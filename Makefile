@@ -39,6 +39,7 @@ LDFLAGS		=	-shared -lc -lm -L. -linv_common
 
 PLUGINS		=	libinv_common.a \
                         inv_input.so \
+                        inv_tube.so \
 
 
 
@@ -47,7 +48,8 @@ all: $(PLUGINS)
 # RULES TO BUILD PLUGINS FROM C CODE
 
 libinv_common.a:   libinv_common.o  libinv_common.h     
-inv_input.so:      inv_input.o      inv_input.h      
+inv_input.so:      inv_input.o      inv_input.h   
+inv_tube.so:       inv_tube.o       inv_tube.h     
      
 
 

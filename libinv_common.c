@@ -56,7 +56,7 @@ float InoClip(float in)
 }
 
 /* distortion function based on sin() */
-float ITube(float in, float Drive)
+float ITube_do(float in, float Drive)
 {
 	float out;
 	out = (in>0) ? pow( fabs(sin(in*Drive*PI_ON_2)),ITUBE_MAGIC ) : -pow( fabs(sin(-in*Drive*PI_ON_2)),ITUBE_MAGIC );

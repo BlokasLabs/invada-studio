@@ -8,3 +8,11 @@
                                         lv2:binary   <inv_input.so>  ;
                                         rdfs:seeAlso <inv_input.ttl> .
 
+<http://invadarecords.com/plugins/inv_tube_mono> a lv2:Plugin ;
+                                        lv2:binary   <inv_tube.so>  ;
+                                        rdfs:seeAlso <inv_tube.ttl> .
+
+<http://invadarecords.com/plugins/inv_tube_stereo> a lv2:Plugin ;
+                                        lv2:binary   <inv_tube.so>  ;
+                                        rdfs:seeAlso <inv_tube.ttl> .
+

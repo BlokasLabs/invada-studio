@@ -134,7 +134,7 @@ static void connectPortIInput(LV2_Handle instance, uint32_t port, void *data)
 }
 
 
-void activateIInput(LV2_Handle instance) 
+static void activateIInput(LV2_Handle instance) 
 {
 
 	IInput *plugin = (IInput *)instance;

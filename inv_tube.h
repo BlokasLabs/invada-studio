@@ -18,20 +18,6 @@
 
 */
 
-/* 2.0 * atan(1.0) */
-#define PI_ON_2 1.570796327
+/* control conversion function */
+float convertParam(unsigned long param, float value, double sr);
 
-/* -1.0 / log10(sin(0.2 * atan(1.0))) */
-#define ITUBE_MAGIC 1.241206735
-
-/*2^31-2 */
-#define TWO31_MINUS2 2147483646
-
-/* param change detect function */
-void checkParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
-
-/* soft clipping function */
-float InoClip(float in);
-
-/* distortion function */
-float ITube_do(float in, float Drive);

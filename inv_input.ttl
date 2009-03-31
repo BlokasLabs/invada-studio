@@ -4,7 +4,8 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
 <http://invadarecords.com/plugins/inv_input> a lv2:Plugin ;
-    doap:name ":: Invada :: - Input Module" ;
+    a lv2:UtilityPlugin ;
+    doap:name "Invada Input Module" ;
     doap:maintainer [
 	foaf:name "Fraser Stuart";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
@@ -39,26 +40,32 @@
 	lv2:minimum -24.0 ;
 	lv2:maximum 24.0 ;
 	lv2:scalePoint [
-	    rdfs:label "+18dB" ;
-	    rdf:value 18.0 ;
+	    rdfs:label "-24dB" ;
+	    rdf:value -24.0 ;
 	] , [
-	    rdfs:label "+12dB" ;
-	    rdf:value 12.0 ;
-	] , [
-	    rdfs:label "+6dB" ;
-	    rdf:value 6.0 ;
-	] , [
-	    rdfs:label "0dB" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "-6dB" ;
-	    rdf:value -6.0 ;
+	    rdfs:label "-18dB" ;
+	    rdf:value -18.0 ;
 	] , [
 	    rdfs:label "-12dB" ;
 	    rdf:value -12.0 ;
 	] , [
-	    rdfs:label "-18dB" ;
-	    rdf:value -18.0 ;
+	    rdfs:label "-6dB" ;
+	    rdf:value -6.0 ;
+	] , [
+	    rdfs:label "0dB" ;
+	    rdf:value 0.0 ;
+	] , [
+	    rdfs:label "+6dB" ;
+	    rdf:value 6.0 ;
+	] , [
+	    rdfs:label "+12dB" ;
+	    rdf:value 12.0 ;
+	] , [
+	    rdfs:label "+18dB" ;
+	    rdf:value 18.0 ;
+	] , [
+	    rdfs:label "+24dB" ;
+	    rdf:value 24.0 ;
 	]
     ] , [
 	a lv2:InputPort ;
