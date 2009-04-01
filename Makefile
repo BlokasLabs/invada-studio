@@ -23,7 +23,9 @@
 # Change this if you want to install somewhere else. In particular
 # you may wish to remove the middle "local/" part of the path.
 
-INSTALL_PLUGINS_DIR	=	/usr/local/lib/lv2/invada.lv2
+INSTALL_SYS_PLUGINS_DIR		=	/usr/local/lib/lv2/
+INSTALL_USER_PLUGINS_DIR	=	~/.lv2/
+INSTALL_BUNDLE_DIR		=	invada.lv2
 
 # NO EDITING below this line is required
 # if all you want to do is install and use the plugins.
@@ -38,6 +40,7 @@ CFLAGS		=	-I. -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -f
 LDFLAGS		=	-shared -lc -lm -L. -linv_common
 
 PLUGINS		=	libinv_common.a \
+                        inv_compressor.so \
                         inv_input.so \
                         inv_tube.so \
 
@@ -47,7 +50,8 @@ all: $(PLUGINS)
 
 # RULES TO BUILD PLUGINS FROM C CODE
 
-libinv_common.a:   libinv_common.o  libinv_common.h     
+libinv_common.a:   libinv_common.o  libinv_common.h 
+inv_input.so:      inv_compressor.o inv_compressor.h     
 inv_input.so:      inv_input.o      inv_input.h   
 inv_tube.so:       inv_tube.o       inv_tube.h     
      
@@ -55,10 +59,21 @@ inv_tube.so:       inv_tube.o       inv_tube.h
 
 # OTHER TARGETS
 
-install: targets
-	-mkdir -p		$(INSTALL_PLUGINS_DIR)
-	cp *.so 		$(INSTALL_PLUGINS_DIR)
-	cp *.ttl 		$(INSTALL_PLUGINS_DIR)
+install:
+	@echo ""
+	@echo "use 'make install-user' to install in $(INSTALL_USER_PLUGINS_DIR) or 'make install-sys' to install in $(INSTALL_SYS_PLUGINS_DIR)"
+	@echo ""
+
+install-sys: targets
+	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+	cp *.so 		$(INSTALL_SYS_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+	cp *.ttl 		$(INSTALL_SYS_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+
+install-user: targets
+	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+	cp *.so 		$(INSTALL_USER_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+	cp *.ttl 		$(INSTALL_USER_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+
 
 targets:	$(PLUGINS)
 

@@ -20,7 +20,7 @@
 	lv2:index 0 ;
 	lv2:symbol "phaseL" ;
 	lv2:name "Ø (L)" ;
-	lv2:toggled ;
+	lv2:portProperty :toggled ;
 	lv2:default 0.0 ;
     ] , [
 	a lv2:InputPort ;
@@ -28,7 +28,7 @@
 	lv2:index 1 ;
 	lv2:symbol "phaseR" ;
 	lv2:name "Ø (R)" ;
-	lv2:toggled ;
+	lv2:portProperty :toggled ;
 	lv2:default 0.0 ;
     ] , [
 	a lv2:InputPort ;
@@ -39,34 +39,6 @@
 	lv2:default 0.0 ;
 	lv2:minimum -24.0 ;
 	lv2:maximum 24.0 ;
-	lv2:scalePoint [
-	    rdfs:label "-24dB" ;
-	    rdf:value -24.0 ;
-	] , [
-	    rdfs:label "-18dB" ;
-	    rdf:value -18.0 ;
-	] , [
-	    rdfs:label "-12dB" ;
-	    rdf:value -12.0 ;
-	] , [
-	    rdfs:label "-6dB" ;
-	    rdf:value -6.0 ;
-	] , [
-	    rdfs:label "0dB" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "+6dB" ;
-	    rdf:value 6.0 ;
-	] , [
-	    rdfs:label "+12dB" ;
-	    rdf:value 12.0 ;
-	] , [
-	    rdfs:label "+18dB" ;
-	    rdf:value 18.0 ;
-	] , [
-	    rdfs:label "+24dB" ;
-	    rdf:value 24.0 ;
-	]
     ] , [
 	a lv2:InputPort ;
 	a lv2:ControlPort ;
@@ -76,16 +48,6 @@
 	lv2:default 0.0 ;
 	lv2:minimum -1.0 ;
 	lv2:maximum 1.0 ;
-	lv2:scalePoint [
-	    rdfs:label "Left" ;
-	    rdf:value -1.0 ;
-	] , [
-	    rdfs:label "Center" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "Right" ;
-	    rdf:value 1.0 ;
-	]
     ] , [
 	a lv2:InputPort ;
 	a lv2:ControlPort ;
@@ -95,23 +57,13 @@
 	lv2:default 0.0 ;
 	lv2:minimum -1.0 ;
 	lv2:maximum 1.0 ;
-	lv2:scalePoint [
-	    rdfs:label "Mono" ;
-	    rdf:value -1.0 ;
-	] , [
-	    rdfs:label "Normal" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "Phase" ;
-	    rdf:value 1.0 ;
-	]
     ] , [
 	a lv2:InputPort ;
 	a lv2:ControlPort ;
 	lv2:index 5 ;
 	lv2:symbol "noClip" ;
 	lv2:name "Soft Clip" ;
-	lv2:toggled ;
+	lv2:portProperty :toggled ;
 	lv2:default 0.0 ;
     ] , [
 	a lv2:AudioPort ;

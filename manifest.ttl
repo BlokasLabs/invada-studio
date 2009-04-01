@@ -4,6 +4,14 @@
 @prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
+<http://invadarecords.com/plugins/inv_compressor_mono> a lv2:Plugin ;
+                                        lv2:binary   <inv_compressor.so>  ;
+                                        rdfs:seeAlso <inv_compressor.ttl> .
+
+<http://invadarecords.com/plugins/inv_compressor_stereo> a lv2:Plugin ;
+                                        lv2:binary   <inv_compressor.so>  ;
+                                        rdfs:seeAlso <inv_compressor.ttl> .
+
 <http://invadarecords.com/plugins/inv_input> a lv2:Plugin ;
                                         lv2:binary   <inv_input.so>  ;
                                         rdfs:seeAlso <inv_input.ttl> .

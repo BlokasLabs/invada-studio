@@ -23,19 +23,6 @@
 	lv2:default 0.0 ;
 	lv2:minimum 0.0 ;
 	lv2:maximum 18.0 ;
-	lv2:scalePoint [
-	    rdfs:label "0dB" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "+6dB" ;
-	    rdf:value 6.0 ;
-	] , [
-	    rdfs:label "+12dB" ;
-	    rdf:value 12.0 ;
-	] , [
-	    rdfs:label "+18dB" ;
-	    rdf:value 18.0 ;
-	]
     ] , [
 	a lv2:InputPort ;
 	a lv2:ControlPort ;
@@ -51,7 +38,7 @@
 	lv2:index 2 ;
 	lv2:symbol "phase" ;
 	lv2:name "Ø" ;
-	lv2:toggled ;
+	lv2:portProperty :toggled ;
 	lv2:default 0.0 ;
     ] , [
 	a lv2:InputPort ;
@@ -62,22 +49,6 @@
 	lv2:default 75.0 ;
 	lv2:minimum 0.0 ;
 	lv2:maximum 100.0 ;
-	lv2:scalePoint [
-	    rdfs:label "Dry" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "25%" ;
-	    rdf:value 25.0 ;
-	] , [
-	    rdfs:label "50%" ;
-	    rdf:value 50.0 ;
-	] , [
-	    rdfs:label "75%" ;
-	    rdf:value 75.0 ;
-	] , [
-	    rdfs:label "Wet" ;
-	    rdf:value 100.0 ;
-	]
     ] , [
 	a lv2:AudioPort ;
 	a lv2:InputPort ;
@@ -113,19 +84,6 @@
 	lv2:default 0.0 ;
 	lv2:minimum 0.0 ;
 	lv2:maximum 18.0 ;
-	lv2:scalePoint [
-	    rdfs:label "0dB" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "+6dB" ;
-	    rdf:value 6.0 ;
-	] , [
-	    rdfs:label "+12dB" ;
-	    rdf:value 12.0 ;
-	] , [
-	    rdfs:label "+18dB" ;
-	    rdf:value 18.0 ;
-	]
     ] , [
 	a lv2:InputPort ;
 	a lv2:ControlPort ;
@@ -141,7 +99,7 @@
 	lv2:index 2 ;
 	lv2:symbol "phase" ;
 	lv2:name "Ø" ;
-	lv2:toggled ;
+	lv2:portProperty :toggled ;
 	lv2:default 0.0 ;
     ] , [
 	a lv2:InputPort ;
@@ -152,22 +110,6 @@
 	lv2:default 75.0 ;
 	lv2:minimum 0.0 ;
 	lv2:maximum 100.0 ;
-	lv2:scalePoint [
-	    rdfs:label "Dry" ;
-	    rdf:value 0.0 ;
-	] , [
-	    rdfs:label "25%" ;
-	    rdf:value 25.0 ;
-	] , [
-	    rdfs:label "50%" ;
-	    rdf:value 50.0 ;
-	] , [
-	    rdfs:label "75%" ;
-	    rdf:value 75.0 ;
-	] , [
-	    rdfs:label "Wet" ;
-	    rdf:value 100.0 ;
-	]
     ] , [
 	a lv2:AudioPort ;
 	a lv2:InputPort ;
