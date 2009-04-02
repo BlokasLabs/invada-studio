@@ -4,7 +4,7 @@
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 
-<http://invadarecords.com/plugins/inv_compressor_mono> 
+<http://invadarecords.com/plugins/inv_compressor/mono> 
     a lv2:Plugin, lv2:CompressorPlugin ;
     doap:name "Invada Mono Compressor" ;
     doap:maintainer [
@@ -95,7 +95,7 @@
     ]
 .
 
-<http://invadarecords.com/plugins/inv_compressor_stereo> 
+<http://invadarecords.com/plugins/inv_compressor/stereo> 
     a lv2:Plugin, lv2:CompressorPlugin ;
     doap:name "Invada Stereo Compressor" ;
     doap:maintainer [

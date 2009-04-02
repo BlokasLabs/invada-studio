@@ -4,7 +4,7 @@
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 
-<http://invadarecords.com/plugins/inv_tube_mono> 
+<http://invadarecords.com/plugins/inv_tube/mono> 
     a lv2:Plugin, lv2:DistortionPlugin ;
     doap:name "Invada Mono Tube Distortion" ;
     doap:maintainer [
@@ -61,7 +61,7 @@
     ]
 .
 
-<http://invadarecords.com/plugins/inv_tube_stereo> 
+<http://invadarecords.com/plugins/inv_tube/stereo> 
     a lv2:Plugin, lv2:DistortionPlugin ;
     doap:name "Invada Stereo Tube Distortion" ;
     doap:maintainer [
