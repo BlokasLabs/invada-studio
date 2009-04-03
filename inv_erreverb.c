@@ -230,10 +230,10 @@ static void activateIReverbER(LV2_Handle instance)
 	plugin->LastRoomLength = 25.0;
 	plugin->LastRoomWidth  = 30.0; 
 	plugin->LastRoomHeight = 10;
-	plugin->LastSourceLR   = 0.49;
-	plugin->LastSourceFB   = 0.775;
-	plugin->LastDestLR     = 0.51; 
-	plugin->LastDestFB     = 0.225;
+	plugin->LastSourceLR   = -0.01;
+	plugin->LastSourceFB   = 0.8;
+	plugin->LastDestLR     = 0.01; 
+	plugin->LastDestFB     = 0.2;
 	plugin->LastHPF        = 0.001;
 	plugin->LastWarmth     = 0.5;
 	plugin->LastDiffusion  = 0.5;
@@ -603,6 +603,7 @@ void calculateIReverbER(LV2_Handle instance)
 {
 	IReverbER *plugin = (IReverbER *)instance;
 
+	float convertedWidth,convertedLength,convertedHeight,convertedSourceLR,convertedSourceFB,convertedDestLR,convertedDestFB;
 	float SourceToLeft,SourceToRight,SourceToRear,SourceToFront;
 	float DestToLeft,DestToRight,DestToRear,DestToFront;
 	float RoofHeight,FloorDepth;
@@ -612,19 +613,66 @@ void calculateIReverbER(LV2_Handle instance)
 	struct ERunit * er;
 	unsigned int Num,i;
 
-/* TODO - check room, source and dest within bounds */
+	if (plugin->LastRoomWidth < 3.0)
+		convertedWidth = 3.0;
+	else if (plugin->LastRoomWidth <= 100.0)
+		convertedWidth = plugin->LastRoomWidth;
+	else
+		convertedWidth = 100.0;
 
-	SourceToLeft = plugin->LastSourceLR     * plugin->LastRoomWidth;
-	SourceToRight= (1-plugin->LastSourceLR) * plugin->LastRoomWidth;
-	SourceToFront= plugin->LastSourceFB     * plugin->LastRoomLength;
-	SourceToRear = (1-plugin->LastSourceFB) * plugin->LastRoomLength;
+	if (plugin->LastRoomLength < 3.0)
+		convertedLength = 3.0;
+	else if (plugin->LastRoomLength <= 100.0)
+		convertedLength = plugin->LastRoomLength;
+	else
+		convertedLength = 100.0;
 
-	DestToLeft = plugin->LastDestLR     * plugin->LastRoomWidth;
-	DestToRight= (1-plugin->LastDestLR) * plugin->LastRoomWidth;
-	DestToFront= plugin->LastDestFB     * plugin->LastRoomLength;
-	DestToRear = (1-plugin->LastDestFB) * plugin->LastRoomLength;
+	if (plugin->LastRoomHeight < 3.0)
+		convertedHeight = 3.0;
+	else if (plugin->LastRoomHeight <= 30.0)
+		convertedHeight = plugin->LastRoomHeight;
+	else
+		convertedHeight = 30.0;
 
-	RoofHeight = plugin->LastRoomHeight - OBJECT_HEIGHT;
+	if (plugin->LastSourceLR < -0.99)
+		convertedSourceLR = -0.99;
+	else if (plugin->LastSourceLR <= 0.99)
+		convertedSourceLR = plugin->LastSourceLR;
+	else
+		convertedSourceLR = 0.99;
+
+	if (plugin->LastSourceFB < 0.51)
+		convertedSourceFB = 0.51;
+	else if (plugin->LastSourceFB <= 0.99)
+		convertedSourceFB = plugin->LastSourceFB;
+	else
+		convertedSourceFB = 0.99;
+
+	if (plugin->LastDestLR < -0.99)
+		convertedDestLR = -0.99;
+	else if (plugin->LastDestLR <= 0.99)
+		convertedDestLR = plugin->LastDestLR;
+	else
+		convertedDestLR = 0.99;
+
+	if (plugin->LastDestFB < 0.01)
+		convertedDestFB = 0.01;
+	else if (plugin->LastDestFB <= 0.49)
+		convertedDestFB = plugin->LastDestFB;
+	else
+		convertedDestFB = 0.49;
+
+	SourceToLeft = (1+convertedSourceLR) /2 * convertedWidth;
+	SourceToRight= (1-convertedSourceLR) /2 * convertedWidth;
+	SourceToFront= convertedSourceFB        * convertedLength;
+	SourceToRear = (1-convertedSourceFB)    * convertedLength;
+
+	DestToLeft = (1+convertedDestLR) /2 * convertedWidth;
+	DestToRight= (1-convertedDestLR) /2 * convertedWidth;
+	DestToFront= convertedDestFB        * convertedLength;
+	DestToRear = (1-convertedDestFB)    * convertedLength;
+
+	RoofHeight = convertedHeight - OBJECT_HEIGHT;
 	FloorDepth = OBJECT_HEIGHT;
 
 	DirectLength = SourceToFront-DestToFront;
