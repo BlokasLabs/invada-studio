@@ -266,7 +266,7 @@ float convertParam(unsigned long param, float value, double sr) {
 	switch(param)  {
 		case IINPUT_PHASEL:
 		case IINPUT_PHASER:
-			if(value<0.5)
+			if(value<=0.0)
 				result= 0; 
 			else
 				result= 1;
@@ -289,7 +289,7 @@ float convertParam(unsigned long param, float value, double sr) {
 				result= 1;
 			break;
 		case IINPUT_NOCLIP:
-			if(value<0.5)
+			if(value<=0.0)
 				result= 0; 
 			else
 				result= 1;

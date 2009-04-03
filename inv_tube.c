@@ -290,7 +290,7 @@ float convertParam(unsigned long param, float value, double sr) {
 				result= 1;
 			break;
 		case ITUBE_PHASE:
-			if(value<0.5)
+			if(value<=0.0)
 				result= 0; 
 			else
 				result= 1;

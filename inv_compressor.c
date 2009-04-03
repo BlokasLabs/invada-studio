@@ -386,7 +386,7 @@ float convertParam(unsigned long param, float value, double sr) {
 				result= pow(10, 1.8);
 			break;
 		case ICOMP_NOCLIP:
-			if(value<0.5)
+			if(value<=0.0)
 				result= 0; 
 			else
 				result= 1;

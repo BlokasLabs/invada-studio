@@ -59,7 +59,9 @@ float InoClip(float in)
 float ITube_do(float in, float Drive)
 {
 	float out;
-	out = (in>0) ? pow( fabs(sin(in*Drive*PI_ON_2)),ITUBE_MAGIC ) : -pow( fabs(sin(-in*Drive*PI_ON_2)),ITUBE_MAGIC );
+	out = (in>0) ? 
+		 pow( fabs(sin( in*Drive*PI_ON_2)),ITUBE_MAGIC ) : 
+		-pow( fabs(sin(-in*Drive*PI_ON_2)),ITUBE_MAGIC ) ;
 	return out;
 }
 

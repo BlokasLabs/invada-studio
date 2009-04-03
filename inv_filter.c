@@ -411,7 +411,7 @@ float convertParam(unsigned long param, float value, double sr) {
 				result= pow(10,0.6);
 			break;
 		case IFILTER_NOCLIP:
-			if(value<0.5)
+			if(value<=0.0)
 				result= 0; 
 			else
 				result= 1;

@@ -1,0 +1,239 @@
+@prefix units: <http://lv2plug.in/ns/extension/units#> .
+@prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix doap:  <http://usefulinc.com/ns/doap#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://invadarecords.com/plugins/lv2/erreverb/mono> 
+    a lv2:Plugin, lv2:ReverbPlugin ;
+    doap:name "Invada Early Reflection Reverb (Mono in)" ;
+    doap:maintainer [
+	foaf:name "Fraser Stuart";
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:mbox <mailto:fraser@arkhostings.com> ;
+    ] ;
+    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    lv2:optionalFeature lv2:hardRtCapable ;
+
+    lv2:port [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 0 ;
+	lv2:symbol "roomLength" ;
+	lv2:name "Room Length" ;
+	lv2:default 25 ;
+	lv2:minimum 3 ;
+	lv2:maximum 100 ;
+	units:unit :m ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 1 ;
+	lv2:symbol "roomWidth" ;
+	lv2:name "Room Width" ;
+	lv2:default 30 ;
+	lv2:minimum 3 ;
+	lv2:maximum 100 ;
+	units:unit :m ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 2 ;
+	lv2:symbol "roomHeight" ;
+	lv2:name "Room Height" ;
+	lv2:default 10 ;
+	lv2:minimum 3 ;
+	lv2:maximum 30 ;
+	units:unit :m ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 3 ;
+	lv2:symbol "sourceLR" ;
+	lv2:name "Source (L/R)" ;
+	lv2:default 0.49 ;
+	lv2:minimum 0.01 ;
+	lv2:maximum 0.99 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 4 ;
+	lv2:symbol "sourceFB" ;
+	lv2:name "Source (F/B)" ;
+	lv2:default 0.775 ;
+	lv2:minimum 0.55 ;
+	lv2:maximum 0.99 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 5 ;
+	lv2:symbol "listLR" ;
+	lv2:name "Listener (L/R)" ;
+	lv2:default 0.51 ;
+	lv2:minimum 0.01 ;
+	lv2:maximum 0.99 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 6 ;
+	lv2:symbol "listFB" ;
+	lv2:name "Listener (F/B)" ;
+	lv2:default 0.225 ;
+	lv2:minimum 0.01 ;
+	lv2:maximum 0.45 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 7 ;
+	lv2:symbol "hpf" ;
+	lv2:name "HPF" ;
+	lv2:default 0.001 ;
+	lv2:minimum 0.001 ;
+	lv2:maximum 0.05 ;
+	lv2:portProperty :sampleRate ;
+	units:unit :hz ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 8 ;
+	lv2:symbol "warmth" ;
+	lv2:name "Warmth" ;
+	lv2:default 0.5 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 9 ;
+	lv2:symbol "diffusion" ;
+	lv2:name "Diffusion" ;
+	lv2:default 0.5 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:OutputPort, lv2:AudioPort ;
+	lv2:index 10 ;
+	lv2:symbol "outL" ;
+	lv2:name "L Out" ;
+    ] , [
+	a lv2:OutputPort, lv2:AudioPort ;
+	lv2:index 11 ;
+	lv2:symbol "outR" ;
+	lv2:name "R Out" ;
+    ] , [
+	a lv2:InputPort, lv2:AudioPort ;
+	lv2:index 12 ;
+	lv2:symbol "in" ;
+	lv2:name "In" ;
+    ]
+.
+
+<http://invadarecords.com/plugins/lv2/erreverb/sum> 
+    a lv2:Plugin, lv2:ReverbPlugin ;
+    doap:name "Invada Early Reflection Reverb (Sum L+R in)" ;
+    doap:maintainer [
+	foaf:name "Fraser Stuart";
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:mbox <mailto:fraser@arkhostings.com> ;
+    ] ;
+    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    lv2:optionalFeature lv2:hardRtCapable ;
+
+    lv2:port [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 0 ;
+	lv2:symbol "roomLength" ;
+	lv2:name "Room Length" ;
+	lv2:default 25 ;
+	lv2:minimum 3 ;
+	lv2:maximum 100 ;
+	units:unit :m ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 1 ;
+	lv2:symbol "roomWidth" ;
+	lv2:name "Room Width" ;
+	lv2:default 30 ;
+	lv2:minimum 3 ;
+	lv2:maximum 100 ;
+	units:unit :m ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 2 ;
+	lv2:symbol "roomHeight" ;
+	lv2:name "Room Height" ;
+	lv2:default 10 ;
+	lv2:minimum 3 ;
+	lv2:maximum 30 ;
+	units:unit :m ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 3 ;
+	lv2:symbol "sourceLR" ;
+	lv2:name "Source (L/R)" ;
+	lv2:default 0.49 ;
+	lv2:minimum 0.01 ;
+	lv2:maximum 0.99 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 4 ;
+	lv2:symbol "sourceFB" ;
+	lv2:name "Source (F/B)" ;
+	lv2:default 0.775 ;
+	lv2:minimum 0.55 ;
+	lv2:maximum 0.99 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 5 ;
+	lv2:symbol "listLR" ;
+	lv2:name "Listener (L/R)" ;
+	lv2:default 0.51 ;
+	lv2:minimum 0.01 ;
+	lv2:maximum 0.99 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 6 ;
+	lv2:symbol "listFB" ;
+	lv2:name "Listener (F/B)" ;
+	lv2:default 0.225 ;
+	lv2:minimum 0.01 ;
+	lv2:maximum 0.45 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 7 ;
+	lv2:symbol "hpf" ;
+	lv2:name "HPF" ;
+	lv2:default 0.001 ;
+	lv2:minimum 0.001 ;
+	lv2:maximum 0.05 ;
+	lv2:portProperty :sampleRate ;
+	units:unit :hz ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 8 ;
+	lv2:symbol "warmth" ;
+	lv2:name "Warmth" ;
+	lv2:default 0.5 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 9 ;
+	lv2:symbol "diffusion" ;
+	lv2:name "Diffusion" ;
+	lv2:default 0.5 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:OutputPort, lv2:AudioPort ;
+	lv2:index 10 ;
+	lv2:symbol "outL" ;
+	lv2:name "L Out" ;
+    ] , [
+	a lv2:OutputPort, lv2:AudioPort ;
+	lv2:index 11 ;
+	lv2:symbol "outR" ;
+	lv2:name "R Out" ;
+    ] , [
+	a lv2:InputPort, lv2:AudioPort ;
+	lv2:index 12 ;
+	lv2:symbol "inL" ;
+	lv2:name "L In" ;
+    ] , [
+	a lv2:InputPort, lv2:AudioPort ;
+	lv2:index 13 ;
+	lv2:symbol "inR" ;
+	lv2:name "R In" ;
+    ]
+.
+

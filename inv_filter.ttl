@@ -23,7 +23,7 @@
 	lv2:default 0.015811388 ;
 	lv2:minimum 0.0005 ;
 	lv2:maximum 0.5 ;
-	lv2:portProperty:sampleRate
+	lv2:portProperty :sampleRate;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -72,7 +72,7 @@
 	lv2:default 0.015811388 ;
 	lv2:minimum 0.0005 ;
 	lv2:maximum 0.5 ;
-	lv2:portProperty:sampleRate
+	lv2:portProperty :sampleRate;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -131,7 +131,7 @@
 	lv2:default 0.015811388 ;
 	lv2:minimum 0.0005 ;
 	lv2:maximum 0.5 ;
-	lv2:portProperty:sampleRate
+	lv2:portProperty :sampleRate;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -180,7 +180,7 @@
 	lv2:default 0.015811388 ;
 	lv2:minimum 0.0005 ;
 	lv2:maximum 0.5 ;
-	lv2:portProperty:sampleRate
+	lv2:portProperty :sampleRate;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
