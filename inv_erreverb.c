@@ -603,7 +603,7 @@ void calculateIReverbER(LV2_Handle instance)
 {
 	IReverbER *plugin = (IReverbER *)instance;
 
-	float convertedWidth,convertedLength,convertedHeight,convertedSourceLR,convertedSourceFB,convertedDestLR,convertedDestFB;
+	float convertedWidth,convertedLength,convertedHeight,convertedSourceLR,convertedSourceFB,convertedDestLR,convertedDestFB,convertedDiffusion;
 	float SourceToLeft,SourceToRight,SourceToRear,SourceToFront;
 	float DestToLeft,DestToRight,DestToRear,DestToFront;
 	float RoofHeight,FloorDepth;
@@ -662,6 +662,13 @@ void calculateIReverbER(LV2_Handle instance)
 	else
 		convertedDestFB = 0.49;
 
+	if (plugin->LastDiffusion < 0.0)
+		convertedDiffusion = 0.0;
+	else if (plugin->LastDiffusion <= 1.0)
+		convertedDiffusion = plugin->LastDiffusion;
+	else
+		convertedDiffusion = 1.0;
+
 	SourceToLeft = (1+convertedSourceLR) /2 * convertedWidth;
 	SourceToRight= (1-convertedSourceLR) /2 * convertedWidth;
 	SourceToFront= convertedSourceFB        * convertedLength;
@@ -686,7 +693,7 @@ void calculateIReverbER(LV2_Handle instance)
 	MaxGain=0.000000000001; /* this is used to scale up the reflections so that the loudest one has a gain of 1 (0db) */
 
 	/* seed the random sequence with a version of the diffusion */
-	srand48(1+(long int)(plugin->LastDiffusion*TWO31_MINUS2));
+	srand48(1+(long int)(convertedDiffusion*TWO31_MINUS2));
   
 	// reflections from the left wall
 	// 0: S->Left->D
@@ -711,7 +718,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 2: S->Right->Left->D
 	ERLength       = DirectLength;
-	ERWidth        = -(SourceToRight + plugin->LastRoomWidth + DestToLeft);
+	ERWidth        = -(SourceToRight + convertedWidth + DestToLeft);
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -721,7 +728,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 3: S->BackWall->Right->Left->D
 	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = -(SourceToRight + plugin->LastRoomWidth + DestToLeft);
+	ERWidth        = -(SourceToRight + convertedWidth + DestToLeft);
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -731,7 +738,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 4: S->Left->Rigtht->Left->D
 	ERLength       = DirectLength;
-	ERWidth        = -(SourceToLeft + (2 * plugin->LastRoomWidth) + DestToLeft);
+	ERWidth        = -(SourceToLeft + (2 * convertedWidth) + DestToLeft);
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -741,7 +748,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 5: S->BackWall->Left->Right->Left->D
 	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = -(SourceToLeft + (2 * plugin->LastRoomWidth) + DestToLeft);
+	ERWidth        = -(SourceToLeft + (2 * convertedWidth) + DestToLeft);
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 4, DirectDistance,  plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -772,7 +779,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 8: S->Left->Right->D
 	ERLength       = DirectLength;
-	ERWidth        = SourceToLeft + plugin->LastRoomWidth + DestToRight;
+	ERWidth        = SourceToLeft + convertedWidth + DestToRight;
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -782,7 +789,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 9: S->BackWall->Left->Right->D
 	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = SourceToLeft + plugin->LastRoomWidth + DestToRight;
+	ERWidth        = SourceToLeft + convertedWidth + DestToRight;
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -792,7 +799,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 10: S->Right->Left->Right->D
 	ERLength       = DirectLength;
-	ERWidth        = SourceToRight + (2 * plugin->LastRoomWidth) + DestToRight;
+	ERWidth        = SourceToRight + (2 * convertedWidth) + DestToRight;
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -802,7 +809,7 @@ void calculateIReverbER(LV2_Handle instance)
 
 	// 11: S->BackWall->Right->Left->Right->D
 	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = SourceToRight + (2 * plugin->LastRoomWidth) + DestToRight;
+	ERWidth        = SourceToRight + (2 * convertedWidth) + DestToRight;
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 4, DirectDistance, plugin->SampleRate);
 	if(er->AbsGain > MaxGain)
@@ -822,7 +829,7 @@ void calculateIReverbER(LV2_Handle instance)
 	Num++;
 
 	// 13: S->NearWall->BackWall->D
-	ERLength       = SourceToFront + plugin->LastRoomLength + DestToRear;
+	ERLength       = SourceToFront + convertedLength + DestToRear;
 	ERWidth        = DirectWidth;
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
@@ -832,7 +839,7 @@ void calculateIReverbER(LV2_Handle instance)
 	Num++;
 
 	// S->Left->NearWall->BackWall->D
-	ERLength       = SourceToFront + plugin->LastRoomLength + DestToRear;
+	ERLength       = SourceToFront + convertedLength + DestToRear;
 	ERWidth        = -(SourceToLeft + DestToLeft);
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
@@ -842,7 +849,7 @@ void calculateIReverbER(LV2_Handle instance)
 	Num++;
 
 	// S->Right->NearWall->BackWall->D
-	ERLength       = SourceToFront + plugin->LastRoomLength + DestToRear;
+	ERLength       = SourceToFront + convertedLength + DestToRear;
 	ERWidth        = SourceToRight + DestToRight;
 	ERHeight       = DirectHeight;
 	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
@@ -940,7 +947,7 @@ void calculateIReverbER(LV2_Handle instance)
 	/* scale up and calculate l/r actual gains for run() */
 	er=plugin->er;
 	for(i=0;i<Num;i++) {
-		er->Delay=er->Delay*(1.01+drand48()*plugin->LastDiffusion/10);
+		er->Delay=er->Delay*(1.01+drand48()*convertedDiffusion/10);
 		er->GainL=er->GainL/MaxGain;
 		er->GainR=er->GainR/MaxGain;
 		er++;
