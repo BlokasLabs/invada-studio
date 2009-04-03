@@ -30,8 +30,8 @@
 /* The port numbers for the plugin: */
 
 
-#define ICOMP_MONO_URI		"http://invadarecords.com/plugins/inv_compressor/mono";
-#define ICOMP_STEREO_URI	"http://invadarecords.com/plugins/inv_compressor/stereo";
+#define ICOMP_MONO_URI		"http://invadarecords.com/plugins/lv2/compressor/mono";
+#define ICOMP_STEREO_URI	"http://invadarecords.com/plugins/lv2/compressor/stereo";
 #define ICOMP_RMS 		0
 #define ICOMP_ATTACK 		1
 #define ICOMP_RELEASE 		2

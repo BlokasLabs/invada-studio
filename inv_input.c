@@ -30,7 +30,7 @@
 
 /* The port numbers for the plugin: */
 
-#define IINPUT_URI		"http://invadarecords.com/plugins/inv_input";
+#define IINPUT_URI		"http://invadarecords.com/plugins/lv2/input";
 #define IINPUT_PHASEL		0
 #define IINPUT_PHASER		1
 #define IINPUT_GAIN		2

@@ -29,8 +29,8 @@
 #include "inv_tube.h"
 
 
-#define ITUBE_MONO_URI		"http://invadarecords.com/plugins/inv_tube/mono";
-#define ITUBE_STEREO_URI	"http://invadarecords.com/plugins/inv_tube/stereo";
+#define ITUBE_MONO_URI		"http://invadarecords.com/plugins/lv2/tube/mono";
+#define ITUBE_STEREO_URI	"http://invadarecords.com/plugins/lv2/tube/stereo";
 #define ITUBE_DRIVE 		0
 #define ITUBE_DCOFFSET		1
 #define ITUBE_PHASE		2

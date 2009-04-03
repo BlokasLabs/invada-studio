@@ -28,10 +28,10 @@
 #include "inv_filter.h"
 
 
-#define IFILTER_MONO_LPF_URI	"http://invadarecords.com/plugins/inv_filter/lpf/mono";
-#define IFILTER_STEREO_LPF_URI	"http://invadarecords.com/plugins/inv_filter/lpf/stereo";
-#define IFILTER_MONO_HPF_URI	"http://invadarecords.com/plugins/inv_filter/hpf/mono";
-#define IFILTER_STEREO_HPF_URI	"http://invadarecords.com/plugins/inv_filter/hpf/stereo";
+#define IFILTER_MONO_LPF_URI	"http://invadarecords.com/plugins/lv2/filter/lpf/mono";
+#define IFILTER_STEREO_LPF_URI	"http://invadarecords.com/plugins/lv2/filter/lpf/stereo";
+#define IFILTER_MONO_HPF_URI	"http://invadarecords.com/plugins/lv2/filter/hpf/mono";
+#define IFILTER_STEREO_HPF_URI	"http://invadarecords.com/plugins/lv2/filter/hpf/stereo";
 #define IFILTER_FREQ 		0
 #define IFILTER_GAIN 		1
 #define IFILTER_NOCLIP 		2
