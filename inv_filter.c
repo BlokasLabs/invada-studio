@@ -21,24 +21,10 @@
 */
 
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 #include <lv2.h>
 #include "libinv_common.h"
 #include "inv_filter.h"
-
-
-#define IFILTER_MONO_LPF_URI	"http://invadarecords.com/plugins/lv2/filter/lpf/mono";
-#define IFILTER_STEREO_LPF_URI	"http://invadarecords.com/plugins/lv2/filter/lpf/stereo";
-#define IFILTER_MONO_HPF_URI	"http://invadarecords.com/plugins/lv2/filter/hpf/mono";
-#define IFILTER_STEREO_HPF_URI	"http://invadarecords.com/plugins/lv2/filter/hpf/stereo";
-#define IFILTER_FREQ 		0
-#define IFILTER_GAIN 		1
-#define IFILTER_NOCLIP 		2
-#define IFILTER_AUDIO_INL  	3
-#define IFILTER_AUDIO_OUTL 	4
-#define IFILTER_AUDIO_INR  	5 /* not used in mono mode */
-#define IFILTER_AUDIO_OUTR 	6 /* not used in mono mode */
 
 
 static LV2_Descriptor *IFilterMonoLPFDescriptor = NULL;

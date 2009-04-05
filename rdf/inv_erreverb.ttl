@@ -76,16 +76,6 @@
 	lv2:default 0.01 ;
 	lv2:minimum -1.0 ;
 	lv2:maximum 1.0 ;
-        lv2:scalePoint [
-            rdfs:label "Left" ;
-            rdf:value -1.0 ;
-        ] , [
-            rdfs:label "Center" ;
-            rdf:value 0.0 ;
-        ] , [
-            rdfs:label "Right" ;
-            rdf:value 1.0 ;
-        ]
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 6 ;
@@ -184,16 +174,6 @@
 	lv2:default -0.01 ;
 	lv2:minimum -1.0 ;
 	lv2:maximum 1.0 ;
-        lv2:scalePoint [
-            rdfs:label "Left" ;
-            rdf:value -1.0 ;
-        ] , [
-            rdfs:label "Center" ;
-            rdf:value 0.0 ;
-        ] , [
-            rdfs:label "Right" ;
-            rdf:value 1.0 ;
-        ]
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 4 ;

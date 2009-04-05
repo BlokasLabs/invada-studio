@@ -23,8 +23,8 @@
 # Change this if you want to install somewhere else. In particular
 # you may wish to remove the middle "local/" part of the path.
 
-INSTALL_SYS_PLUGINS_DIR		=	/usr/local/lib/lv2/
-INSTALL_USER_PLUGINS_DIR	=	~/.lv2/
+INSTALL_SYS_PLUGINS_DIR		=	/usr/local/lib/lv2
+INSTALL_USER_PLUGINS_DIR	=	~/.lv2
 INSTALL_BUNDLE_DIR		=	invada.lv2
 
 # NO EDITING below this line is required
@@ -36,7 +36,7 @@ INSTALL_BUNDLE_DIR		=	invada.lv2
 
 CC		=	gcc
 LD		=	ld
-CFLAGS		=	-I. -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
+CFLAGS		=	-I. -I/usr/include/libgnome-2.0 -I/usr/include/orbit-2.0 -I/usr/include/gconf/2 -I/usr/include/gnome-vfs-2.0 -I/usr/lib/gnome-vfs-2.0/include -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/libbonobo-2.0 -I/usr/include/bonobo-activation-2.0 -I/usr/include/libgnomeui-2.0 -I/usr/include/libart-2.0 -I/usr/include/gnome-keyring-1 -I/usr/include/libbonoboui-2.0 -I/usr/include/libgnomecanvas-2.0 -I/usr/include/gtk-2.0 -I/usr/include/libxml2 -I/usr/include/pango-1.0 -I/usr/include/gail-1.0 -I/usr/include/freetype2 -I/usr/include/atk-1.0 -I/usr/lib/gtk-2.0/include -I/usr/include/cairo -I/usr/include/libpng12 -I/usr/include/pixman-1 -I/usr/include/libglade-2.0  -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
 LDFLAGS		=	-shared -lc -lm -L. -linv_common
 
 PLUGINS		=	libinv_common.a \
@@ -46,9 +46,11 @@ PLUGINS		=	libinv_common.a \
                         inv_input.so \
                         inv_tube.so \
 
+GUIS		=	inv_filter_gui.so \
 
 
-all: $(PLUGINS)
+all: $(PLUGINS) \
+     $(GUIS)
 
 # RULES TO BUILD PLUGINS FROM C CODE
 
@@ -59,6 +61,9 @@ inv_filter.so:     inv_filter.o     inv_filter.h
 inv_input.so:      inv_input.o      inv_input.h   
 inv_tube.so:       inv_tube.o       inv_tube.h     
      
+# RULES TO BUILD GUIS FROM C CODE
+ 
+inv_filter_gui.so:     inv_filter_gui.o     inv_filter.h     inv_filter_gui.h   
 
 
 # OTHER TARGETS
@@ -69,17 +74,26 @@ install:
 	@echo ""
 
 install-sys: targets
-	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
-	cp *.so 		$(INSTALL_SYS_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
-	cp *.ttl 		$(INSTALL_SYS_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/images
+	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp *.so 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp rdf/*.ttl 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp images/*.png		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/images
+	cp gtk/*.glade 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 
 install-user: targets
-	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
-	cp *.so 		$(INSTALL_USER_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
-	cp *.ttl 		$(INSTALL_USER_PLUGINS_DIR)$(INSTALL_BUNDLE_DIR)
+	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/images
+	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp *.so 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp rdf/*.ttl 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp images/*.png		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/images
+	cp gtk/*.glade 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 
 
-targets:	$(PLUGINS)
+targets:	$(PLUGINS) \
+                $(GUIS)
 
 always:	
 
