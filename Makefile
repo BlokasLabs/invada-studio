@@ -1,4 +1,4 @@
-#   Copyright (C) 2007 Fraser Stuart
+#   Copyright (C) 2009 Fraser Stuart
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -20,8 +20,7 @@
 #####################################################################
 # PLEASE CHANGE THIS to your preferred installation location!
 #
-# Change this if you want to install somewhere else. In particular
-# you may wish to remove the middle "local/" part of the path.
+# Change this if you want to install somewhere else. 
 
 INSTALL_SYS_PLUGINS_DIR		=	/usr/local/lib/lv2
 INSTALL_USER_PLUGINS_DIR	=	~/.lv2
@@ -80,7 +79,7 @@ install-sys: targets
 	cp *.so 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp rdf/*.ttl 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp images/*.png		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/images
-	cp gtk/*.glade 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp gtk/*.xml 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 
 install-user: targets
 	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
@@ -89,7 +88,7 @@ install-user: targets
 	cp *.so 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp rdf/*.ttl 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp images/*.png		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/images
-	cp gtk/*.glade 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp gtk/*.xml 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 
 
 targets:	$(PLUGINS) \

@@ -1,46 +1,61 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
+<?xml version="1.0"?>
 <!--Generated with glade3 3.4.5 on Mon Apr  6 02:22:49 2009 -->
-<glade-interface>
-  <widget class="GtkWindow" id="filter_window">
+<interface>
+  <object class="GtkAdjustment" id="adjustment1">
+    <property name="upper">100</property>
+    <property name="lower">0</property>
+    <property name="page_increment">10</property>
+    <property name="step_increment">1</property>
+    <property name="page_size">10</property>
+    <property name="value">0</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment2">
+    <property name="upper">100</property>
+    <property name="lower">0</property>
+    <property name="page_increment">10</property>
+    <property name="step_increment">1</property>
+    <property name="page_size">10</property>
+    <property name="value">0</property>
+  </object>
+  <object class="GtkWindow" id="filter_window">
     <property name="title" translatable="yes">Invada Filter</property>
     <property name="resizable">False</property>
-    <signal name="destroy" handler="on_filter_window_destroy"/>
+    <signal handler="on_filter_window_destroy" name="destroy"/>
     <child>
-      <widget class="GtkVBox" id="vbox1">
+      <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
         <child>
-          <widget class="GtkHBox" id="hbox6">
+          <object class="GtkHBox" id="hbox6">
             <property name="visible">True</property>
             <child>
-              <widget class="GtkImage" id="image_logo">
+              <object class="GtkImage" id="image_logo">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
                 <property name="pixbuf">../images/invada_logo.png</property>
-              </widget>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkVBox" id="vbox5">
+              <object class="GtkVBox" id="vbox5">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label_heading">
+                  <object class="GtkLabel" id="label_heading">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Invada Filter</property>
-                  </widget>
+                  </object>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hbox3">
+                  <object class="GtkHBox" id="hbox3">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkLabel" id="label4">
+                      <object class="GtkLabel" id="label4">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">In</property>
                         <property name="width_chars">5</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
@@ -50,11 +65,11 @@
                       <placeholder/>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label5">
+                      <object class="GtkLabel" id="label5">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Out</property>
                         <property name="width_chars">5</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
@@ -64,61 +79,61 @@
                     <child>
                       <placeholder/>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="position">1</property>
                   </packing>
                 </child>
-              </widget>
+              </object>
               <packing>
                 <property name="position">1</property>
               </packing>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
           </packing>
         </child>
         <child>
-          <widget class="GtkHSeparator" id="hseparator1">
+          <object class="GtkHSeparator" id="hseparator1">
             <property name="visible">True</property>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="position">1</property>
           </packing>
         </child>
         <child>
-          <widget class="GtkImage" id="image1">
+          <object class="GtkImage" id="image1">
             <property name="visible">True</property>
             <property name="stock">gtk-missing-image</property>
-          </widget>
+          </object>
           <packing>
             <property name="position">2</property>
           </packing>
         </child>
         <child>
-          <widget class="GtkHSeparator" id="hseparator2">
+          <object class="GtkHSeparator" id="hseparator2">
             <property name="visible">True</property>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="position">3</property>
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox2">
+          <object class="GtkHBox" id="hbox2">
             <property name="visible">True</property>
             <property name="spacing">2</property>
             <child>
-              <widget class="GtkVBox" id="vbox2">
+              <object class="GtkVBox" id="vbox2">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label1">
+                  <object class="GtkLabel" id="label1">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Frequency</property>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
@@ -126,29 +141,29 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHScale" id="hscale_freq">
+                  <object class="GtkHScale" id="hscale_freq">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="adjustment">0 0 100 1 10 10</property>
+                    <property name="adjustment">adjustment1</property>
                     <property name="show_fill_level">True</property>
                     <property name="restrict_to_fill_level">False</property>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
-              </widget>
+              </object>
             </child>
             <child>
-              <widget class="GtkVBox" id="vbox3">
+              <object class="GtkVBox" id="vbox3">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label2">
+                  <object class="GtkLabel" id="label2">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Gain</property>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
@@ -156,33 +171,33 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHScale" id="hscale_gain">
+                  <object class="GtkHScale" id="hscale_gain">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="adjustment">0 0 100 1 10 10</property>
+                    <property name="adjustment">adjustment2</property>
                     <property name="show_fill_level">True</property>
                     <property name="restrict_to_fill_level">False</property>
                     <property name="fill_level">100</property>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
-              </widget>
+              </object>
               <packing>
                 <property name="position">1</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkVBox" id="vbox4">
+              <object class="GtkVBox" id="vbox4">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label3">
+                  <object class="GtkLabel" id="label3">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Soft Clip</property>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
@@ -190,27 +205,26 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToggleButton" id="togglebutton_softclip">
+                  <object class="GtkToggleButton" id="togglebutton_softclip">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="label" translatable="yes">On</property>
-                    <property name="response_id">0</property>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
-              </widget>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
                 <property name="position">2</property>
               </packing>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
@@ -218,7 +232,7 @@
             <property name="position">4</property>
           </packing>
         </child>
-      </widget>
+      </object>
     </child>
-  </widget>
-</glade-interface>
+  </object>
+</interface>

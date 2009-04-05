@@ -12,7 +12,7 @@
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
-    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
 
     lv2:port [
@@ -136,7 +136,7 @@
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
-    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
 
     lv2:port [

@@ -6,14 +6,14 @@
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
 
 <http://invadarecords.com/plugins/lv2/filter/lpf/gui>
-    a guiext:GtkUI;
-    guiext:binary <inv_filter_gui.so>;
-    guiext:requiredFeature guiext:makeResident.
+    a uiext:GtkUI;
+    uiext:binary <inv_filter_gui.so>;
+    uiext:requiredFeature uiext:makeResident.
 
 <http://invadarecords.com/plugins/lv2/filter/hpf/gui>
     a guiext:GtkUI;
     guiext:binary <inv_filter_gui.so>;
-    guiext:requiredFeature guiext:makeResident.
+    guiext:requiredFeature uiext:makeResident.
 
 <http://invadarecords.com/plugins/lv2/filter/lpf/mono> 
     a lv2:Plugin, lv2:LowpassPlugin ;
@@ -23,9 +23,9 @@
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
-    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    guiext:ui <http://invadarecords.com/plugins/lv2/filter/lpf/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/filter/lpf/gui>;
 
 
     lv2:port [
@@ -75,7 +75,7 @@
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
-    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
     guiext:ui <http://invadarecords.com/plugins/lv2/filter/lpf/gui>;
 
@@ -136,9 +136,9 @@
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
-    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    guiext:ui <http://invadarecords.com/plugins/lv2/filter/hpf/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/filter/hpf/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -187,7 +187,7 @@
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
-    doap:licence <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
     guiext:ui <http://invadarecords.com/plugins/lv2/filter/hpf/gui>;
 

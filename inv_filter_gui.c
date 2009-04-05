@@ -39,11 +39,13 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	GtkBuilder      *builder; 
 	GtkWidget       *window;
 
+	GError *err = NULL;
+
 	gtk_init (NULL,NULL);
 
 	builder = gtk_builder_new ();
-	gtk_builder_add_from_file (builder, "gtk/inv_filter.glade", NULL);
-	window = GTK_WIDGET (gtk_builder_get_object (builder, "window_filter"));
+	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_filter_gui.xml", &err);
+	window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
 	gtk_builder_connect_signals (builder, NULL);
 
 	g_object_unref (G_OBJECT (builder));
