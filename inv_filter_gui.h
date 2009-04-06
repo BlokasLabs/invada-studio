@@ -18,4 +18,4 @@
 
 */
 
-void on_window_filter_destroy(GtkObject *object, gpointer user_data);
+void on_filter_window_destroy(GtkObject *object, gpointer user_data);

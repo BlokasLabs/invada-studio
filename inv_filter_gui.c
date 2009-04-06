@@ -34,10 +34,22 @@ static LV2UI_Descriptor *IFilterLPFGuiDescriptor = NULL;
 static LV2UI_Descriptor *IFilterHPFGuiDescriptor = NULL;
 
 
+typedef struct {
+ 
+	GtkWidget       *window;
+	GtkWidget	*container;
+
+} IFilterGui;
+
+
 static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
+	IFilterGui *pluginGui = (IFilterGui *)malloc(sizeof(IFilterGui));
+	if(pluginGui==NULL)
+		return NULL;
+
 	GtkBuilder      *builder; 
-	GtkWidget       *window;
+//	GObject		*object;
 
 	GError *err = NULL;
 
@@ -45,20 +57,26 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 
 	builder = gtk_builder_new ();
 	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_filter_gui.xml", &err);
-	window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
-	gtk_builder_connect_signals (builder, NULL);
+	pluginGui->window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
+	pluginGui->container = GTK_WIDGET (gtk_builder_get_object (builder, "vbox1"));
+
+	gtk_widget_ref(pluginGui->container);
+	gtk_container_remove(GTK_CONTAINER(pluginGui->window), pluginGui->container);
+
+	*widget = (LV2UI_Widget) pluginGui->container;
+
+//	g_signal_connect (object, "destroy", G_CALLBACK(on_filter_window_destroy),NULL); 
 
 	g_object_unref (G_OBJECT (builder));
+             
 
-	gtk_widget_show (window);                
-	gtk_main ();
-
-	return NULL;
+	return pluginGui;
 }
 
 
 static void cleanupIFilterGui(LV2UI_Handle ui)
 {
+//	gtk_main_quit ();
 	return;
 }
 
@@ -109,9 +127,10 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-void on_window_filter_destroy(GtkObject *object, gpointer user_data)
+G_MODULE_EXPORT void on_filter_window_destroy(GtkObject *object, gpointer user_data)
 {
-    gtk_main_quit ();
+	gtk_main_quit ();
+	return;
 }
 
 
