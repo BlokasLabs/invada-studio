@@ -10,7 +10,7 @@ static void gtk_meter_size_allocate(GtkWidget *widget,
 static void gtk_meter_realize(GtkWidget *widget);
 static gboolean gtk_meter_expose(GtkWidget *widget,
     GdkEventExpose *event);
-static void gtk_meter_paint(GtkWidget *widget);
+static void gtk_meter_paint(GtkWidget *widget, gint mode);
 static void gtk_meter_destroy(GtkObject *object);
 
 
@@ -48,14 +48,14 @@ void
 gtk_meter_set_LdB(GtkMeter *meter, float num)
 {
    meter->LdB = num;
-   gtk_meter_paint(GTK_WIDGET(meter));
+   gtk_meter_paint(GTK_WIDGET(meter),1);
 }
 
 void
 gtk_meter_set_RdB(GtkMeter *meter, float num)
 {
    meter->RdB = num;
-   gtk_meter_paint(GTK_WIDGET(meter));
+   gtk_meter_paint(GTK_WIDGET(meter),1);
 }
 
 
@@ -168,24 +168,24 @@ gtk_meter_expose(GtkWidget *widget,
   g_return_val_if_fail(GTK_IS_METER(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
 
-  gtk_meter_paint(widget);
+  gtk_meter_paint(widget,0);
 
   return FALSE;
 }
 
 
 static void
-gtk_meter_paint(GtkWidget *widget)
+gtk_meter_paint(GtkWidget *widget, gint mode)
 {
 	cairo_t *cr;
 	float Lon,Ron;
 
 	cr = gdk_cairo_create(widget->window);
 
-	cairo_translate(cr, 0, 0);
-
-	cairo_set_source_rgb(cr, 0, 0, 0);
-	cairo_paint(cr);
+	if(mode==0) {
+		cairo_set_source_rgb(cr, 0, 0, 0);
+		cairo_paint(cr);
+	}
 
 	gint channels = GTK_METER(widget)->channels;
 	gint Lpos = (gint)((GTK_METER(widget)->LdB/2)+31);

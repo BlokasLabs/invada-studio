@@ -53,10 +53,12 @@ float IEnvelope(float value, float envelope, int mode, double sr)
 	switch(mode) 
 	{
 		case INVADA_METER_VU:
-			EnvelopeDelta=(valueA > envelope)   ? 0.25 * (valueA - envelope)   : 0.01 * (valueA - envelope);
+			/* 300ms attack, 300ms decay */
+			EnvelopeDelta=(valueA > envelope)   ? 0.00005 * (valueA - envelope)   : 0.00005 * (valueA - envelope);
 			break;
-		case INVADA_METER_PEAK:
-			EnvelopeDelta=(valueA > envelope)   ? 0.25 * (valueA - envelope)   : 0.01 * (valueA - envelope);
+		case INVADA_METER_PEAK:  
+			/* 1ms attack, 100ms decay */
+			EnvelopeDelta=(valueA > envelope)   ? 0.015 * (valueA - envelope)   : 0.0015 * (valueA - envelope);
 			break;
 		default:
 			EnvelopeDelta=0;

@@ -185,8 +185,8 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		*(pfAudioOutputL++)= OutL; 
 
 		//evelope on in and out for meters
-		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 
 	}
 
@@ -252,10 +252,10 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		*(pfAudioOutputR++)=OutR;
 
 		//evelope on in and out for meters
-		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
-		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_VU,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
-		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_VU,plugin->SampleRate);
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 		
 	}
   
@@ -315,8 +315,8 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		*(pfAudioOutputL++)=OutL;
 
 		//evelope on in and out for meters
-		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 	}
 
 	// store values for next loop
@@ -381,10 +381,10 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		*(pfAudioOutputR++)=OutR;
 
 		//evelope on in and out for meters
-		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
-		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_VU,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
-		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_VU,plugin->SampleRate);
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 	}
 
 	// store values for next loop
