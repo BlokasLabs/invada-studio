@@ -35,10 +35,11 @@ INSTALL_BUNDLE_DIR		=	invada.lv2
 
 CC		=	gcc
 LD		=	ld
-CFLAGS		=	-I. `pkg-config --cflags libglade-2.0`  -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
-LDFLAGS		=	-shared -lc -lm -L. -linv_common
+CFLAGS		=	-I. `pkg-config --cflags gtk+-2.0`  -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
+LDFLAGS		=	-shared -lc -lm -L. -linv_common -linv_widget-meter
 
 PLUGINS		=	libinv_common.a \
+			libinv_widget-meter.a \
                         inv_compressor.so \
                         inv_erreverb.so \
                         inv_filter.so \
@@ -53,16 +54,17 @@ all: $(PLUGINS) \
 
 # RULES TO BUILD PLUGINS FROM C CODE
 
-libinv_common.a:   libinv_common.o  libinv_common.h 
-inv_compressor.so: inv_compressor.o inv_compressor.h
-inv_erreverb.so:   inv_erreverb.o   inv_erreverb.h    
-inv_filter.so:     inv_filter.o     inv_filter.h         
-inv_input.so:      inv_input.o      inv_input.h   
-inv_tube.so:       inv_tube.o       inv_tube.h     
+libinv_common.a:	libinv_common.o		libinv_common.h 
+libinv_widget-meter.a:	libinv_widget-meter.o	libinv_widget-meter.h 
+inv_compressor.so:	inv_compressor.o	inv_compressor.h
+inv_erreverb.so:	inv_erreverb.o		inv_erreverb.h    
+inv_filter.so:		inv_filter.o		inv_filter.h         
+inv_input.so:		inv_input.o		inv_input.h   
+inv_tube.so:		inv_tube.o		inv_tube.h     
      
 # RULES TO BUILD GUIS FROM C CODE
  
-inv_filter_gui.so:     inv_filter_gui.o     inv_filter.h     inv_filter_gui.h   
+inv_filter_gui.so:     inv_filter_gui.o		inv_filter.h	inv_filter_gui.h   
 
 
 # OTHER TARGETS

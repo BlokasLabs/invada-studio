@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Mon Apr  6 14:10:10 2009 -->
+<!--Generated with glade3 3.4.5 on Mon Apr  6 17:56:03 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="filter_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -38,6 +38,7 @@
                       <widget class="GtkLabel" id="label4">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">In</property>
+                        <property name="justify">GTK_JUSTIFY_RIGHT</property>
                         <property name="width_chars">5</property>
                       </widget>
                       <packing>
@@ -46,12 +47,18 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <widget class="GtkFixed" id="Fixed_meter_in_display">
+                        <property name="visible">True</property>
+                      </widget>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                     <child>
                       <widget class="GtkLabel" id="label5">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Out</property>
+                        <property name="justify">GTK_JUSTIFY_RIGHT</property>
                         <property name="width_chars">5</property>
                       </widget>
                       <packing>
@@ -61,7 +68,12 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <widget class="GtkFixed" id="Fixed_meter_out_display">
+                        <property name="visible">True</property>
+                      </widget>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
                     </child>
                   </widget>
                   <packing>
@@ -89,9 +101,8 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkImage" id="image1">
+          <widget class="GtkFixed" id="Fixed_filter_display">
             <property name="visible">True</property>
-            <property name="pixbuf">filter_display.png</property>
           </widget>
           <packing>
             <property name="position">2</property>

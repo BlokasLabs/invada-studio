@@ -25,6 +25,7 @@
 #include <math.h>
 #include <gtk/gtk.h>
 #include <lv2.h>
+#include "libinv_widget-meter.h"
 #include "lv2_ui.h"
 #include "inv_filter.h"
 #include "inv_filter_gui.h"
@@ -49,7 +50,10 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 		return NULL;
 
 	GtkBuilder      *builder; 
-//	GObject		*object;
+	GtkWidget	*object;
+	GtkWidget	*meterIn;
+	GtkWidget	*meterOut;
+	GtkWidget	*display;
 
 	GError *err = NULL;
 
@@ -59,6 +63,16 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_filter_gui.xml", &err);
 	pluginGui->window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
 	pluginGui->container = GTK_WIDGET (gtk_builder_get_object (builder, "vbox1"));
+
+
+	object=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_in_display"));
+	meterIn = gtk_meter_new ();
+	gtk_container_add (GTK_CONTAINER (object), meterIn);
+
+	object=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_out_display"));
+	meterOut = gtk_meter_new ();
+	gtk_container_add (GTK_CONTAINER (object), meterOut);
+
 
 	gtk_widget_ref(pluginGui->container);
 	gtk_container_remove(GTK_CONTAINER(pluginGui->window), pluginGui->container);

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Mon Apr  6 14:10:10 2009 -->
+<!--Generated with glade3 3.4.5 on Mon Apr  6 17:56:03 2009 -->
 <interface>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">100</property>
@@ -53,6 +53,7 @@
                       <object class="GtkLabel" id="label4">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">In</property>
+                        <property name="justify">GTK_JUSTIFY_RIGHT</property>
                         <property name="width_chars">5</property>
                       </object>
                       <packing>
@@ -61,12 +62,18 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkFixed" id="Fixed_meter_in_display">
+                        <property name="visible">True</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                     <child>
                       <object class="GtkLabel" id="label5">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Out</property>
+                        <property name="justify">GTK_JUSTIFY_RIGHT</property>
                         <property name="width_chars">5</property>
                       </object>
                       <packing>
@@ -76,7 +83,12 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkFixed" id="Fixed_meter_out_display">
+                        <property name="visible">True</property>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -104,9 +116,8 @@
           </packing>
         </child>
         <child>
-          <object class="GtkImage" id="image1">
+          <object class="GtkFixed" id="Fixed_filter_display">
             <property name="visible">True</property>
-            <property name="pixbuf">filter_display.png</property>
           </object>
           <packing>
             <property name="position">2</property>
