@@ -199,23 +199,20 @@ gtk_meter_paint(GtkWidget *widget, gint mode)
 		switch(channels)
 		{
 			case 1:
-				Lon = i < Lpos ? 1 : 0;
-				if(i< 27 ) cairo_set_source_rgb(cr, 0.2+(Lon*0.4), 0.4+(Lon*0.6), 0);
-				else if (i< 31) cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.4+(Lon*0.6), 0);
+				Lon = i <= Lpos ? 1 : 0;
+				if(i< 31 ) cairo_set_source_rgb(cr, 0.1+((float)i * 0.01)+(Lon*(0.3+((float)i * 0.01))), 0.4+(Lon*0.6), 0);
 				else cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.2, 0);
 				cairo_rectangle(cr, i*3, 2, 2, 18 );
 				cairo_fill(cr);
 				break;
 			case 2:
-				Lon = i < Lpos ? 1 : 0;
-				Ron = i < Rpos ? 1 : 0;
-				if(i< 27 ) cairo_set_source_rgb(cr, 0.2+(Lon*0.4), 0.4+(Lon*0.6), 0);
-				else if (i< 31) cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.4+(Lon*0.6), 0);
+				Lon = i <= Lpos ? 1 : 0;
+				Ron = i <= Rpos ? 1 : 0;
+				if(i< 31 ) cairo_set_source_rgb(cr, 0.1+((float)i * 0.01)+(Lon*(0.3+((float)i * 0.01))), 0.4+(Lon*0.6), 0);
 				else cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.2, 0);
 				cairo_rectangle(cr, i*3, 2, 2, 8 );
 				cairo_fill(cr);
-				if(i< 27 ) cairo_set_source_rgb(cr, 0.2+(Ron*0.4), 0.4+(Ron*0.6), 0);
-				else if (i< 31) cairo_set_source_rgb(cr, 0.4+(Ron*0.6), 0.4+(Ron*0.6), 0);
+				if(i< 31 ) cairo_set_source_rgb(cr, 0.1+((float)i * 0.01)+(Ron*(0.3+((float)i * 0.01))), 0.4+(Ron*0.6), 0);
 				else cairo_set_source_rgb(cr, 0.4+(Ron*0.6), 0.2, 0);
 				cairo_rectangle(cr, i*3, 12, 2, 8);
 				cairo_fill(cr);
