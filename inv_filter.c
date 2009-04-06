@@ -43,6 +43,10 @@ typedef struct {
 	float * AudioOutputBufferL;
 	float * AudioInputBufferR; 
 	float * AudioOutputBufferR;
+	float * MeterInputL;
+	float * MeterOutputL;
+	float * MeterInputR; 
+	float * MeterOutputR;
 
 	double SampleRate;
 
@@ -58,6 +62,10 @@ typedef struct {
 	/* stuff we need to remember between calls */
 	float AudioLLast; 
 	float AudioRLast;
+	float EnvInLLast; 
+	float EnvOutLLast; 
+	float EnvInRLast; 
+	float EnvOutRLast; 
 
 } IFilter;
 
@@ -91,14 +99,26 @@ static void connectPortIFilter(LV2_Handle instance, uint32_t port, void *data)
 		case IFILTER_AUDIO_INL:
 			plugin->AudioInputBufferL = data;
 			break;
-		case IFILTER_AUDIO_OUTL:
-			plugin->AudioOutputBufferL = data;
-			break;
 		case IFILTER_AUDIO_INR:
 			plugin->AudioInputBufferR = data;
 			break;
+		case IFILTER_AUDIO_OUTL:
+			plugin->AudioOutputBufferL = data;
+			break;
 		case IFILTER_AUDIO_OUTR:
 			plugin->AudioOutputBufferR = data;
+			break;
+		case IFILTER_METER_INL:
+			plugin->MeterInputL = data;
+			break;
+		case IFILTER_METER_INR:
+			plugin->MeterInputR = data;
+			break;
+		case IFILTER_METER_OUTL:
+			plugin->MeterOutputL = data;
+			break;
+		case IFILTER_METER_OUTR:
+			plugin->MeterOutputR = data;
 			break;
 	}
 }
@@ -111,6 +131,10 @@ static void activateIFilter(LV2_Handle instance)
 
 	plugin->AudioLLast = 0;
 	plugin->AudioRLast = 0;
+	plugin->EnvInLLast = 0; 
+	plugin->EnvOutLLast = 0; 
+	plugin->EnvInRLast = 0; 
+	plugin->EnvOutRLast = 0; 
 
 	/* defaults */
 	plugin->LastFreq = 0.015811388;   // middle on a logarithmic scale      
@@ -128,6 +152,7 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
 	float * pfAudioOutputL;
+	float InL,OutL,EnvInL,EnvOutL;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioLSum;
 	unsigned long lSampleIndex;
@@ -147,15 +172,32 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	pfAudioOutputL = plugin->AudioOutputBufferL;
 
 	fAudioLSum = plugin->AudioLLast;
+	EnvInL     = plugin->EnvInLLast;
+	EnvOutL    = plugin->EnvOutLLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
 	{
-		fAudioLSum = ((fSamples-1) * fAudioLSum + *(pfAudioInputL++)) / fSamples;  
+		InL=*(pfAudioInputL++);
+		fAudioLSum = ((fSamples-1) * fAudioLSum + InL) / fSamples;  
 		fAudioL = fAudioLSum*fGain; 
-		*(pfAudioOutputL++)=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
+
+		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;
+		*(pfAudioOutputL++)= OutL; 
+
+		//evelope on in and out for meters
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
+
 	}
-  
+
+	// remember for next time round  
 	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  // and store values for next loop
+	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+
+	// update the meters
+	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
 }
 
 
@@ -166,6 +208,8 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioInputR;
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;
+	float InL,OutL,EnvInL,EnvOutL;
+	float InR,OutR,EnvInR,EnvOutR;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioR,fAudioLSum,fAudioRSum;
 	unsigned long lSampleIndex;
@@ -188,20 +232,46 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 
 	fAudioLSum = plugin->AudioLLast;
 	fAudioRSum = plugin->AudioRLast;
+	EnvInL     = plugin->EnvInLLast;
+	EnvInR     = plugin->EnvInRLast;
+	EnvOutL    = plugin->EnvOutLLast;
+	EnvOutR    = plugin->EnvOutRLast;
 
-	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
-		fAudioLSum = ((fSamples-1) * fAudioLSum + *(pfAudioInputL++)) / fSamples;  
-		fAudioRSum = ((fSamples-1) * fAudioRSum + *(pfAudioInputR++)) / fSamples;
-		  
+	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
+	{
+		InL=*(pfAudioInputL++);
+		InR=*(pfAudioInputR++);
+		fAudioLSum = ((fSamples-1) * fAudioLSum + InL) / fSamples;  
+		fAudioRSum = ((fSamples-1) * fAudioRSum + InR) / fSamples;
 		fAudioL = fAudioLSum*fGain; 
 		fAudioR = fAudioRSum*fGain; 
 		  
-		*(pfAudioOutputL++)=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
-		*(pfAudioOutputR++)=fNoClip > 0 ? InoClip(fAudioR) : fAudioR;	
+		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
+		OutR=fNoClip > 0 ? InoClip(fAudioR) : fAudioR;
+		*(pfAudioOutputL++)=OutL;
+		*(pfAudioOutputR++)=OutR;
+
+		//evelope on in and out for meters
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
+		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_VU,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
+		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_VU,plugin->SampleRate);
+		
 	}
   
-	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  // and store values for next loop
-	plugin->AudioRLast = (fabs(fAudioRSum)<1.0e-10)  ? 0.f : fAudioRSum;  // and store values for next loop
+	// store values for next loop
+	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  
+	plugin->AudioRLast = (fabs(fAudioRSum)<1.0e-10)  ? 0.f : fAudioRSum; 
+	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
+	plugin->EnvInRLast = (fabs(EnvInR)<1.0e-10)  ? 0.f : EnvInR; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+
+	// update the meters
+	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
+	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
 }
 
 
@@ -211,6 +281,7 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
 	float * pfAudioOutputL;
+	float InL,OutL,EnvInL,EnvOutL;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioLSum;
 	unsigned long lSampleIndex;
@@ -230,16 +301,32 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	pfAudioOutputL = plugin->AudioOutputBufferL;
 
 	fAudioLSum = plugin->AudioLLast;
+	EnvInL     = plugin->EnvInLLast;
+	EnvOutL    = plugin->EnvOutLLast;
 
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
 	{
-		fAudioL = *(pfAudioInputL++);
-		fAudioLSum = ((fSamples-1) * fAudioLSum + fAudioL) / fSamples;  
-		fAudioL = (fAudioL - fAudioLSum)*fGain;
-		*(pfAudioOutputL++)=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
+
+		InL=*(pfAudioInputL++);
+		fAudioLSum = ((fSamples-1) * fAudioLSum + InL) / fSamples;  
+		fAudioL = (InL - fAudioLSum)*fGain;
+
+		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
+		*(pfAudioOutputL++)=OutL;
+
+		//evelope on in and out for meters
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
 	}
 
-	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  // and store values for next loop
+	// store values for next loop
+	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  
+	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+
+	// update the meters
+	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -60.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -60.0;
 }
 
 
@@ -250,6 +337,8 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioInputR;
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;
+	float InL,OutL,EnvInL,EnvOutL;
+	float InR,OutR,EnvInR,EnvOutR;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioR,fAudioLSum,fAudioRSum;
 	unsigned long lSampleIndex;
@@ -272,23 +361,45 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 
 	fAudioLSum = plugin->AudioLLast;
 	fAudioRSum = plugin->AudioRLast;
+	EnvInL     = plugin->EnvInLLast;
+	EnvInR     = plugin->EnvInRLast;
+	EnvOutL    = plugin->EnvOutLLast;
+	EnvOutR    = plugin->EnvOutRLast;
   
-	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
-		fAudioL = *(pfAudioInputL++);
-		fAudioR = *(pfAudioInputR++);
-		  
-		fAudioLSum = ((fSamples-1) * fAudioLSum + fAudioL) / fSamples;  
-		fAudioRSum = ((fSamples-1) * fAudioRSum + fAudioR) / fSamples;
-		  
-		fAudioL = (fAudioL - fAudioLSum)*fGain;
-		fAudioR = (fAudioR - fAudioRSum)*fGain;
+	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
+	{
+		InL = *(pfAudioInputL++);
+		InR = *(pfAudioInputR++);
+		fAudioLSum = ((fSamples-1) * fAudioLSum + InL) / fSamples;  
+		fAudioRSum = ((fSamples-1) * fAudioRSum + InR) / fSamples;
+		fAudioL = (InL - fAudioLSum)*fGain;
+		fAudioR = (InR - fAudioRSum)*fGain;
 		
-		*(pfAudioOutputL++)=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;
-		*(pfAudioOutputR++)=fNoClip > 0 ? InoClip(fAudioR) : fAudioR;	  
+		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
+		OutR=fNoClip > 0 ? InoClip(fAudioR) : fAudioR;
+		*(pfAudioOutputL++)=OutL;
+		*(pfAudioOutputR++)=OutR;
+
+		//evelope on in and out for meters
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_VU,plugin->SampleRate);
+		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_VU,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_VU,plugin->SampleRate);
+		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_VU,plugin->SampleRate);
 	}
 
-	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  // and store values for next loop
-	plugin->AudioRLast = (fabs(fAudioRSum)<1.0e-10)  ? 0.f : fAudioRSum;  // and store values for next loop
+	// store values for next loop
+	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  
+	plugin->AudioRLast = (fabs(fAudioRSum)<1.0e-10)  ? 0.f : fAudioRSum; 
+	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
+	plugin->EnvInRLast = (fabs(EnvInR)<1.0e-10)  ? 0.f : EnvInR; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+
+	// update the meters
+	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
+	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
 }
 
 

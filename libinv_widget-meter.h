@@ -19,7 +19,9 @@ typedef struct _GtkMeterClass GtkMeterClass;
 struct _GtkMeter {
   GtkWidget widget;
 
-  gint sel;
+  gint  channels;
+  float LdB;
+  float RdB;
 };
 
 struct _GtkMeterClass {
@@ -28,8 +30,11 @@ struct _GtkMeterClass {
 
 
 GtkType gtk_meter_get_type(void);
-void gtk_meter_set_sel(GtkMeter *meter, gint sel);
 GtkWidget * gtk_meter_new();
+
+void gtk_meter_set_channels(GtkMeter *meter, gint num);
+void gtk_meter_set_LdB(GtkMeter *meter, float num);
+void gtk_meter_set_RdB(GtkMeter *meter, float num);
 
 
 G_END_DECLS

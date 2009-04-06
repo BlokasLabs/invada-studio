@@ -39,9 +39,22 @@ gtk_meter_get_type(void)
 }
 
 void
-gtk_meter_set_state(GtkMeter *meter, gint num)
+gtk_meter_set_channels(GtkMeter *meter, gint num)
 {
-   meter->sel = num;
+   meter->channels = num;
+}
+
+void
+gtk_meter_set_LdB(GtkMeter *meter, float num)
+{
+   meter->LdB = num;
+   gtk_meter_paint(GTK_WIDGET(meter));
+}
+
+void
+gtk_meter_set_RdB(GtkMeter *meter, float num)
+{
+   meter->RdB = num;
    gtk_meter_paint(GTK_WIDGET(meter));
 }
 
@@ -74,7 +87,9 @@ gtk_meter_class_init(GtkMeterClass *klass)
 static void
 gtk_meter_init(GtkMeter *meter)
 {
-   meter->sel = 0;
+   meter->channels = 1;
+   meter->LdB = -90;
+   meter->RdB = -90;
 }
 
 
@@ -163,7 +178,7 @@ static void
 gtk_meter_paint(GtkWidget *widget)
 {
 	cairo_t *cr;
-	float on;
+	float Lon,Ron;
 
 	cr = gdk_cairo_create(widget->window);
 
@@ -172,21 +187,40 @@ gtk_meter_paint(GtkWidget *widget)
 	cairo_set_source_rgb(cr, 0, 0, 0);
 	cairo_paint(cr);
 
-	gint pos = GTK_METER(widget)->sel;
+	gint channels = GTK_METER(widget)->channels;
+	gint Lpos = (gint)((GTK_METER(widget)->LdB/2)+31);
+	gint Rpos = (gint)((GTK_METER(widget)->RdB/2)+31);
 
 	cairo_set_source_rgb(cr, 0.2, 0.4, 0);
 
 	gint i;
-	for ( i = 1; i <= 34; i++) {
-		on= i < 32 ? 1 : 0;
-		if(i< 27 ) cairo_set_source_rgb(cr, 0.2+(on*0.4), 0.4+(on*0.6), 0);
-		else if (i< 31) cairo_set_source_rgb(cr, 0.4+(on*0.6), 0.4+(on*0.6), 0);
-		else cairo_set_source_rgb(cr, 0.4+(on*0.6), 0.2, 0);
-
-		cairo_rectangle(cr, i*3, 2, 2, 8 );
-		cairo_rectangle(cr, i*3, 12, 2, 8);
-		cairo_fill(cr);
-
+	for ( i = 1; i <= 34; i++) 
+	{
+		switch(channels)
+		{
+			case 1:
+				Lon = i < Lpos ? 1 : 0;
+				if(i< 27 ) cairo_set_source_rgb(cr, 0.2+(Lon*0.4), 0.4+(Lon*0.6), 0);
+				else if (i< 31) cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.4+(Lon*0.6), 0);
+				else cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.2, 0);
+				cairo_rectangle(cr, i*3, 2, 2, 18 );
+				cairo_fill(cr);
+				break;
+			case 2:
+				Lon = i < Lpos ? 1 : 0;
+				Ron = i < Rpos ? 1 : 0;
+				if(i< 27 ) cairo_set_source_rgb(cr, 0.2+(Lon*0.4), 0.4+(Lon*0.6), 0);
+				else if (i< 31) cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.4+(Lon*0.6), 0);
+				else cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.2, 0);
+				cairo_rectangle(cr, i*3, 2, 2, 8 );
+				cairo_fill(cr);
+				if(i< 27 ) cairo_set_source_rgb(cr, 0.2+(Ron*0.4), 0.4+(Ron*0.6), 0);
+				else if (i< 31) cairo_set_source_rgb(cr, 0.4+(Ron*0.6), 0.4+(Ron*0.6), 0);
+				else cairo_set_source_rgb(cr, 0.4+(Ron*0.6), 0.2, 0);
+				cairo_rectangle(cr, i*3, 12, 2, 8);
+				cairo_fill(cr);
+				break; 
+		}
 	}
   	cairo_destroy(cr);
 }

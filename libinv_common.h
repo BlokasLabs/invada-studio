@@ -27,8 +27,15 @@
 /*2^31-2 */
 #define TWO31_MINUS2 2147483646
 
+
+#define INVADA_METER_VU 0
+#define INVADA_METER_PEAK 1
+
 /* param change detect function */
 void checkParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
+
+/* audio envelope */
+float IEnvelope(float value, float envelope, int mode, double sr);
 
 /* soft clipping function */
 float InoClip(float in);

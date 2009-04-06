@@ -31,15 +31,14 @@
 #include "inv_filter_gui.h"
 
 
-static LV2UI_Descriptor *IFilterLPFGuiDescriptor = NULL;
-static LV2UI_Descriptor *IFilterHPFGuiDescriptor = NULL;
+static LV2UI_Descriptor *IFilterGuiDescriptor = NULL;
 
 
 typedef struct {
- 
-	GtkWidget       *window;
-	GtkWidget	*container;
-
+	GtkWidget	*windowContainer;
+	GtkWidget	*meterIn;
+	GtkWidget	*meterOut;
+//	GtkWidget	*display;
 } IFilterGui;
 
 
@@ -50,10 +49,8 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 		return NULL;
 
 	GtkBuilder      *builder; 
-	GtkWidget	*object;
-	GtkWidget	*meterIn;
-	GtkWidget	*meterOut;
-	GtkWidget	*display;
+	GtkWidget       *window;
+	GtkWidget	*tempObject;
 
 	GError *err = NULL;
 
@@ -61,25 +58,26 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 
 	builder = gtk_builder_new ();
 	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_filter_gui.xml", &err);
-	pluginGui->window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
-	pluginGui->container = GTK_WIDGET (gtk_builder_get_object (builder, "vbox1"));
+	window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
+	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "vbox1"));
 
 
-	object=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_in_display"));
-	meterIn = gtk_meter_new ();
-	gtk_container_add (GTK_CONTAINER (object), meterIn);
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_in_display"));
+	pluginGui->meterIn = gtk_meter_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterIn);
 
-	object=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_out_display"));
-	meterOut = gtk_meter_new ();
-	gtk_container_add (GTK_CONTAINER (object), meterOut);
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_out_display"));
+	pluginGui->meterOut = gtk_meter_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterOut);
+
+	gtk_meter_set_channels(GTK_METER (pluginGui->meterIn), 2);
+	gtk_meter_set_channels(GTK_METER (pluginGui->meterOut), 2);
 
 
-	gtk_widget_ref(pluginGui->container);
-	gtk_container_remove(GTK_CONTAINER(pluginGui->window), pluginGui->container);
+	gtk_widget_ref(pluginGui->windowContainer);
+	gtk_container_remove(GTK_CONTAINER(window), pluginGui->windowContainer);
 
-	*widget = (LV2UI_Widget) pluginGui->container;
-
-//	g_signal_connect (object, "destroy", G_CALLBACK(on_filter_window_destroy),NULL); 
+	*widget = (LV2UI_Widget) pluginGui->windowContainer;
 
 	g_object_unref (G_OBJECT (builder));
              
@@ -90,48 +88,59 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 
 static void cleanupIFilterGui(LV2UI_Handle ui)
 {
-//	gtk_main_quit ();
 	return;
 }
 
 
-static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port_index, uint32_t buffer_size, uint32_t format, const void*  buffer)
+static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
 {
-	return;
+	IFilterGui *pluginGui = (IFilterGui *)ui;
+
+	float value;
+
+	if(format==0) 
+	{
+		value=* (float *) buffer;
+		switch(port)
+		{
+			case IFILTER_METER_INL:
+				gtk_meter_set_LdB(GTK_METER (pluginGui->meterIn),value);
+				break;
+			case IFILTER_METER_INR:
+				gtk_meter_set_RdB(GTK_METER (pluginGui->meterIn),value);
+				break;
+			case IFILTER_METER_OUTL:
+				gtk_meter_set_LdB(GTK_METER (pluginGui->meterOut),value);
+				break;
+			case IFILTER_METER_OUTR:
+				gtk_meter_set_RdB(GTK_METER (pluginGui->meterOut),value);
+				break;
+		}
+	}
 }
 
 
 static void init()
 {
-	IFilterLPFGuiDescriptor =
+	IFilterGuiDescriptor =
 	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
 
-	IFilterLPFGuiDescriptor->URI 		= IFILTER_LPF_GUI_URI;
-	IFilterLPFGuiDescriptor->instantiate 	= instantiateIFilterGui;
-	IFilterLPFGuiDescriptor->cleanup 	= cleanupIFilterGui;
-	IFilterLPFGuiDescriptor->port_event	= port_eventIFilterGui;
-	IFilterLPFGuiDescriptor->extension_data = NULL;
+	IFilterGuiDescriptor->URI 		= IFILTER_GUI_URI;
+	IFilterGuiDescriptor->instantiate 	= instantiateIFilterGui;
+	IFilterGuiDescriptor->cleanup		= cleanupIFilterGui;
+	IFilterGuiDescriptor->port_event	= port_eventIFilterGui;
+	IFilterGuiDescriptor->extension_data 	= NULL;
 
-	IFilterHPFGuiDescriptor =
-	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
-
-	IFilterHPFGuiDescriptor->URI 		= IFILTER_HPF_GUI_URI;
-	IFilterHPFGuiDescriptor->instantiate 	= instantiateIFilterGui;
-	IFilterHPFGuiDescriptor->cleanup 	= cleanupIFilterGui;
-	IFilterHPFGuiDescriptor->port_event	= port_eventIFilterGui;
-	IFilterHPFGuiDescriptor->extension_data	= NULL;
 }
 
 
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IFilterLPFGuiDescriptor) init();
+	if (!IFilterGuiDescriptor) init();
 
 	switch (index) {
 		case 0:
-			return IFilterLPFGuiDescriptor;
-		case 1:
-			return IFilterHPFGuiDescriptor;
+			return IFilterGuiDescriptor;
 	default:
 		return NULL;
 	}

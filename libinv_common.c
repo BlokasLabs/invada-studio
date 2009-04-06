@@ -42,6 +42,29 @@ void checkParamChange(
 }
 
 
+/* a function which maps an envelope to a sound */
+float IEnvelope(float value, float envelope, int mode, double sr)
+{
+	float valueA;
+	float EnvelopeDelta;
+
+	valueA=fabs(value);
+
+	switch(mode) 
+	{
+		case INVADA_METER_VU:
+			EnvelopeDelta=(valueA > envelope)   ? 0.25 * (valueA - envelope)   : 0.01 * (valueA - envelope);
+			break;
+		case INVADA_METER_PEAK:
+			EnvelopeDelta=(valueA > envelope)   ? 0.25 * (valueA - envelope)   : 0.01 * (valueA - envelope);
+			break;
+		default:
+			EnvelopeDelta=0;
+	}
+	return EnvelopeDelta;
+}
+
+
 /* this function is linear between -0.7 & 0.7 (approx -3db) and returns a value bewteen 0.7 and 1 for an input from 0.7 to infinity */
 float InoClip(float in)
 {
