@@ -22,7 +22,7 @@
 
 #include <math.h>
 #include <lv2.h>
-#include "libinv_common.h"
+#include "common.h"
 
 
 /* a function that checks to see if a control has been changed and calls the provided conversion fuction */

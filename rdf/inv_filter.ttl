@@ -133,7 +133,7 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    guiext:ui <http://invadarecords.com/plugins/lv2/filter/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/filter/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -284,7 +284,7 @@
 .
 
 <http://invadarecords.com/plugins/lv2/filter/hpf/stereo>
-    a lv2:Plugin, lv2:LowpassPlugin ;
+    a lv2:Plugin, lv2:HighpassPlugin ;
     doap:name "Invada Stereo HPF" ;
     doap:maintainer [
 	foaf:name "Fraser Stuart";
@@ -293,7 +293,7 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    guiext:ui <http://invadarecords.com/plugins/lv2/filter/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/filter/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;

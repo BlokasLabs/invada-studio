@@ -25,9 +25,9 @@
 #include <math.h>
 #include <gtk/gtk.h>
 #include <lv2.h>
-#include "libinv_widget-meter.h"
 #include "lv2_ui.h"
-#include "inv_filter.h"
+#include "widgets/meter.h"
+#include "../plugin/inv_filter.h"
 #include "inv_filter_gui.h"
 
 
@@ -36,9 +36,14 @@ static LV2UI_Descriptor *IFilterGuiDescriptor = NULL;
 
 typedef struct {
 	GtkWidget	*windowContainer;
+	GtkWidget	*heading;
 	GtkWidget	*meterIn;
 	GtkWidget	*meterOut;
 //	GtkWidget	*display;
+
+	gint		InChannels;
+	gint		OutChannels;
+
 } IFilterGui;
 
 
@@ -57,23 +62,52 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	gtk_init (NULL,NULL);
 
 	builder = gtk_builder_new ();
+// TODO change this to use the supplied bundle path
 	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_filter_gui.xml", &err);
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
+
+	/* get pointers to some useful widgets from the design */
 	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "vbox1"));
+	pluginGui->heading = GTK_WIDGET (gtk_builder_get_object (builder, "label_heading"));
 
-
+	/* add custom widgets */
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_in_display"));
-	pluginGui->meterIn = gtk_meter_new ();
+	pluginGui->meterIn = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterIn);
 
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_out_display"));
-	pluginGui->meterOut = gtk_meter_new ();
+	pluginGui->meterOut = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterOut);
 
-	gtk_meter_set_channels(GTK_METER (pluginGui->meterIn), 2);
-	gtk_meter_set_channels(GTK_METER (pluginGui->meterOut), 2);
+	/* customise for the plugin */
+	if(!strcmp(plugin_uri,IFILTER_MONO_LPF_URI)) 
+	{
+		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada Low Pass Filter (mono)");
+		pluginGui->InChannels=1;
+		pluginGui->OutChannels=1;
+	}
+	if(!strcmp(plugin_uri,IFILTER_MONO_HPF_URI)) 
+	{
+		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada High Pass Filter (mono)");
+		pluginGui->InChannels=1;
+		pluginGui->OutChannels=1;
+	}
+	if(!strcmp(plugin_uri,IFILTER_STEREO_LPF_URI)) 
+	{
+		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada Low Pass Filter (stereo)");
+		pluginGui->InChannels=2;
+		pluginGui->OutChannels=2;
+	}
+	if(!strcmp(plugin_uri,IFILTER_STEREO_HPF_URI)) 
+	{
+		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada High Pass Filter (stereo)");
+		pluginGui->InChannels=2;
+		pluginGui->OutChannels=2;
+	}
+	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
+	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 
-
+	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
 	gtk_container_remove(GTK_CONTAINER(window), pluginGui->windowContainer);
 
@@ -81,7 +115,7 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 
 	g_object_unref (G_OBJECT (builder));
              
-
+	/* return the instance */
 	return pluginGui;
 }
 
@@ -104,16 +138,16 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 		switch(port)
 		{
 			case IFILTER_METER_INL:
-				gtk_meter_set_LdB(GTK_METER (pluginGui->meterIn),value);
+				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
 				break;
 			case IFILTER_METER_INR:
-				gtk_meter_set_RdB(GTK_METER (pluginGui->meterIn),value);
+				if(pluginGui->InChannels==2) inv_meter_set_RdB(INV_METER (pluginGui->meterIn),value);
 				break;
 			case IFILTER_METER_OUTL:
-				gtk_meter_set_LdB(GTK_METER (pluginGui->meterOut),value);
+				inv_meter_set_LdB(INV_METER (pluginGui->meterOut),value);
 				break;
 			case IFILTER_METER_OUTR:
-				gtk_meter_set_RdB(GTK_METER (pluginGui->meterOut),value);
+				if(pluginGui->OutChannels==2) inv_meter_set_RdB(INV_METER (pluginGui->meterOut),value);
 				break;
 		}
 	}

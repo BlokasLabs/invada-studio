@@ -23,7 +23,7 @@
 #include <string.h>
 #include <math.h>
 #include <lv2.h>
-#include "libinv_common.h"
+#include "library/common.h"
 #include "inv_compressor.h"
 
 
