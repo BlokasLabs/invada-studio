@@ -27,6 +27,7 @@
 #include <lv2.h>
 #include "lv2_ui.h"
 #include "widgets/meter.h"
+#include "widgets/display-FrequencyGain.h"
 #include "../plugin/inv_filter.h"
 #include "inv_filter_gui.h"
 
@@ -39,8 +40,9 @@ typedef struct {
 	GtkWidget	*heading;
 	GtkWidget	*meterIn;
 	GtkWidget	*meterOut;
-//	GtkWidget	*display;
+	GtkWidget	*display;
 
+	gint		Mode;
 	gint		InChannels;
 	gint		OutChannels;
 
@@ -67,43 +69,52 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
 
 	/* get pointers to some useful widgets from the design */
-	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "vbox1"));
+	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "filter_container"));
 	pluginGui->heading = GTK_WIDGET (gtk_builder_get_object (builder, "label_heading"));
 
 	/* add custom widgets */
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_in_display"));
 	pluginGui->meterIn = inv_meter_new ();
-	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterIn);
+	gtk_fixed_put (GTK_FIXED (tempObject), pluginGui->meterIn,0,0);
 
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_out_display"));
 	pluginGui->meterOut = inv_meter_new ();
-	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterOut);
+	gtk_fixed_put (GTK_FIXED (tempObject), pluginGui->meterOut,0,0);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_filter_display"));
+	pluginGui->display = inv_display_fg_new ();
+	gtk_fixed_put (GTK_FIXED (tempObject), pluginGui->display,0,0);
 
 	/* customise for the plugin */
 	if(!strcmp(plugin_uri,IFILTER_MONO_LPF_URI)) 
 	{
 		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada Low Pass Filter (mono)");
+		pluginGui->Mode=INV_DISPLAYFG_MODE_LPF;
 		pluginGui->InChannels=1;
 		pluginGui->OutChannels=1;
 	}
 	if(!strcmp(plugin_uri,IFILTER_MONO_HPF_URI)) 
 	{
 		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada High Pass Filter (mono)");
+		pluginGui->Mode=INV_DISPLAYFG_MODE_HPF;
 		pluginGui->InChannels=1;
 		pluginGui->OutChannels=1;
 	}
 	if(!strcmp(plugin_uri,IFILTER_STEREO_LPF_URI)) 
 	{
 		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada Low Pass Filter (stereo)");
+		pluginGui->Mode=INV_DISPLAYFG_MODE_LPF;
 		pluginGui->InChannels=2;
 		pluginGui->OutChannels=2;
 	}
 	if(!strcmp(plugin_uri,IFILTER_STEREO_HPF_URI)) 
 	{
 		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada High Pass Filter (stereo)");
+		pluginGui->Mode=INV_DISPLAYFG_MODE_HPF;
 		pluginGui->InChannels=2;
 		pluginGui->OutChannels=2;
 	}
+	inv_display_fg_set_mode(INV_DISPLAY_FG (pluginGui->display), pluginGui->Mode);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 
@@ -137,6 +148,12 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 		value=* (float *) buffer;
 		switch(port)
 		{
+			case IFILTER_FREQ:
+				inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), value);
+				break;
+			case IFILTER_GAIN:
+				inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), value);
+				break;
 			case IFILTER_METER_INL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
 				break;

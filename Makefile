@@ -75,6 +75,6 @@ clean:
 	-rm -f `find . -name "*.a"`
 	-rm -f `find . -name "*.o"`
 	-rm -f `find . -name "*.xml"`
-	-rm -f `find .. -name "*~"`
+	-rm -f `find . -name "*~"`
 
 

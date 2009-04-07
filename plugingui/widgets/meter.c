@@ -1,8 +1,8 @@
 #include "meter.h"
 
 
-static void 	inv_meter_class_init(GtkMeterClass *klass);
-static void 	inv_meter_init(GtkMeter *meter);
+static void 	inv_meter_class_init(InvMeterClass *klass);
+static void 	inv_meter_init(InvMeter *meter);
 static void 	inv_meter_size_request(GtkWidget *widget, GtkRequisition *requisition);
 static void 	inv_meter_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static void 	inv_meter_realize(GtkWidget *widget);
@@ -18,9 +18,9 @@ inv_meter_get_type(void)
 
 	if (!inv_meter_type) {
 		static const GtkTypeInfo inv_meter_info = {
-		  "GtkMeter",
-		  sizeof(GtkMeter),
-		  sizeof(GtkMeterClass),
+		  "InvMeter",
+		  sizeof(InvMeter),
+		  sizeof(InvMeterClass),
 		  (GtkClassInitFunc) inv_meter_class_init,
 		  (GtkObjectInitFunc) inv_meter_init,
 		  NULL,
@@ -33,23 +33,25 @@ inv_meter_get_type(void)
 }
 
 void
-inv_meter_set_channels(GtkMeter *meter, gint num)
+inv_meter_set_channels(InvMeter *meter, gint num)
 {
 	meter->channels = num;
 }
 
 void
-inv_meter_set_LdB(GtkMeter *meter, float num)
+inv_meter_set_LdB(InvMeter *meter, float num)
 {
 	meter->LdB = num;
-	inv_meter_paint(GTK_WIDGET(meter),1);
+	if(GTK_WIDGET_REALIZED(meter))
+		inv_meter_paint(GTK_WIDGET(meter),INV_METER_DRAW_DATA);
 }
 
 void
-inv_meter_set_RdB(GtkMeter *meter, float num)
+inv_meter_set_RdB(InvMeter *meter, float num)
 {
 	meter->RdB = num;
-	inv_meter_paint(GTK_WIDGET(meter),1);
+	if(GTK_WIDGET_REALIZED(meter))
+		inv_meter_paint(GTK_WIDGET(meter),INV_METER_DRAW_DATA);
 }
 
 
@@ -60,7 +62,7 @@ GtkWidget * inv_meter_new()
 
 
 static void
-inv_meter_class_init(GtkMeterClass *klass)
+inv_meter_class_init(InvMeterClass *klass)
 {
 	GtkWidgetClass *widget_class;
 	GtkObjectClass *object_class;
@@ -79,7 +81,7 @@ inv_meter_class_init(GtkMeterClass *klass)
 
 
 static void
-inv_meter_init(GtkMeter *meter)
+inv_meter_init(InvMeter *meter)
 {
 	meter->channels = 1;
 	meter->LdB = -90;
@@ -95,7 +97,7 @@ inv_meter_size_request(GtkWidget *widget,
 	g_return_if_fail(INV_IS_METER(widget));
 	g_return_if_fail(requisition != NULL);
 
-	requisition->width = 107;
+	requisition->width = 113;
 	requisition->height = 22;
 }
 
@@ -134,7 +136,7 @@ inv_meter_realize(GtkWidget *widget)
 	attributes.window_type = GDK_WINDOW_CHILD;
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
-	attributes.width = 107;
+	attributes.width = 113;
 	attributes.height = 22;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
@@ -161,7 +163,7 @@ inv_meter_expose(GtkWidget *widget, GdkEventExpose *event)
 	g_return_val_if_fail(INV_IS_METER(widget), FALSE);
 	g_return_val_if_fail(event != NULL, FALSE);
 
-	inv_meter_paint(widget,0);
+	inv_meter_paint(widget,INV_METER_DRAW_ALL);
 
 	return FALSE;
 }
@@ -175,16 +177,28 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 
 	cr = gdk_cairo_create(widget->window);
 
-	if(mode==0) {
-		cairo_set_source_rgb(cr, 0, 0, 0);
-		cairo_paint(cr);
-	}
-
 	gint channels = INV_METER(widget)->channels;
 	gint Lpos = (gint)((INV_METER(widget)->LdB/2)+31);
 	gint Rpos = (gint)((INV_METER(widget)->RdB/2)+31);
 
-	cairo_set_source_rgb(cr, 0.2, 0.4, 0);
+	if(mode==INV_METER_DRAW_ALL) {
+		cairo_set_source_rgb(cr, 0, 0, 0);
+		cairo_paint(cr);
+
+		cairo_set_source_rgb(cr, 1, 1, 1);
+		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_set_font_size(cr,6);
+		if(channels==1) {
+			cairo_move_to(cr,2,13);
+			cairo_show_text(cr,"M");
+		}
+		if(channels==2) {
+			cairo_move_to(cr,2,8);
+			cairo_show_text(cr,"L");
+			cairo_move_to(cr,2,18);
+			cairo_show_text(cr,"R");
+		}
+	}
 
 	gint i;
 	for ( i = 1; i <= 34; i++) 
@@ -195,7 +209,7 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 				Lon = i <= Lpos ? 1 : 0;
 				if(i< 31 ) cairo_set_source_rgb(cr, 0.1+((float)i * 0.01)+(Lon*(0.3+((float)i * 0.01))), 0.4+(Lon*0.6), 0);
 				else cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.2, 0);
-				cairo_rectangle(cr, i*3, 2, 2, 18 );
+				cairo_rectangle(cr, 6+(i*3), 2, 2, 18 );
 				cairo_fill(cr);
 				break;
 			case 2:
@@ -203,11 +217,11 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 				Ron = i <= Rpos ? 1 : 0;
 				if(i< 31 ) cairo_set_source_rgb(cr, 0.1+((float)i * 0.01)+(Lon*(0.3+((float)i * 0.01))), 0.4+(Lon*0.6), 0);
 				else cairo_set_source_rgb(cr, 0.4+(Lon*0.6), 0.2, 0);
-				cairo_rectangle(cr, i*3, 2, 2, 8 );
+				cairo_rectangle(cr, 6+(i*3), 2, 2, 8 );
 				cairo_fill(cr);
 				if(i< 31 ) cairo_set_source_rgb(cr, 0.1+((float)i * 0.01)+(Ron*(0.3+((float)i * 0.01))), 0.4+(Ron*0.6), 0);
 				else cairo_set_source_rgb(cr, 0.4+(Ron*0.6), 0.2, 0);
-				cairo_rectangle(cr, i*3, 12, 2, 8);
+				cairo_rectangle(cr, 6+(i*3), 12, 2, 8);
 				cairo_fill(cr);
 				break; 
 		}
@@ -219,8 +233,8 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 static void
 inv_meter_destroy(GtkObject *object)
 {
-	GtkMeter *meter;
-	GtkMeterClass *klass;
+	InvMeter *meter;
+	InvMeterClass *klass;
 
 	g_return_if_fail(object != NULL);
 	g_return_if_fail(INV_IS_METER(object));
