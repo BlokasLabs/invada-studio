@@ -33,12 +33,7 @@ INSTALL_BUNDLE_DIR		=	invada.lv2
 
 # GENERAL
 
-CC		=	gcc
-LD		=	ld
-CFLAGS		=	-I. `pkg-config --cflags gtk+-2.0`  -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
-LDFLAGS		=	-shared -lc -lm -L. -linv_common -linv_widget-meter
-
-SUBDIRS		=	plugin/library plugin plugingui/widgets plugingui
+SUBDIRS		=	plugin/library plugin plugingui/gtk plugingui/widgets plugingui
 
 
 all:	        
@@ -79,6 +74,7 @@ clean:
 	-rm -f `find . -name "*.so"`
 	-rm -f `find . -name "*.a"`
 	-rm -f `find . -name "*.o"`
+	-rm -f `find . -name "*.xml"`
 	-rm -f `find .. -name "*~"`
 
 

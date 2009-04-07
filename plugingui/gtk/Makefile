@@ -17,106 +17,30 @@
 #   
 
 
-#####################################################################
-# PLEASE CHANGE THIS to your preferred installation location!
-#
-# Change this if you want to install somewhere else. 
-
-INSTALL_SYS_PLUGINS_DIR		=	/usr/local/lib/lv2
-INSTALL_USER_PLUGINS_DIR	=	~/.lv2
-INSTALL_BUNDLE_DIR		=	invada.lv2
-
-# NO EDITING below this line is required
-# if all you want to do is install and use the plugins.
-#####################################################################
+GLADES		=	inv_filter_gui.xml \
 
 
-# GENERAL
+all:	$(GLADES)
 
-CC		=	gcc
-LD		=	ld
-CFLAGS		=	-I. `pkg-config --cflags gtk+-2.0`  -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
-LDFLAGS		=	-shared -lc -lm -L. -linv_common -linv_widget-meter
+# RULES TO BUILD XML 
 
-LIBRARIES	=	libinv_common.a \
-			libinv_widgets.a \
+inv_filter_gui.xml:	inv_filter_gui.glade
 
-PLUGINS		=	inv_compressor.so \
-                        inv_erreverb.so \
-                        inv_filter.so \
-                        inv_input.so \
-                        inv_tube.so \
-
-GUIS		=	inv_filter_gui.so \
-
-
-all:	$(LIBRARIES) \
-	$(PLUGINS) \
-	$(GUIS)
-
-# RULES TO BUILD LIBRARIES FROM C CODE
-
-libinv_common.a:	libinv_common.o		libinv_common.h 
-libinv_widgets.a:	libinv_widget-meter.o	libinv_widget-meter.h 
-
-# RULES TO BUILD PLUGINS FROM C CODE
-
-inv_compressor.so:	inv_compressor.o	inv_compressor.h
-inv_erreverb.so:	inv_erreverb.o		inv_erreverb.h    
-inv_filter.so:		inv_filter.o		inv_filter.h         
-inv_input.so:		inv_input.o		inv_input.h   
-inv_tube.so:		inv_tube.o		inv_tube.h     
-     
-# RULES TO BUILD GUIS FROM C CODE
- 
-inv_filter_gui.so:     inv_filter_gui.o		inv_filter.h	inv_filter_gui.h   
 
 
 # OTHER TARGETS
 
-install:
-	@echo ""
-	@echo "use 'make install-user' to install in $(INSTALL_USER_PLUGINS_DIR) or 'make install-sys' to install in $(INSTALL_SYS_PLUGINS_DIR)"
-	@echo ""
 
-install-sys: targets
-	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp *.so 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp rdf/*.ttl 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp gtk/*.png		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp gtk/*.xml 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-
-install-user: targets
-	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp *.so 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp rdf/*.ttl 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp gtk/*.png		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp gtk/*.xml 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-
-
-targets:	$(LIBRARIES) \
-		$(PLUGINS) \
-                $(GUIS)
+targets:	$(GLADES)
 
 always:	
 
 clean:
-	-rm -f `find . -name "*.so"`
-	-rm -f `find . -name "*.a"`
-	-rm -f `find . -name "*.o"`
-	-rm -f `find .. -name "*~"`
+	-rm -f *.xml
+	-rm -f *~
 
-%.o: %.c
-	@echo "Compiling $<"
-	@$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@ 
+%.xml: %.glade
+	@echo "Generating $@"
+	@gtk-builder-convert $< $@ 
 
-%.so: %.o
-	@echo "Creating  $@"
-	@$(LD) -o $@ $< $(LDFLAGS)
 
-%.a: %.o
-	@echo "Creating  $@"
-	@echo "ar rcs $@ $<"
-	@ar rcs $@ $<
