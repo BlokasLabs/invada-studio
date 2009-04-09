@@ -137,7 +137,7 @@ static void activateIFilter(LV2_Handle instance)
 	plugin->EnvOutRLast = 0; 
 
 	/* defaults */
-	plugin->LastFreq = 0.015811388;   // middle on a logarithmic scale      
+	plugin->LastFreq = 1000;      
 	plugin->LastGain = 0;
 	plugin->LastNoClip = 0;
 
@@ -485,19 +485,17 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
 
 float convertParam(unsigned long param, float value, double sr) {
 
-	float temp;
 	float result;
 
 	switch(param)
 	{
 		case IFILTER_FREQ:
-			temp = value / (float)sr;
-			if (temp <  0.0005)
-				result = 1000;
-			else if (temp <= 0.5)
-				result = 1/(2*temp);
+			if (value <  20)
+				result = sr/(40.0);
+			else if (value <= 20000.0)
+				result = sr/(2*value);
 			else
-				result=1;
+				result=sr/(40000.0);
 			break;
 		case IFILTER_GAIN:
 			if(value<0)

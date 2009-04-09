@@ -24,6 +24,21 @@ struct _InvMeter {
 	gint  channels;
 	float LdB;
 	float RdB;
+
+	float mOff60[3];
+	float mOn60[3];  /* delta */
+
+	float mOff12[3];
+	float mOn12[3];  /* delta */
+
+	float mOff6[3];
+	float mOn6[3];  /* delta */
+
+	float mOff0[3];
+	float mOn0[3];   /* delta */
+
+	float overOff[3];
+	float overOn[3]; /* delta */
 };
 
 struct _InvMeterClass {

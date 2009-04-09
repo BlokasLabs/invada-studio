@@ -28,9 +28,9 @@ all:			libinv_widgets.a
 
 # RULES TO BUILD LIBRARIES FROM C CODE
 
-libinv_widgets.a:	display-FrequencyGain.o	meter.o	meter.h display-FrequencyGain.h 
+libinv_widgets.a:	display-FrequencyGain.o	meter.o	knob.o display-FrequencyGain.h meter.h knob.h
 			@echo "Creating libinv_widgets.a"
-			@ar rcs libinv_widgets.a meter.o display-FrequencyGain.o
+			@ar rcs libinv_widgets.a knob.o meter.o display-FrequencyGain.o
 
 
 # OTHER TARGETS

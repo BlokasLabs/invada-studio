@@ -73,10 +73,9 @@
 	lv2:index 0 ;
 	lv2:symbol "freq" ;
 	lv2:name "Frequency" ;
-	lv2:default 0.015811388 ;
-	lv2:minimum 0.0005 ;
-	lv2:maximum 0.5 ;
-	lv2:portProperty :sampleRate;
+	lv2:default 1000 ;
+	lv2:minimum 20 ;
+	lv2:maximum 20000 ;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -140,10 +139,9 @@
 	lv2:index 0 ;
 	lv2:symbol "freq" ;
 	lv2:name "Frequency" ;
-	lv2:default 0.015811388 ;
-	lv2:minimum 0.0005 ;
-	lv2:maximum 0.5 ;
-	lv2:portProperty :sampleRate;
+	lv2:default 1000 ;
+	lv2:minimum 20 ;
+	lv2:maximum 20000 ;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -233,10 +231,9 @@
 	lv2:index 0 ;
 	lv2:symbol "freq" ;
 	lv2:name "Frequency" ;
-	lv2:default 0.015811388 ;
-	lv2:minimum 0.0005 ;
-	lv2:maximum 0.5 ;
-	lv2:portProperty :sampleRate;
+	lv2:default 1000 ;
+	lv2:minimum 20 ;
+	lv2:maximum 20000 ;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -300,10 +297,9 @@
 	lv2:index 0 ;
 	lv2:symbol "freq" ;
 	lv2:name "Frequency" ;
-	lv2:default 0.015811388 ;
-	lv2:minimum 0.0005 ;
-	lv2:maximum 0.5 ;
-	lv2:portProperty :sampleRate;
+	lv2:default 1000 ;
+	lv2:minimum 20 ;
+	lv2:maximum 20000 ;
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;

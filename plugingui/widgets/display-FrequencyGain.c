@@ -111,7 +111,7 @@ inv_display_fg_size_request(GtkWidget *widget,
 	g_return_if_fail(requisition != NULL);
 
 	requisition->width = 408;
-	requisition->height = 192;
+	requisition->height = 108;
 }
 
 
@@ -150,7 +150,7 @@ inv_display_fg_realize(GtkWidget *widget)
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
 	attributes.width = 408;
-	attributes.height = 192;
+	attributes.height = 108;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
 	attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
@@ -188,6 +188,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	cairo_t *cr;
 	gint i,j,k;
 	float p,freq,gain;
+	float x,y;
 	gint type;
 	char string[10];
 
@@ -201,64 +202,63 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		cairo_paint(cr);
 
 		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-		cairo_rectangle(cr, 2, 2, 404, 188 );
+		cairo_rectangle(cr, 2, 2, 404, 104 );
 		cairo_fill(cr);
 
-		/* horizontal axis 20,50,100,200,500,1000,2000,5000,10000,20000*/
+		/* horizontal axis */
 		cairo_set_source_rgb(cr, 1, 1, 1);
-		cairo_rectangle(cr, 4, 178, 374, 1);
+		cairo_rectangle(cr, 4, 94, 374, 1);
 		cairo_fill(cr);
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
-		cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
 
 		for(i=1; i<5;i++) 
 		{
-			for(j=2;j<3;j++) 
+			for(j=1;j<6;j++) 
 			{
-				p=(float)j*pow(10,(float)i);
-				if(p>=20 && p <= 20000) 
+				if( j==1 || j==2 || j==5)
 				{
-					switch(i)
+					p=(float)j*pow(10,(float)i);
+					if(p>=20 && p <= 20000) 
 					{
-						case 1:
-							sprintf(string,"%i0Hz",j);
-							break;
-						case 2:
-							sprintf(string,"%i00Hz",j);
-							break;
-						case 3:
-							sprintf(string,"%ikHz",j);
-							break;
-						case 4:
-							sprintf(string,"%i0kHz",j);
-							break;
+						switch(i)
+						{
+							case 1:
+								sprintf(string,"%i0Hz",j);
+								break;
+							case 2:
+								sprintf(string,"%i00Hz",j);
+								break;
+							case 3:
+								sprintf(string,"%ikHz",j);
+								break;
+							case 4:
+								sprintf(string,"%i0kHz",j);
+								break;
+						}
+						k= (gint) get_point(20.0, 20000.0, p, 358);
+						cairo_move_to(cr,6+k,104);
+						cairo_show_text(cr,string);
 					}
-					k= (gint) get_point(20.0, 20000.0, p, 358);
-					cairo_move_to(cr,4+k,188);
-					cairo_show_text(cr,string);
 				}
 			}
 		}
 
 		/* vertical axis */
 		cairo_set_source_rgb(cr, 1, 1, 1);
-		cairo_rectangle(cr, 377, 4, 1, 175);
+		cairo_rectangle(cr, 377, 4, 1, 91);
 		cairo_fill(cr);
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
-		for(i=0;i<9;i++)
+		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		for(i=0;i<11;i+=2)
 		{
-			if(i==2) 
-				cairo_set_source_rgb(cr, 0.5, 0.5, 0.2);
-			else 
-				cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
-	
 			j=12-(i*6);
 			sprintf(string,"%3idB",j);
-			cairo_move_to(cr,379,13+(i*20));
+			cairo_move_to(cr,379,11+(i*8));
 			cairo_show_text(cr,string);
 			cairo_fill(cr);
 		}
@@ -267,53 +267,104 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 	/*graph area */
 	cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-	cairo_rectangle(cr, 4, 4, 373, 174 );
+	cairo_rectangle(cr, 4, 4, 373, 90 );
 	cairo_fill(cr);
 
-	/* horizontal axis */
+	/* horizontal axis except for labeled lines */
 	cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
 	for(i=1; i<5;i++) 
 	{
 		for(j=1; j<10; j++)
 		{
-			p=(float)j*pow(10,(float)i);
-			if(p>=20 && p <= 20000) {
-				k= (gint) get_point(20.0, 20000.0, p, 358);
-				cairo_rectangle(cr, 10+k, 4, 1, 174);
-				cairo_fill(cr);
+			if( !(j==1 || j==2 || j==5))
+			{
+				p=(float)j*pow(10,(float)i);
+				if(p>=20 && p <= 20000) 
+				{
+					k= (gint) get_point(20.0, 20000.0, p, 358);
+					cairo_rectangle(cr, 8+k, 4, 1, 90);
+					cairo_fill(cr);
+				}
 			}
 		}
 	}
 
 	/* vertical axis */
-	for(i=0;i<9;i++)
+	for(i=0;i<11;i++)
 	{
-		if(i==2) 
-			cairo_set_source_rgb(cr, 0.5, 0.5, 0.2);
-		else 
-			cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);	
-		cairo_rectangle(cr, 4, 10+(i*20), 373, 1);
+		switch(i) 
+		{
+			case 0:
+			case 2:
+			case 4:
+			case 6:
+			case 8:
+			case 10:
+				cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+				break;
+			case 1: 
+			case 3: 
+			case 5: 
+			case 7: 
+			case 9: 
+				cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+				break;
+		}	
+		cairo_rectangle(cr, 4, 8+(i*8), 373, 1);
 		cairo_fill(cr);
 	}
 
+	/* horizontal axis labeled lines */
+	cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+	for(i=1; i<5;i++) 
+	{
+		for(j=1; j<6; j++)
+		{
+			if( j==1 || j==2 || j==5)
+			{
+				p=(float)j*pow(10,(float)i);
+				if(p>=20 && p <= 20000) 
+
+				{
+					k= (gint) get_point(20.0, 20000.0, p, 358);
+					cairo_rectangle(cr, 8+k, 4, 1, 90);
+					cairo_fill(cr);
+				}
+			}
+		}
+	}
 
 	/* filter */
-	cairo_rectangle(cr, 4, 4, 373, 174 );
+	cairo_rectangle(cr, 4, 4, 373, 90 );
 	cairo_clip(cr);
-	cairo_set_source_rgb(cr, 0.5, 1, 0.5);
-	j=(gint) (12-gain)/6;
-	k=(gint) get_point(20.0, 20000.0, freq, 358);
+	cairo_set_source_rgb(cr, 0.0, 0.1, 1);
+	x=get_point(20.0, 20000.0, freq, 358);
+	y=(12-gain)/6;
 	switch(type)
 	{
 		case INV_DISPLAYFG_MODE_LPF:
-			cairo_move_to(cr, 4, 10+(j*20));
-			cairo_line_to(cr, 10+k, 10+(j*20));
-			cairo_line_to(cr, 10+k+400, 20+(j*20)+200);
+			cairo_move_to(cr, 4, 9+(y*8));
+			cairo_line_to(cr, 10+x, 9+(y*8));
+			while(freq < 30000)
+			{
+				freq=freq*1.414213;
+				gain=gain-3;
+				x=get_point(20.0, 20000.0, freq, 358);
+				y=(12-gain)/6;
+				cairo_line_to(cr, 10+x, 9+(y*8));
+			}
 			break;
 		case INV_DISPLAYFG_MODE_HPF:
-			cairo_move_to(cr, 376, 10+(j*20));
-			cairo_line_to(cr, 10+k, 10+(j*20));
-			cairo_line_to(cr, 10+k-400, 10+(j*20)+200);
+			cairo_move_to(cr, 376, 9+(y*8));
+			cairo_line_to(cr, 10+x, 9+(y*8));
+			while(freq > 14)
+			{
+				freq=freq/1.414213;
+				gain=gain-3;
+				x=get_point(20.0, 20000.0, freq, 358);
+				y=(12-gain)/6;
+				cairo_line_to(cr, 10+x, 9+(y*8));
+			}
 			break;
 	}
 

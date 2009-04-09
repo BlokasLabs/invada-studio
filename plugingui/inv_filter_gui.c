@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <lv2.h>
 #include "lv2_ui.h"
+#include "widgets/knob.h"
 #include "widgets/meter.h"
 #include "widgets/display-FrequencyGain.h"
 #include "../plugin/inv_filter.h"
@@ -41,8 +42,9 @@ typedef struct {
 	GtkWidget	*meterIn;
 	GtkWidget	*meterOut;
 	GtkWidget	*display;
+	GtkWidget	*knobFreq;
+	GtkWidget	*knobGain;
 
-	gint		Mode;
 	gint		InChannels;
 	gint		OutChannels;
 
@@ -81,42 +83,66 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	pluginGui->meterOut = inv_meter_new ();
 	gtk_fixed_put (GTK_FIXED (tempObject), pluginGui->meterOut,0,0);
 
-	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_filter_display"));
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Filter_display"));
 	pluginGui->display = inv_display_fg_new ();
-	gtk_fixed_put (GTK_FIXED (tempObject), pluginGui->display,0,0);
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->display);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_frequency_knob"));
+	pluginGui->knobFreq = inv_knob_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobFreq);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_gain_knob"));
+	pluginGui->knobGain = inv_knob_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobGain);
 
 	/* customise for the plugin */
 	if(!strcmp(plugin_uri,IFILTER_MONO_LPF_URI)) 
 	{
-		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada Low Pass Filter (mono)");
-		pluginGui->Mode=INV_DISPLAYFG_MODE_LPF;
 		pluginGui->InChannels=1;
 		pluginGui->OutChannels=1;
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Invada Low Pass Filter (mono)</b>");
+		inv_display_fg_set_mode(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_MODE_LPF);
+		inv_knob_set_highlight(INV_KNOB (pluginGui->knobFreq), INV_KNOB_HIGHLIGHT_R);
 	}
 	if(!strcmp(plugin_uri,IFILTER_MONO_HPF_URI)) 
 	{
-		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada High Pass Filter (mono)");
-		pluginGui->Mode=INV_DISPLAYFG_MODE_HPF;
 		pluginGui->InChannels=1;
 		pluginGui->OutChannels=1;
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Invada High Pass Filter (mono)</b>");
+		inv_display_fg_set_mode(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_MODE_HPF);
+		inv_knob_set_highlight(INV_KNOB (pluginGui->knobFreq), INV_KNOB_HIGHLIGHT_L);
 	}
 	if(!strcmp(plugin_uri,IFILTER_STEREO_LPF_URI)) 
 	{
-		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada Low Pass Filter (stereo)");
-		pluginGui->Mode=INV_DISPLAYFG_MODE_LPF;
 		pluginGui->InChannels=2;
 		pluginGui->OutChannels=2;
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Invada Low Pass Filter (stereo)</b>");
+		inv_display_fg_set_mode(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_MODE_LPF);
+		inv_knob_set_highlight(INV_KNOB (pluginGui->knobFreq), INV_KNOB_HIGHLIGHT_R);
 	}
 	if(!strcmp(plugin_uri,IFILTER_STEREO_HPF_URI)) 
 	{
-		gtk_label_set_text (GTK_LABEL (pluginGui->heading), "Invada High Pass Filter (stereo)");
-		pluginGui->Mode=INV_DISPLAYFG_MODE_HPF;
 		pluginGui->InChannels=2;
 		pluginGui->OutChannels=2;
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Invada High Pass Filter (stereo)</b>");
+		inv_display_fg_set_mode(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_MODE_HPF);
+		inv_knob_set_highlight(INV_KNOB (pluginGui->knobFreq), INV_KNOB_HIGHLIGHT_L);
 	}
-	inv_display_fg_set_mode(INV_DISPLAY_FG (pluginGui->display), pluginGui->Mode);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
+
+	inv_knob_set_size(INV_KNOB (pluginGui->knobFreq), INV_KNOB_SIZE_LARGE);
+	inv_knob_set_curve(INV_KNOB (pluginGui->knobFreq), INV_KNOB_CURVE_LOG);
+	inv_knob_set_markings(INV_KNOB (pluginGui->knobFreq), INV_KNOB_MARKINGS_4); 
+	inv_knob_set_min(INV_KNOB (pluginGui->knobFreq), 20.0);
+	inv_knob_set_max(INV_KNOB (pluginGui->knobFreq), 20000.0);
+
+	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_LARGE);
+	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
+	inv_knob_set_markings(INV_KNOB (pluginGui->knobGain), INV_KNOB_MARKINGS_5);
+	inv_knob_set_highlight(INV_KNOB (pluginGui->knobGain), INV_KNOB_HIGHLIGHT_L);
+	inv_knob_set_min(INV_KNOB (pluginGui->knobGain), 0.0);
+	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 12.0);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
@@ -149,9 +175,11 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 		switch(port)
 		{
 			case IFILTER_FREQ:
+				inv_knob_set_value(INV_KNOB (pluginGui->knobFreq), value);
 				inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), value);
 				break;
 			case IFILTER_GAIN:
+				inv_knob_set_value(INV_KNOB (pluginGui->knobGain), value);
 				inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), value);
 				break;
 			case IFILTER_METER_INL:
