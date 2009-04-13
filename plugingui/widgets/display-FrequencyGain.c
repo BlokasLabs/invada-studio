@@ -191,18 +191,38 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	float x,y;
 	gint type;
 	char string[10];
+	GtkStyle	*style;
 
-	cr = gdk_cairo_create(widget->window);
+	style = gtk_widget_get_style(widget);
 	type=INV_DISPLAY_FG(widget)->mode;
 	freq=INV_DISPLAY_FG(widget)->freq;
 	gain=INV_DISPLAY_FG(widget)->gain;
 
+	cr = gdk_cairo_create(widget->window);
+
 	if(mode==INV_DISPLAYFG_DRAW_ALL) {
-		cairo_set_source_rgb(cr, 0, 0, 0);
-		cairo_paint(cr);
+
+		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
+		cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
+		cairo_set_line_width(cr,1);
+
+		gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+		cairo_move_to(cr, 0, 107);
+		cairo_line_to(cr, 0, 0);
+		cairo_line_to(cr, 407, 0);
+		cairo_stroke(cr);
+
+		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+		cairo_move_to(cr, 0, 107);
+		cairo_line_to(cr, 407, 107);
+		cairo_line_to(cr, 407, 0);
+		cairo_stroke(cr);
+
+		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
+		cairo_new_path(cr);
 
 		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-		cairo_rectangle(cr, 2, 2, 404, 104 );
+		cairo_rectangle(cr, 1, 1, 406, 106 );
 		cairo_fill(cr);
 
 		/* horizontal axis */
@@ -260,7 +280,6 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 			sprintf(string,"%3idB",j);
 			cairo_move_to(cr,379,11+(i*8));
 			cairo_show_text(cr,string);
-			cairo_fill(cr);
 		}
 
 	}
@@ -282,7 +301,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 				if(p>=20 && p <= 20000) 
 				{
 					k= (gint) get_point(20.0, 20000.0, p, 358);
-					cairo_rectangle(cr, 8+k, 4, 1, 90);
+					cairo_rectangle(cr, 10+k, 4, 1, 90);
 					cairo_fill(cr);
 				}
 			}
@@ -327,7 +346,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 				{
 					k= (gint) get_point(20.0, 20000.0, p, 358);
-					cairo_rectangle(cr, 8+k, 4, 1, 90);
+					cairo_rectangle(cr, 10+k, 4, 1, 90);
 					cairo_fill(cr);
 				}
 			}
@@ -335,35 +354,88 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	}
 
 	/* filter */
+
+
+
 	cairo_rectangle(cr, 4, 4, 373, 90 );
 	cairo_clip(cr);
+
+	cairo_set_line_width(cr,3);
 	cairo_set_source_rgb(cr, 0.0, 0.1, 1);
-	x=get_point(20.0, 20000.0, freq, 358);
-	y=(12-gain)/6;
+
 	switch(type)
 	{
 		case INV_DISPLAYFG_MODE_LPF:
-			cairo_move_to(cr, 4, 9+(y*8));
+			x=get_point(20.0, 20000.0, freq/10, 358);
+			y=(12-gain)/6;
+			if(10+x > 4) 
+			{
+				cairo_move_to(cr, 4, 9+(y*8));
+				cairo_line_to(cr, 10+x, 9+(y*8));
+			} else {
+				cairo_move_to(cr, 10+x, 9+(y*8));
+			}
+			gain=gain -2;
+			x=get_point(20.0, 20000.0, freq*0.3, 358);
+			y=(12-gain)/6;
 			cairo_line_to(cr, 10+x, 9+(y*8));
+
+			gain=gain -2;
+			x=get_point(20.0, 20000.0, freq*0.7, 358);
+			y=(12-gain)/6;
+			cairo_line_to(cr, 10+x, 9+(y*8));
+
+			gain=gain -2;
+			x=get_point(20.0, 20000.0, freq, 358);
+			y=(12-gain)/6;
+			cairo_line_to(cr, 10+x, 9+(y*8));
+
+			i=0;
 			while(freq < 30000)
 			{
-				freq=freq*1.414213;
-				gain=gain-3;
+				freq=freq*1.58;
+				gain=gain-3-i;
 				x=get_point(20.0, 20000.0, freq, 358);
 				y=(12-gain)/6;
 				cairo_line_to(cr, 10+x, 9+(y*8));
+				i++;
 			}
 			break;
 		case INV_DISPLAYFG_MODE_HPF:
-			cairo_move_to(cr, 376, 9+(y*8));
+
+			x=get_point(20.0, 20000.0, freq*10, 358);
+			y=(12-gain)/6;
+			if(10+x < 376) 
+			{
+				cairo_move_to(cr, 376, 9+(y*8));
+				cairo_line_to(cr, 10+x, 9+(y*8));
+			} else {
+				cairo_move_to(cr, 10+x, 9+(y*8));
+			}
+			gain=gain -2;
+			x=get_point(20.0, 20000.0, freq/0.3, 358);
+			y=(12-gain)/6;
 			cairo_line_to(cr, 10+x, 9+(y*8));
+
+			gain=gain -2;
+			x=get_point(20.0, 20000.0, freq/0.7, 358);
+			y=(12-gain)/6;
+			cairo_line_to(cr, 10+x, 9+(y*8));
+
+			gain=gain -2;
+			x=get_point(20.0, 20000.0, freq, 358);
+			y=(12-gain)/6;
+			cairo_line_to(cr, 10+x, 9+(y*8));
+
+			i=0;
 			while(freq > 14)
 			{
-				freq=freq/1.414213;
-				gain=gain-3;
+				freq=freq/1.58;
+				gain=gain-3-i;
 				x=get_point(20.0, 20000.0, freq, 358);
 				y=(12-gain)/6;
 				cairo_line_to(cr, 10+x, 9+(y*8));
+				i++;
 			}
 			break;
 	}

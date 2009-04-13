@@ -115,8 +115,8 @@ inv_meter_size_request(GtkWidget *widget,
 	g_return_if_fail(INV_IS_METER(widget));
 	g_return_if_fail(requisition != NULL);
 
-	requisition->width = 147;
-	requisition->height = 22;
+	requisition->width = 149;
+	requisition->height = 24;
 }
 
 
@@ -154,8 +154,8 @@ inv_meter_realize(GtkWidget *widget)
 	attributes.window_type = GDK_WINDOW_CHILD;
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
-	attributes.width = 147;
-	attributes.height = 22;
+	attributes.width = 149;
+	attributes.height = 24;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
 	attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
@@ -190,31 +190,54 @@ inv_meter_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 inv_meter_paint(GtkWidget *widget, gint mode)
 {
-	cairo_t *cr;
-	float 	Lon,Ron;
-	float 	R,G,B;
+	cairo_t 	*cr;
+	float 		Lon,Ron;
+	float 		R,G,B;
+	GtkStyle	*style;
 
-	cr = gdk_cairo_create(widget->window);
-
+	style = gtk_widget_get_style(widget);
 	gint channels = INV_METER(widget)->channels;
 	gint Lpos = (gint)(INV_METER(widget)->LdB+60.25);
 	gint Rpos = (gint)(INV_METER(widget)->RdB+60.25);
+
+	cr = gdk_cairo_create(widget->window);
 
 	if(mode==INV_METER_DRAW_ALL) {
 		cairo_set_source_rgb(cr, 0, 0, 0);
 		cairo_paint(cr);
 
+		cairo_new_path(cr);
+
+		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
+		cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
+		cairo_set_line_width(cr,1);
+
+		gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+		cairo_move_to(cr, 0, 23);
+		cairo_line_to(cr, 0, 0);
+		cairo_line_to(cr, 148, 0);
+		cairo_stroke(cr);
+
+		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+		cairo_move_to(cr, 0, 23);
+		cairo_line_to(cr, 148, 23);
+		cairo_line_to(cr, 148, 0);
+		cairo_stroke(cr);
+
+		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
+		cairo_new_path(cr);
+
 		cairo_set_source_rgb(cr, 1, 1, 1);
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		if(channels==1) {
-			cairo_move_to(cr,2,14);
+			cairo_move_to(cr,3,14);
 			cairo_show_text(cr,"M");
 		}
 		if(channels==2) {
-			cairo_move_to(cr,2,9);
+			cairo_move_to(cr,3,9);
 			cairo_show_text(cr,"L");
-			cairo_move_to(cr,2,19);
+			cairo_move_to(cr,3,19);
 			cairo_show_text(cr,"R");
 		}
 	}
@@ -230,7 +253,7 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 
 				inv_meter_colour(widget, i, Lon, &R, &G,&B);
 				cairo_set_source_rgb(cr, R, G, B);
-				cairo_rectangle(cr, 9+(i*2), 2, 1, 18);
+				cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
 				cairo_fill(cr);
 				break;
 			case 2:
@@ -239,12 +262,12 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 
 				inv_meter_colour(widget, i, Lon, &R, &G,&B);
 				cairo_set_source_rgb(cr, R, G, B);
-				cairo_rectangle(cr, 9+(i*2), 2, 1, 8);
+				cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
 				cairo_fill(cr);
 
 				inv_meter_colour(widget, i, Ron, &R, &G,&B);
 				cairo_set_source_rgb(cr, R, G, B);
-				cairo_rectangle(cr, 9+(i*2), 12, 1, 8);
+				cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
 				cairo_fill(cr);
 				break; 
 		}

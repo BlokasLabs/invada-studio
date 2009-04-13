@@ -35,7 +35,6 @@
 
 static LV2UI_Descriptor *IFilterGuiDescriptor = NULL;
 
-
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
@@ -44,11 +43,18 @@ typedef struct {
 	GtkWidget	*display;
 	GtkWidget	*knobFreq;
 	GtkWidget	*knobGain;
+//	GtkWidget	*switchandlightClip;
 
 	gint		InChannels;
 	gint		OutChannels;
+	float		freq;
+	float		gain;
+
+	LV2UI_Write_Function 	write_function;
+	LV2UI_Controller 	controller;
 
 } IFilterGui;
+
 
 
 static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
@@ -56,6 +62,9 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	IFilterGui *pluginGui = (IFilterGui *)malloc(sizeof(IFilterGui));
 	if(pluginGui==NULL)
 		return NULL;
+
+	pluginGui->write_function = write_function;
+	pluginGui->controller = controller;
 
 	GtkBuilder      *builder; 
 	GtkWidget       *window;
@@ -75,15 +84,15 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	pluginGui->heading = GTK_WIDGET (gtk_builder_get_object (builder, "label_heading"));
 
 	/* add custom widgets */
-	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_in_display"));
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_in"));
 	pluginGui->meterIn = inv_meter_new ();
-	gtk_fixed_put (GTK_FIXED (tempObject), pluginGui->meterIn,0,0);
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterIn);
 
-	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Fixed_meter_out_display"));
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_out"));
 	pluginGui->meterOut = inv_meter_new ();
-	gtk_fixed_put (GTK_FIXED (tempObject), pluginGui->meterOut,0,0);
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterOut);
 
-	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "Filter_display"));
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_filter_display"));
 	pluginGui->display = inv_display_fg_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->display);
 
@@ -128,21 +137,34 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 		inv_display_fg_set_mode(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_MODE_HPF);
 		inv_knob_set_highlight(INV_KNOB (pluginGui->knobFreq), INV_KNOB_HIGHLIGHT_L);
 	}
+	pluginGui->freq=1000.0;
+	pluginGui->gain=0.0;
+
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
+
+	inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), pluginGui->freq);
+	inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), pluginGui->gain);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobFreq), INV_KNOB_SIZE_LARGE);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobFreq), INV_KNOB_CURVE_LOG);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobFreq), INV_KNOB_MARKINGS_4); 
+	inv_knob_set_human(INV_KNOB (pluginGui->knobFreq)); 
+	inv_knob_set_units(INV_KNOB (pluginGui->knobFreq), "Hz");
 	inv_knob_set_min(INV_KNOB (pluginGui->knobFreq), 20.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobFreq), 20000.0);
+	inv_knob_set_value(INV_KNOB (pluginGui->knobFreq), pluginGui->freq);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobFreq),"motion-notify-event",G_CALLBACK(on_freq_knob_motion),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_LARGE);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobGain), INV_KNOB_MARKINGS_5);
 	inv_knob_set_highlight(INV_KNOB (pluginGui->knobGain), INV_KNOB_HIGHLIGHT_L);
+	inv_knob_set_units(INV_KNOB (pluginGui->knobGain), "dB");
 	inv_knob_set_min(INV_KNOB (pluginGui->knobGain), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 12.0);
+	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_gain_knob_motion),pluginGui);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
@@ -175,12 +197,14 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 		switch(port)
 		{
 			case IFILTER_FREQ:
-				inv_knob_set_value(INV_KNOB (pluginGui->knobFreq), value);
-				inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), value);
+				pluginGui->freq=value;
+				inv_knob_set_value(INV_KNOB (pluginGui->knobFreq), pluginGui->freq);
+				inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), pluginGui->freq);
 				break;
 			case IFILTER_GAIN:
-				inv_knob_set_value(INV_KNOB (pluginGui->knobGain), value);
-				inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), value);
+				pluginGui->gain=value;
+				inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
+				inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), pluginGui->gain);
 				break;
 			case IFILTER_METER_INL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
@@ -229,9 +253,22 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-G_MODULE_EXPORT void on_filter_window_destroy(GtkObject *object, gpointer user_data)
+static void on_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	gtk_main_quit ();
+	IFilterGui *pluginGui = (IFilterGui *) data;
+
+	pluginGui->freq=inv_knob_get_value(INV_KNOB (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IFILTER_FREQ, 4, 0, &pluginGui->freq);
+	return;
+}
+
+static void on_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+
+	IFilterGui *pluginGui = (IFilterGui *) data;
+
+	pluginGui->gain=inv_knob_get_value(INV_KNOB (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IFILTER_GAIN, 4, 0, &pluginGui->gain);
 	return;
 }
 
