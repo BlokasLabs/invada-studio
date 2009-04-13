@@ -1,8 +1,29 @@
-@prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix units: <http://lv2plug.in/ns/extension/units#> .
+@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
+
+
+<http://invadarecords.com/plugins/lv2/input/gui>
+    a uiext:GtkUI;
+    uiext:binary <inv_input_gui.so>;
+    uiext:requiredFeature uiext:makeResident ;
+
+    uiext:portNotification [ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
+        uiext:portIndex 10 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
+        uiext:portIndex 11 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
+        uiext:portIndex 12 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
+        uiext:portIndex 13 ;
+    ] .
 
 <http://invadarecords.com/plugins/lv2/input> 
     a lv2:Plugin, lv2:UtilityPlugin ;
@@ -14,6 +35,7 @@
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     lv2:optionalFeature lv2:hardRtCapable ;
+    uiext:ui <http://invadarecords.com/plugins/lv2/input/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -81,6 +103,46 @@
 	lv2:index 9 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
+   ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 10 ;
+	lv2:symbol "meterInL" ;
+	lv2:name "L In" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 11 ;
+	lv2:symbol "meterInR" ;
+	lv2:name "R In" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 12 ;
+	lv2:symbol "meterOutL" ;
+	lv2:name "L Out" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 13 ;
+	lv2:symbol "meterOutR" ;
+	lv2:name "R Out" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+   ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 14 ;
+	lv2:symbol "meterPhase" ;
+	lv2:name "Phase" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
     ]
 .
 

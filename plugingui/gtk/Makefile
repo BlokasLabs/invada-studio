@@ -18,6 +18,7 @@
 
 
 GLADES		=	inv_filter_gui.xml \
+			inv_input_gui.xml \
 
 
 all:	$(GLADES)
@@ -25,6 +26,7 @@ all:	$(GLADES)
 # RULES TO BUILD XML 
 
 inv_filter_gui.xml:	inv_filter_gui.glade
+inv_input_gui.xml:	inv_input_gui.glade
 
 
 

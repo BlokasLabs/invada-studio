@@ -28,20 +28,6 @@
 #include "library/common.h"
 #include "inv_input.h"
 
-/* The port numbers for the plugin: */
-
-#define IINPUT_URI		"http://invadarecords.com/plugins/lv2/input";
-#define IINPUT_PHASEL		0
-#define IINPUT_PHASER		1
-#define IINPUT_GAIN		2
-#define IINPUT_PAN		3
-#define IINPUT_WIDTH		4
-#define IINPUT_NOCLIP		5
-#define IINPUT_AUDIO_INL	6
-#define IINPUT_AUDIO_INR	7
-#define IINPUT_AUDIO_OUTL	8
-#define IINPUT_AUDIO_OUTR	9
-
 
 static LV2_Descriptor *IInputDescriptor = NULL;
 
@@ -59,6 +45,11 @@ typedef struct {
 	float *AudioInputBufferR; 
 	float *AudioOutputBufferL;
 	float *AudioOutputBufferR;
+	float *MeterInputL;
+	float *MeterInputR; 
+	float *MeterOutputL;
+	float *MeterOutputR;
+	float *MeterPhase;
 
 	/* stuff we need to remember to reduce cpu */ 
 	double SampleRate; 
@@ -77,6 +68,10 @@ typedef struct {
 	float ConvertedPan;  
 	float ConvertedWidth;  
 	float ConvertedNoClip; 
+	float EnvInLLast; 
+	float EnvInRLast; 
+	float EnvOutLLast; 
+	float EnvOutRLast; 
 
 
 } IInput;
@@ -130,6 +125,21 @@ static void connectPortIInput(LV2_Handle instance, uint32_t port, void *data)
 		case IINPUT_AUDIO_OUTR:
 			plugin->AudioOutputBufferR = data;
 			break;
+		case IINPUT_METER_INL:
+			plugin->MeterInputL = data;
+			break;
+		case IINPUT_METER_INR:
+			plugin->MeterInputR = data;
+			break;
+		case IINPUT_METER_OUTL:
+			plugin->MeterOutputL = data;
+			break;
+		case IINPUT_METER_OUTR:
+			plugin->MeterOutputR = data;
+			break;
+		case IINPUT_METER_PHASE:
+			plugin->MeterPhase = data;
+			break;
 	}
 }
 
@@ -147,6 +157,10 @@ static void activateIInput(LV2_Handle instance)
 	plugin->LastPan    = 0;  
 	plugin->LastWidth  = 0;  
 	plugin->LastNoClip = 0; 
+	plugin->EnvInLLast = 0; 
+	plugin->EnvOutLLast = 0; 
+	plugin->EnvInRLast = 0; 
+	plugin->EnvOutRLast = 0; 
 
 	plugin->ConvertedPhaseL = convertParam(IINPUT_PHASEL, plugin->LastPhaseL,  plugin->SampleRate);
 	plugin->ConvertedPhaseR = convertParam(IINPUT_PHASER, plugin->LastPhaseR,  plugin->SampleRate);
@@ -166,6 +180,8 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputR;
 	float fPhaseL,fPhaseR,fGain,fPan,fLPan,fRPan,fWidth,fMono,fStereoL,fStereoR,fNoClip;
 	float fAudioL,fAudioR;
+	float InL,EnvInL,EnvOutL;
+	float InR,EnvInR,EnvOutR;
 	uint32_t lSampleIndex;
 
 	IInput *plugin = (IInput *)instance;
@@ -193,11 +209,19 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	pfAudioInputR = plugin->AudioInputBufferR;
 	pfAudioOutputL = plugin->AudioOutputBufferL;
 	pfAudioOutputR = plugin->AudioOutputBufferR;
+
+	EnvInL     = plugin->EnvInLLast;
+	EnvInR     = plugin->EnvInRLast;
+	EnvOutL    = plugin->EnvOutLLast;
+	EnvOutR    = plugin->EnvOutRLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+
+		InL=*(pfAudioInputL++);
+		InR=*(pfAudioInputR++);
   
-		fAudioL =  fPhaseL > 0 ? -(*(pfAudioInputL++)) : *(pfAudioInputL++) ;
-		fAudioR =  fPhaseR > 0 ? -(*(pfAudioInputR++)) : *(pfAudioInputR++) ;
+		fAudioL =  fPhaseL > 0 ? -InL : InL ;
+		fAudioR =  fPhaseR > 0 ? -InR : InR ;
 		fAudioL *= fGain;
 		fAudioR *= fGain;
 		fAudioL *= fLPan;
@@ -218,7 +242,19 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 		fAudioR = fNoClip > 0 ? InoClip(fAudioR) : fAudioR;
 		*(pfAudioOutputL++) = fAudioL;
 		*(pfAudioOutputR++) = fAudioR;
+
+		//evelope on in and out for meters
+		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(fAudioL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutR += IEnvelope(fAudioR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 	}
+
+	// update the meters
+	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
+	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
 }
 
 

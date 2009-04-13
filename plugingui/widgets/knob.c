@@ -16,6 +16,8 @@ static gboolean	inv_knob_motion_notify_event(GtkWidget *widget, GdkEventMotion *
 static gboolean inv_knob_button_release_event (GtkWidget *widget, GdkEventButton *event);
 
 static void	inv_knob_label(gint mode, char *label, char *units, gint human, float value);
+static void	inv_knob_label_pan(char *label, float value, float min, float max);
+static float	inv_knob_label_set_dp(float value);
 static float    inv_marking_to_value(float mark, gint curve, float min, float max);
 static float	inv_value_to_angle(float value, gint curve, float min, float max);
 static gint	inv_choose_light_dark(GdkColor *bg,GdkColor *light,GdkColor *dark);
@@ -59,6 +61,22 @@ void
 inv_knob_set_markings(InvKnob *knob, gint num)
 {
 	knob->markings = num;
+}
+
+void 
+inv_knob_set_custom(InvKnob *knob, gint pos, char *label)
+{
+	switch(pos) {
+		case 0:
+			strncpy(knob->clow, label, 9);
+			break;
+		case 1:
+			strncpy(knob->cmid, label, 9);
+			break;
+		case 2:
+			strncpy(knob->chigh, label, 9);
+			break;
+	}
 }
 
 void
@@ -149,6 +167,9 @@ inv_knob_init(InvKnob *knob)
 	knob->markings  = INV_KNOB_MARKINGS_5;
 	knob->highlight = INV_KNOB_HIGHLIGHT_L;
 	strcpy(knob->units,"");
+	strcpy(knob->clow,"");
+	strcpy(knob->cmid,"");
+	strcpy(knob->chigh,"");
 	knob->human 	= 0;
 	knob->min       = 0.0;
 	knob->max       = 1.0;
@@ -277,6 +298,9 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 	gint  		highlight;
 	gint  		human;
 	char		*units;
+	char		*clow;
+	char		*cmid;
+	char		*chigh;
 	float		min;
 	float		max;
 	float 		value;
@@ -300,6 +324,9 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 	highlight = INV_KNOB(widget)->highlight;
 	human = INV_KNOB(widget)->human;
 	units = INV_KNOB(widget)->units;
+	clow = INV_KNOB(widget)->clow;
+	cmid = INV_KNOB(widget)->cmid;
+	chigh = INV_KNOB(widget)->chigh;
 	min = INV_KNOB(widget)->min;
 	max = INV_KNOB(widget)->max;
 	value = INV_KNOB(widget)->value;
@@ -358,7 +385,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 			gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
 		}
 
-		if(markings==INV_KNOB_MARKINGS_3 || markings==INV_KNOB_MARKINGS_4 || markings==INV_KNOB_MARKINGS_5) {
+		if(markings==INV_KNOB_MARKINGS_3 || markings==INV_KNOB_MARKINGS_4 || markings==INV_KNOB_MARKINGS_5 || markings==INV_KNOB_MARKINGS_CUST12) {
 			for(i=0;i<=12;i++)
 			{ 
 				cairo_move_to(cr,xc+(r-6)*sin((INV_PI/3)+(i*INV_PI/9)),yc+(r-6)*cos((INV_PI/3)+(i*INV_PI/9)));
@@ -385,7 +412,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 					cairo_line_to(cr,xc+(r+ll)*sin((INV_PI/3)+(i*INV_PI/9)),yc+(r+ll)*cos((INV_PI/3)+(i*INV_PI/9)));
 					cairo_set_line_width(cr,2); 
 					cairo_stroke(cr);
-				} else if (i==6 && markings==INV_KNOB_MARKINGS_3){
+				} else if (i==6 && (markings==INV_KNOB_MARKINGS_3 || markings==INV_KNOB_MARKINGS_CUST12)){
 					/*top M3 */
 					cairo_line_to(cr,xc+(r+ls)*sin((INV_PI/3)+(i*INV_PI/9)),yc+(r+ls)*cos((INV_PI/3)+(i*INV_PI/9)));
 					cairo_set_line_width(cr,2);
@@ -397,7 +424,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 					cairo_stroke(cr);
 				} 
 			}
-		} else { /* pan, cust & 10 */
+		} else { /* pan, cust10 & 10 */
 			for(i=0;i<=10;i++)
 			{
 				cairo_move_to(cr,xc+(r-6)*sin((INV_PI/3)+(4*i*INV_PI/30)),yc+(r-6)*cos((INV_PI/3)+(4*i*INV_PI/30)));
@@ -426,50 +453,91 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 		gdk_cairo_set_source_color(cr,&style->fg[state]);
 
 		/* bottom left */
-		if(markings==INV_KNOB_MARKINGS_PAN) {
-			switch(size)
-			{
-				case INV_KNOB_SIZE_MEDIUM:
-				case INV_KNOB_SIZE_LARGE:
-					strcpy(label,"Left");
-					break;
-				case INV_KNOB_SIZE_SMALL:
-				default:
-					strcpy(label,"L");
-					break;
-			}
-		} else {
-			inv_knob_label(0,label, units,human, min);
+		switch(markings)
+		{
+			case INV_KNOB_MARKINGS_PAN:
+				switch(size)
+				{
+					case INV_KNOB_SIZE_MEDIUM:
+					case INV_KNOB_SIZE_LARGE:
+						strcpy(label,"Left");
+						break;
+					case INV_KNOB_SIZE_SMALL:
+					default:
+						strcpy(label,"L");
+						break;
+				}
+				break;
+
+			case INV_KNOB_MARKINGS_CUST10:
+			case INV_KNOB_MARKINGS_CUST12:
+				strcpy(label,clow);
+				break;
+
+			case INV_KNOB_MARKINGS_3:
+			case INV_KNOB_MARKINGS_4:
+			case INV_KNOB_MARKINGS_5:
+			case INV_KNOB_MARKINGS_10:
+				inv_knob_label(0,label, units,human, min);
+				break;
 		}
+
 		cairo_move_to(cr,1,yc+r+8);
 		cairo_show_text(cr,label);
 
 		/* bottom right */
-		if(markings==INV_KNOB_MARKINGS_PAN) {
-			switch(size)
-			{
-				case INV_KNOB_SIZE_MEDIUM:
-				case INV_KNOB_SIZE_LARGE:
-					strcpy(label,"Right");
-					break;
-				case INV_KNOB_SIZE_SMALL:
-				default:
-					strcpy(label,"R");
-					break;
-			}
-		} else {
-			inv_knob_label(0,label, units, human, max);
+		switch(markings)
+		{
+			case INV_KNOB_MARKINGS_PAN:
+				switch(size)
+				{
+					case INV_KNOB_SIZE_MEDIUM:
+					case INV_KNOB_SIZE_LARGE:
+						strcpy(label,"Right");
+						break;
+					case INV_KNOB_SIZE_SMALL:
+					default:
+						strcpy(label,"R");
+						break;
+				}
+				break;
+
+			case INV_KNOB_MARKINGS_CUST10:
+			case INV_KNOB_MARKINGS_CUST12:
+				strcpy(label,chigh);
+				break;
+
+			case INV_KNOB_MARKINGS_3:
+			case INV_KNOB_MARKINGS_4:
+			case INV_KNOB_MARKINGS_5:
+			case INV_KNOB_MARKINGS_10:
+				inv_knob_label(0,label, units, human, max);
+				break;
 		}
+
 		cairo_text_extents (cr,label,&extents);
 		cairo_move_to(cr,size+1-extents.width,yc+r+8);
 		cairo_show_text(cr,label);
 
 		/* top */
 		if(markings != INV_KNOB_MARKINGS_4) {
-			if(markings==INV_KNOB_MARKINGS_PAN) {
-				strcpy(label,"Centre");
-			} else {
-				inv_knob_label(0,label, units, human, inv_marking_to_value(1.0/2.0, curve, min, max));
+			switch(markings)
+			{
+				case INV_KNOB_MARKINGS_PAN:
+					strcpy(label,"Centre");
+					break;
+
+				case INV_KNOB_MARKINGS_CUST10:
+				case INV_KNOB_MARKINGS_CUST12:
+					strcpy(label,cmid);
+					break;
+
+				case INV_KNOB_MARKINGS_3:
+				case INV_KNOB_MARKINGS_5:
+				case INV_KNOB_MARKINGS_10:
+					inv_knob_label(0,label, units, human, inv_marking_to_value(1.0/2.0, curve, min, max));
+					break;
+				
 			}
 			cairo_text_extents (cr,label,&extents);
 			switch(markings)
@@ -477,6 +545,8 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 				case INV_KNOB_MARKINGS_PAN:
 				case INV_KNOB_MARKINGS_3:
 				case INV_KNOB_MARKINGS_10:
+				case INV_KNOB_MARKINGS_CUST10:
+				case INV_KNOB_MARKINGS_CUST12:
 					cairo_move_to(cr,xc-(extents.width/2)-1,(1.5*fontsize)+1);
 					break;
 				case INV_KNOB_MARKINGS_5:
@@ -545,7 +615,19 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 
 	cairo_set_font_size(cr,fontsize);
 	gdk_cairo_set_source_color(cr,&style->text[state]);
-	inv_knob_label(1,label, units, human, value);
+	switch(markings) {
+		case INV_KNOB_MARKINGS_3:
+		case INV_KNOB_MARKINGS_4:	
+		case INV_KNOB_MARKINGS_5:	
+		case INV_KNOB_MARKINGS_10:
+		case INV_KNOB_MARKINGS_CUST10:  
+		case INV_KNOB_MARKINGS_CUST12: 
+			inv_knob_label(1,label, units, human, value);
+			break;
+		case INV_KNOB_MARKINGS_PAN:
+			inv_knob_label_pan(label, value, min, max);
+			break;
+	}
 	cairo_text_extents (cr,label,&extents);
 	cairo_move_to(cr,xc-(extents.width/2)-1,yc+r+ll+11+extents.height);
 	cairo_show_text(cr,label);
@@ -636,6 +718,7 @@ inv_knob_button_release_event (GtkWidget *widget, GdkEventButton *event)
 static void
 inv_knob_label(gint mode, char *label, char *units, gint human, float value)
 {
+	float rounded;
 	if(mode==0) {
 		if(human==1) {
 			if(fabs(value)<0.001) {
@@ -655,21 +738,70 @@ inv_knob_label(gint mode, char *label, char *units, gint human, float value)
 	} else {
 		if(human==1) {
 			if(fabs(value)<0.001) {
-				sprintf(label,"%0.3g µ%s",value*1000000,units);
+				rounded=inv_knob_label_set_dp(value*1000000);
+				sprintf(label,"%0.3g µ%s",rounded,units);
 			} else if(fabs(value)<1) {
-				sprintf(label,"%0.3g m%s",value*1000,units);
+				rounded=inv_knob_label_set_dp(value*1000);
+				sprintf(label,"%0.3g m%s",rounded,units);
 			} else if(fabs(value<1000)) {
-				sprintf(label,"%0.3g %s",value,units);
+				rounded=inv_knob_label_set_dp(value);
+				sprintf(label,"%0.3g %s",rounded,units);
 			} else if(fabs(value<1000000)) {
-				sprintf(label,"%0.3g k%s",value/1000,units);
+				rounded=inv_knob_label_set_dp(value/1000);
+				sprintf(label,"%0.3g k%s",rounded,units);
 			} else {
-				sprintf(label,"%0.3g M%s",value/1000000,units);
+				rounded=inv_knob_label_set_dp(value/1000000);
+				sprintf(label,"%0.3g M%s",rounded,units);
 			}
 		} else {
-			sprintf(label,"%0.3g %s",value,units);
+			rounded=inv_knob_label_set_dp(value);
+			sprintf(label,"%0.3g %s",rounded,units);
 		}
 	}
 } 
+
+static void
+inv_knob_label_pan(char *label, float value, float min, float max)
+{
+	float center;
+	gint pan;
+
+	center = (max+min)/2;
+
+	if(value < center) /* left */
+	{
+		pan=-100 * (value/(center-min));
+		if(pan==0) {
+			sprintf(label,"Centre");
+		} else {
+			sprintf(label,"%i%% L",pan);
+		}
+	} else { 	/* right */
+		pan=100 * (value/(max-center));
+		if(pan==0) {
+			sprintf(label,"Centre");
+		} else {
+			sprintf(label,"%i%% R",pan);
+		}
+	}
+}
+
+static float
+inv_knob_label_set_dp(float value)
+{
+	float exponent,newval;
+
+	exponent= value==0 ? 0 : log10(fabs(value));
+
+	if(exponent<1) {
+		newval=floor(value*100)/100;
+	} else if(exponent<2) {
+		newval=floor(value*10)/10;
+	} else  {
+		newval=floor(value);
+	}
+	return newval;
+}
 
 static float
 inv_marking_to_value(float mark, gint curve, float min, float max)
@@ -686,7 +818,7 @@ inv_marking_to_value(float mark, gint curve, float min, float max)
 			break;
 		case INV_KNOB_CURVE_LINEAR:
 		default:
-			value = (max-min) * mark;
+			value = min + (max-min) * mark;
 			break;
 	}
 	return value;
@@ -751,4 +883,6 @@ inv_value_from_motion(float x_delta, float y_delta, float current, gint curve, f
 
 	return value;
 }
+
+
 

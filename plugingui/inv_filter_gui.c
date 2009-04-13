@@ -141,7 +141,12 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	pluginGui->gain=0.0;
 
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
+	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
+	inv_meter_set_RdB(INV_METER (pluginGui->meterIn),-90);
+
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
+	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
+	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
 	inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), pluginGui->freq);
 	inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), pluginGui->gain);

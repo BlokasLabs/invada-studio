@@ -33,11 +33,17 @@ INSTALL_BUNDLE_DIR		=	invada.lv2
 
 # GENERAL
 
-SUBDIRS		=	plugin/library plugin plugingui/gtk plugingui/widgets plugingui
+SUBDIRS		=	plugin/library plugin plugingui/widgets plugingui
+GLADEDIRS	=	plugingui/gtk 
 
 
 all:	        
 	@for i in $(SUBDIRS); do \
+        echo "\nmake all in $$i..."; \
+        (cd $$i; $(MAKE) ); done
+
+glade:	        
+	@for i in $(GLADEDIRS); do \
         echo "\nmake all in $$i..."; \
         (cd $$i; $(MAKE) ); done
 
@@ -71,6 +77,12 @@ install-user:
 always:	
 
 clean:
+	-rm -f `find . -name "*.so"`
+	-rm -f `find . -name "*.a"`
+	-rm -f `find . -name "*.o"`
+	-rm -f `find . -name "*~"`
+
+veryclean:
 	-rm -f `find . -name "*.so"`
 	-rm -f `find . -name "*.a"`
 	-rm -f `find . -name "*.o"`

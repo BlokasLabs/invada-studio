@@ -19,12 +19,13 @@ G_BEGIN_DECLS
 #define INV_KNOB_CURVE_LOG    1
 #define INV_KNOB_CURVE_QUAD   2
 
-#define INV_KNOB_MARKINGS_PAN 0
-#define INV_KNOB_MARKINGS_CUST 1
-#define INV_KNOB_MARKINGS_3   3
-#define INV_KNOB_MARKINGS_4   4
-#define INV_KNOB_MARKINGS_5   5
-#define INV_KNOB_MARKINGS_10  10
+#define INV_KNOB_MARKINGS_PAN 	0
+#define INV_KNOB_MARKINGS_CUST10 1
+#define INV_KNOB_MARKINGS_CUST12 2
+#define INV_KNOB_MARKINGS_3   	3
+#define INV_KNOB_MARKINGS_4   	4
+#define INV_KNOB_MARKINGS_5   	5
+#define INV_KNOB_MARKINGS_10  	10
 
 #define INV_KNOB_HIGHLIGHT_L  -1
 #define INV_KNOB_HIGHLIGHT_C  0
@@ -48,6 +49,9 @@ struct _InvKnob {
 	gint  highlight;
 	gint  human;
 	char  units[5];
+	char  clow[10];
+	char  cmid[10];
+	char  chigh[10];
 	float min;
 	float max;
 	float value;
@@ -67,6 +71,7 @@ GtkWidget * inv_knob_new();
 void inv_knob_set_size(InvKnob *knob, gint num);
 void inv_knob_set_curve(InvKnob *knob, gint num);
 void inv_knob_set_markings(InvKnob *knob, gint num);
+void inv_knob_set_custom(InvKnob *knob, gint pos, char *label);
 void inv_knob_set_highlight(InvKnob *knob, gint num);
 void inv_knob_set_human(InvKnob *knob);
 void inv_knob_set_units(InvKnob *knob, char *units);
