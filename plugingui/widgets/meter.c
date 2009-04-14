@@ -1,3 +1,5 @@
+#include "stdlib.h"
+#include "string.h"
 #include "meter.h"
 
 
@@ -15,22 +17,36 @@ static void	inv_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, flo
 GtkType
 inv_meter_get_type(void)
 {
-	static GtkType inv_meter_type = 0;
+	static GType inv_meter_type = 0;
+	char *name;
+	int i;
 
-	if (!inv_meter_type) {
-		static const GtkTypeInfo inv_meter_info = {
-		  "InvMeter",
-		  sizeof(InvMeter),
-		  sizeof(InvMeterClass),
-		  (GtkClassInitFunc) inv_meter_class_init,
-		  (GtkObjectInitFunc) inv_meter_init,
-		  NULL,
-		  NULL,
-		  (GtkClassInitFunc) NULL
+
+	if (!inv_meter_type) 
+	{
+		static const GTypeInfo type_info = {
+			sizeof(InvMeterClass),
+			NULL, /* base_init */
+			NULL, /* base_finalize */
+			(GClassInitFunc)inv_meter_class_init,
+			NULL, /* class_finalize */
+			NULL, /* class_data */
+			sizeof(InvMeter),
+			0,    /* n_preallocs */
+			(GInstanceInitFunc)inv_meter_init
 		};
-	inv_meter_type = gtk_type_unique(GTK_TYPE_WIDGET, &inv_meter_info);
+		for (i = 0; ; i++) {
+			name = g_strdup_printf("InvMeter-%p-%d",inv_meter_class_init, i);
+			if (g_type_from_name(name)) {
+				free(name);
+				continue;
+			}
+			inv_meter_type = g_type_register_static(GTK_TYPE_WIDGET,name,&type_info,(GTypeFlags)0);
+			free(name);
+			break;
+		}
 	}
-  return inv_meter_type;
+	return inv_meter_type;
 }
 
 void

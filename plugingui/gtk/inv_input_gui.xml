@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Tue Apr 14 04:16:23 2009 -->
+<!--Generated with glade3 3.4.5 on Tue Apr 14 17:23:18 2009 -->
 <interface>
   <object class="GtkWindow" id="input_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -134,7 +134,6 @@
                             <child>
                               <object class="GtkAlignment" id="alignment_meter_phase">
                                 <property name="visible">True</property>
-                                <property name="xalign">0</property>
                                 <property name="xscale">0</property>
                                 <property name="yscale">0</property>
                                 <child>
@@ -184,11 +183,75 @@
                 <property name="n_columns">5</property>
                 <property name="row_spacing">2</property>
                 <child>
-                  <object class="GtkFrame" id="frame-width">
+                  <object class="GtkFrame" id="frame-softclip">
                     <property name="visible">True</property>
                     <property name="label_xalign">0.5</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment_width_knob">
+                      <object class="GtkAlignment" id="alignment1">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <child>
+                          <object class="GtkVBox" id="vbox1">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkAlignment" id="alignment_soft_clip_button">
+                                <property name="visible">True</property>
+                                <property name="xscale">0</property>
+                                <property name="yscale">0</property>
+                                <property name="top_padding">4</property>
+                                <property name="bottom_padding">4</property>
+                                <property name="left_padding">4</property>
+                                <property name="right_padding">4</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkAlignment" id="alignment_soft_clip_led">
+                                <property name="visible">True</property>
+                                <property name="xscale">0</property>
+                                <property name="yscale">0</property>
+                                <property name="top_padding">4</property>
+                                <property name="bottom_padding">4</property>
+                                <property name="left_padding">4</property>
+                                <property name="right_padding">4</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="label9">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Soft Clip</property>
+                        <property name="use_markup">True</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">4</property>
+                    <property name="right_attach">5</property>
+                    <property name="x_options">GTK_EXPAND</property>
+                    <property name="y_options">GTK_FILL</property>
+                    <property name="x_padding">2</property>
+                    <property name="y_padding">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="frame-gain">
+                    <property name="visible">True</property>
+                    <property name="label_xalign">0.5</property>
+                    <child>
+                      <object class="GtkAlignment" id="alignment_gain_knob">
                         <property name="visible">True</property>
                         <property name="xscale">0</property>
                         <property name="yscale">0</property>
@@ -202,16 +265,51 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="label3">
+                      <object class="GtkLabel" id="label8">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Width</property>
+                        <property name="label" translatable="yes">Gain</property>
                         <property name="use_markup">True</property>
                       </object>
                     </child>
                   </object>
                   <packing>
-                    <property name="left_attach">3</property>
-                    <property name="right_attach">4</property>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="x_options">GTK_EXPAND</property>
+                    <property name="y_options">GTK_FILL</property>
+                    <property name="x_padding">2</property>
+                    <property name="y_padding">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="frame-pan">
+                    <property name="visible">True</property>
+                    <property name="label_xalign">0.5</property>
+                    <child>
+                      <object class="GtkAlignment" id="alignment_pan_knob">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="label6">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Pan</property>
+                        <property name="use_markup">True</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="right_attach">3</property>
                     <property name="x_options">GTK_EXPAND</property>
                     <property name="y_options">GTK_FILL</property>
                     <property name="x_padding">2</property>
@@ -281,11 +379,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame-pan">
+                  <object class="GtkFrame" id="frame-width">
                     <property name="visible">True</property>
                     <property name="label_xalign">0.5</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment_pan_knob">
+                      <object class="GtkAlignment" id="alignment_width_knob">
                         <property name="visible">True</property>
                         <property name="xscale">0</property>
                         <property name="yscale">0</property>
@@ -299,115 +397,16 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="label6">
+                      <object class="GtkLabel" id="label3">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Pan</property>
+                        <property name="label" translatable="yes">Width</property>
                         <property name="use_markup">True</property>
                       </object>
                     </child>
                   </object>
                   <packing>
-                    <property name="left_attach">2</property>
-                    <property name="right_attach">3</property>
-                    <property name="x_options">GTK_EXPAND</property>
-                    <property name="y_options">GTK_FILL</property>
-                    <property name="x_padding">2</property>
-                    <property name="y_padding">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkFrame" id="frame-gain">
-                    <property name="visible">True</property>
-                    <property name="label_xalign">0.5</property>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_gain_knob">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label8">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Gain</property>
-                        <property name="use_markup">True</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="right_attach">2</property>
-                    <property name="x_options">GTK_EXPAND</property>
-                    <property name="y_options">GTK_FILL</property>
-                    <property name="x_padding">2</property>
-                    <property name="y_padding">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkFrame" id="frame-softclip">
-                    <property name="visible">True</property>
-                    <property name="label_xalign">0.5</property>
-                    <child>
-                      <object class="GtkAlignment" id="alignment1">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <child>
-                          <object class="GtkVBox" id="vbox1">
-                            <property name="visible">True</property>
-                            <child>
-                              <object class="GtkAlignment" id="alignment_soft_clip_button">
-                                <property name="visible">True</property>
-                                <property name="xscale">0</property>
-                                <property name="yscale">0</property>
-                                <property name="top_padding">4</property>
-                                <property name="bottom_padding">4</property>
-                                <property name="left_padding">4</property>
-                                <property name="right_padding">4</property>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkAlignment" id="alignment_soft_clip_led">
-                                <property name="visible">True</property>
-                                <property name="xscale">0</property>
-                                <property name="yscale">0</property>
-                                <property name="top_padding">4</property>
-                                <property name="bottom_padding">4</property>
-                                <property name="left_padding">4</property>
-                                <property name="right_padding">4</property>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label9">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Soft Clip</property>
-                        <property name="use_markup">True</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left_attach">4</property>
-                    <property name="right_attach">5</property>
+                    <property name="left_attach">3</property>
+                    <property name="right_attach">4</property>
                     <property name="x_options">GTK_EXPAND</property>
                     <property name="y_options">GTK_FILL</property>
                     <property name="x_padding">2</property>

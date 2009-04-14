@@ -28,6 +28,7 @@
 #include "lv2_ui.h"
 #include "widgets/knob.h"
 #include "widgets/meter.h"
+#include "widgets/meter-phase.h"
 #include "../plugin/inv_input.h"
 #include "inv_input_gui.h"
 
@@ -39,6 +40,7 @@ typedef struct {
 	GtkWidget	*heading;
 	GtkWidget	*meterIn;
 	GtkWidget	*meterOut;
+	GtkWidget	*meterPhase;
 	GtkWidget	*knobGain;
 	GtkWidget	*knobPan;
 	GtkWidget	*knobWidth;
@@ -59,6 +61,7 @@ typedef struct {
 
 static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
+
 	IInputGui *pluginGui = (IInputGui *)malloc(sizeof(IInputGui));
 	if(pluginGui==NULL)
 		return NULL;
@@ -92,6 +95,10 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	pluginGui->meterOut = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterOut);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_phase"));
+	pluginGui->meterPhase = inv_phase_meter_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterPhase);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_gain_knob"));
 	pluginGui->knobGain = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobGain);
@@ -118,6 +125,8 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
+	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
+
 	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobGain), INV_KNOB_MARKINGS_5);
@@ -126,7 +135,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_min(INV_KNOB (pluginGui->knobGain), -24.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 24.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_gain_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_input_gain_knob_motion),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobPan), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobPan), INV_KNOB_CURVE_LINEAR);
@@ -136,7 +145,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_min(INV_KNOB (pluginGui->knobPan), -1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobPan), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobPan), pluginGui->pan);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobPan),"motion-notify-event",G_CALLBACK(on_pan_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobPan),"motion-notify-event",G_CALLBACK(on_inv_input_pan_knob_motion),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobWidth), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobWidth), INV_KNOB_CURVE_LINEAR);
@@ -149,7 +158,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_min(INV_KNOB (pluginGui->knobWidth), -1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobWidth), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_width_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_input_width_knob_motion),pluginGui);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
@@ -158,7 +167,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	*widget = (LV2UI_Widget) pluginGui->windowContainer;
 
 	g_object_unref (G_OBJECT (builder));
-             
+ 
 	/* return the instance */
 	return pluginGui;
 }
@@ -205,6 +214,9 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 			case IINPUT_METER_OUTR:
 				inv_meter_set_RdB(INV_METER (pluginGui->meterOut),value);
 				break;
+			case IINPUT_METER_PHASE:
+				inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),value);
+				break;
 		}
 	}
 }
@@ -218,7 +230,7 @@ static void init()
 	IInputGuiDescriptor->URI 		= IINPUT_GUI_URI;
 	IInputGuiDescriptor->instantiate 	= instantiateIInputGui;
 	IInputGuiDescriptor->cleanup		= cleanupIInputGui;
-	IInputGuiDescriptor->port_event	= port_eventIInputGui;
+	IInputGuiDescriptor->port_event		= port_eventIInputGui;
 	IInputGuiDescriptor->extension_data 	= NULL;
 
 }
@@ -240,7 +252,7 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-static void on_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void on_inv_input_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	IInputGui *pluginGui = (IInputGui *) data;
@@ -250,7 +262,7 @@ static void on_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer dat
 	return;
 }
 
-static void on_pan_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void on_inv_input_pan_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IInputGui *pluginGui = (IInputGui *) data;
 
@@ -259,7 +271,7 @@ static void on_pan_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data
 	return;
 }
 
-static void on_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void on_inv_input_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IInputGui *pluginGui = (IInputGui *) data;
 

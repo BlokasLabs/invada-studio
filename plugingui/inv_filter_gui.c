@@ -159,7 +159,7 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	inv_knob_set_min(INV_KNOB (pluginGui->knobFreq), 20.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobFreq), 20000.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobFreq), pluginGui->freq);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobFreq),"motion-notify-event",G_CALLBACK(on_freq_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobFreq),"motion-notify-event",G_CALLBACK(on_inv_filter_freq_knob_motion),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_LARGE);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
@@ -169,7 +169,7 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	inv_knob_set_min(INV_KNOB (pluginGui->knobGain), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 12.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_gain_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_filter_gain_knob_motion),pluginGui);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
@@ -258,7 +258,7 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-static void on_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void on_inv_filter_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IFilterGui *pluginGui = (IFilterGui *) data;
 
@@ -267,7 +267,7 @@ static void on_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer dat
 	return;
 }
 
-static void on_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void on_inv_filter_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	IFilterGui *pluginGui = (IFilterGui *) data;

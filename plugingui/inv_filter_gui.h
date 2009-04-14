@@ -18,5 +18,5 @@
 
 */
 
-static void on_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_filter_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_filter_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);

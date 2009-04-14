@@ -20,7 +20,7 @@
 
 */
 
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -72,6 +72,7 @@ typedef struct {
 	float EnvInRLast; 
 	float EnvOutLLast; 
 	float EnvOutRLast; 
+	float EnvPhaseLast; 
 
 
 } IInput;
@@ -161,6 +162,7 @@ static void activateIInput(LV2_Handle instance)
 	plugin->EnvOutLLast = 0; 
 	plugin->EnvInRLast = 0; 
 	plugin->EnvOutRLast = 0; 
+	plugin->EnvPhaseLast = 0; 
 
 	plugin->ConvertedPhaseL = convertParam(IINPUT_PHASEL, plugin->LastPhaseL,  plugin->SampleRate);
 	plugin->ConvertedPhaseR = convertParam(IINPUT_PHASER, plugin->LastPhaseR,  plugin->SampleRate);
@@ -182,6 +184,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	float fAudioL,fAudioR;
 	float InL,EnvInL,EnvOutL;
 	float InR,EnvInR,EnvOutR;
+	float CurrentPhase,EnvPhase;
 	uint32_t lSampleIndex;
 
 	IInput *plugin = (IInput *)instance;
@@ -214,6 +217,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	EnvInR     = plugin->EnvInRLast;
 	EnvOutL    = plugin->EnvOutLLast;
 	EnvOutR    = plugin->EnvOutRLast;
+	EnvPhase   = plugin->EnvPhaseLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
@@ -248,13 +252,28 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutL += IEnvelope(fAudioL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutR += IEnvelope(fAudioR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+
+		if(fabs(fAudioL) > 0.00000001 || fabs(fAudioR) > 0.00000001) {
+			CurrentPhase = fabs(fAudioL+fAudioR) > 0.00000001 ? atan(fabs((fAudioL-fAudioR)/(fAudioL+fAudioR))) : PI_ON_2;
+		} else {
+			CurrentPhase =0;
+		}
+		EnvPhase += IEnvelope(CurrentPhase,EnvPhase,INVADA_METER_PHASE,plugin->SampleRate);
 	}
+
+	// store values for next loop
+	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
+	plugin->EnvInRLast = (fabs(EnvInR)<1.0e-10)  ? 0.f : EnvInR; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+	plugin->EnvPhaseLast = (fabs(EnvPhase)<1.0e-10)  ? 0.f : EnvPhase; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
 	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
 	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
+	*(plugin->MeterPhase)=EnvPhase;
 }
 
 

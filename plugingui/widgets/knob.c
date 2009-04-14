@@ -1,3 +1,4 @@
+#include "stdlib.h"
 #include "math.h"
 #include "string.h"
 #include "knob.h"
@@ -27,22 +28,37 @@ static float	inv_value_from_motion(float x_delta, float y_delta, float current, 
 GtkType
 inv_knob_get_type(void)
 {
-	static GtkType inv_knob_type = 0;
+	static GType inv_knob_type = 0;
+	char *name;
+	int i;
 
-	if (!inv_knob_type) {
-		static const GtkTypeInfo inv_knob_info = {
-		  "InvKnob",
-		  sizeof(InvKnob),
-		  sizeof(InvKnobClass),
-		  (GtkClassInitFunc) inv_knob_class_init,
-		  (GtkObjectInitFunc) inv_knob_init,
-		  NULL,
-		  NULL,
-		  (GtkClassInitFunc) NULL
+
+	if (!inv_knob_type) 
+	{
+		static const GTypeInfo type_info = {
+			sizeof(InvKnobClass),
+			NULL, /* base_init */
+			NULL, /* base_finalize */
+			(GClassInitFunc)inv_knob_class_init,
+			NULL, /* class_finalize */
+			NULL, /* class_data */
+			sizeof(InvKnob),
+			0,    /* n_preallocs */
+			(GInstanceInitFunc)inv_knob_init
 		};
-	inv_knob_type = gtk_type_unique(GTK_TYPE_WIDGET, &inv_knob_info);
+		for (i = 0; ; i++) {
+
+			name = g_strdup_printf("InvKnob-%p-%d", inv_knob_class_init, i);
+			if (g_type_from_name(name)) {
+				free(name);
+				continue;
+			}
+			inv_knob_type = g_type_register_static(GTK_TYPE_WIDGET,name,&type_info,(GTypeFlags)0);
+			free(name);
+			break;
+		}
 	}
-  return inv_knob_type;
+	return inv_knob_type;
 }
 
 void
