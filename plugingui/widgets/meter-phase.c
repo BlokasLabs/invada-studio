@@ -113,7 +113,7 @@ inv_phase_meter_size_request(GtkWidget *widget,
 	g_return_if_fail(INV_IS_PHASE_METER(widget));
 	g_return_if_fail(requisition != NULL);
 
-	requisition->width = 268;
+	requisition->width = 388;
 	requisition->height = 36;
 }
 
@@ -152,7 +152,7 @@ inv_phase_meter_realize(GtkWidget *widget)
 	attributes.window_type = GDK_WINDOW_CHILD;
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
-	attributes.width = 268;
+	attributes.width = 388;
 	attributes.height = 36;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
@@ -197,7 +197,7 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 	cairo_text_extents_t extents;
 
 	style = gtk_widget_get_style(widget);
-	gint phase = (gint)((INV_PHASE_METER(widget)->phase*38.197186337)+0.2);
+	gint phase = (gint)((INV_PHASE_METER(widget)->phase*57.295779506)+0.2);
 
 	cr = gdk_cairo_create(widget->window);
 
@@ -214,13 +214,13 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 		gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
 		cairo_move_to(cr, 0, 35);
 		cairo_line_to(cr, 0, 0);
-		cairo_line_to(cr, 267, 0);
+		cairo_line_to(cr, 387, 0);
 		cairo_stroke(cr);
 
 		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
 		cairo_move_to(cr, 0, 35);
-		cairo_line_to(cr, 267, 35);
-		cairo_line_to(cr, 267, 0);
+		cairo_line_to(cr, 387, 35);
+		cairo_line_to(cr, 387, 0);
 		cairo_stroke(cr);
 
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
@@ -231,16 +231,16 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 		cairo_rectangle(cr, 14, 21, 1, 2);
 		cairo_fill(cr);
 
-		cairo_rectangle(cr, 74, 21, 1, 2);
-		cairo_fill(cr);
-
-		cairo_rectangle(cr, 134, 21, 1, 2);
+		cairo_rectangle(cr, 104, 21, 1, 2);
 		cairo_fill(cr);
 
 		cairo_rectangle(cr, 194, 21, 1, 2);
 		cairo_fill(cr);
 
-		cairo_rectangle(cr, 254, 21, 1, 2);
+		cairo_rectangle(cr, 284, 21, 1, 2);
+		cairo_fill(cr);
+
+		cairo_rectangle(cr, 374, 21, 1, 2);
 		cairo_fill(cr);
 
 
@@ -250,27 +250,27 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 
 		strcpy(label,"-90");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,14-(2*extents.width/3),31);
+		cairo_move_to(cr,13-(2*extents.width/3),31);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"-45");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,74-(2*extents.width/3),31);
+		cairo_move_to(cr,103-(2*extents.width/3),31);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"0");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,134-(extents.width/2),31);
+		cairo_move_to(cr,193.5-(extents.width/2),31);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"45");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,194-(extents.width/2),31);
+		cairo_move_to(cr,283-(extents.width/2),31);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"90");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,254-(extents.width/2),31);
+		cairo_move_to(cr,373-(extents.width/2),31);
 		cairo_show_text(cr,label);
 
 
@@ -280,17 +280,17 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 
 	inv_phase_meter_colour(widget, 0, 1, &R, &G,&B);
 	cairo_set_source_rgb(cr, R, G, B);
-	cairo_rectangle(cr, 134, 5, 1, 14);
+	cairo_rectangle(cr, 194, 5, 1, 14);
 
-	for ( i = 1; i <= 60; i++) 
+	for ( i = 1; i <= 90; i++) 
 	{
 		Pon = i <= phase ? 1 : 0;
 
 		inv_phase_meter_colour(widget, i, Pon, &R, &G,&B);
 		cairo_set_source_rgb(cr, R, G, B);
-		cairo_rectangle(cr, 134+(i*2), 5, 1, 14);
+		cairo_rectangle(cr, 194+(i*2), 5, 1, 14);
 		cairo_fill(cr);
-		cairo_rectangle(cr, 134-(i*2), 5, 1, 14);
+		cairo_rectangle(cr, 194-(i*2), 5, 1, 14);
 		cairo_fill(cr);
 	}
   	cairo_destroy(cr);
@@ -318,13 +318,6 @@ inv_phase_meter_destroy(GtkObject *object)
 static void	
 inv_phase_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B)
 {
-
-/* 
-20 =  30
-30 =  45
-40 =  60
-60 =  90
-*/
 
 	float r1,r2;
 
@@ -368,36 +361,36 @@ inv_phase_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G,
 	float mOn90G = INV_PHASE_METER(widget)->mOn90[1];
 	float mOn90B = INV_PHASE_METER(widget)->mOn90[2];
 
-	if(pos < 20) 
+	if(pos < 30) 
 	{
-		r1=(20.0-(float)pos)/20.0;
-		r2=(float)pos/20.0;
+		r1=(30.0-(float)pos)/30.0;
+		r2=(float)pos/30.0;
 		*R=(r1 * mOff0R + (r2 * mOff30R))  + (on * ((r1 * mOn0R) + (r2 * mOn30R))) ;
 		*G=(r1 * mOff0G + (r2 * mOff30G))  + (on * ((r1 * mOn0G) + (r2 * mOn30G))) ;
 		*B=(r1 * mOff0B + (r2 * mOff30B))  + (on * ((r1 * mOn0B) + (r2 * mOn30B))) ;
 	} 
 
-	else if (pos < 30)
+	else if (pos < 45)
 	{
-		r1=(30.0-(float)pos)/10.0;
-		r2=((float)pos-20.0)/10.0;
+		r1=(45.0-(float)pos)/15.0;
+		r2=((float)pos-30.0)/15.0;
 		*R=(r1 * mOff30R + (r2 * mOff45R))  + (on * ((r1 * mOn30R) + (r2 * mOn45R))) ;
 		*G=(r1 * mOff30G + (r2 * mOff45G))  + (on * ((r1 * mOn30G) + (r2 * mOn45G))) ;
 		*B=(r1 * mOff30B + (r2 * mOff45B))  + (on * ((r1 * mOn30B) + (r2 * mOn45B))) ;
 	}
 
-	else if (pos < 40)
+	else if (pos < 60)
 	{
-		r1=(40.0-(float)pos)/10.0;
-		r2=((float)pos-30.0)/10.0;
+		r1=(60.0-(float)pos)/15.0;
+		r2=((float)pos-45.0)/15.0;
 		*R=(r1 * mOff45R + (r2 * mOff60R))  + (on * ((r1 * mOn45R) + (r2 * mOn60R))) ;
 		*G=(r1 * mOff45G + (r2 * mOff60G))  + (on * ((r1 * mOn45G) + (r2 * mOn60G))) ;
 		*B=(r1 * mOff45B + (r2 * mOff60B))  + (on * ((r1 * mOn45B) + (r2 * mOn60B))) ;
 	}
 	else
 	{
-		r1=(60.0-(float)pos)/20.0;
-		r2=((float)pos-40.0)/20.0;
+		r1=(90.0-(float)pos)/30.0;
+		r2=((float)pos-60.0)/30.0;
 		*R=(r1 * mOff60R + (r2 * mOff90R))  + (on * ((r1 * mOn60R) + (r2 * mOn90R))) ;
 		*G=(r1 * mOff60G + (r2 * mOff90G))  + (on * ((r1 * mOn60G) + (r2 * mOn90G))) ;
 		*B=(r1 * mOff60B + (r2 * mOff90B))  + (on * ((r1 * mOn60B) + (r2 * mOn90B))) ;
