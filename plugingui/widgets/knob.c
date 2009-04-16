@@ -830,7 +830,9 @@ inv_marking_to_value(float mark, gint curve, float min, float max)
 			value=pow(10,log10(min)+(mark*(log10(max)-log10(min))));
 			break;
 		case INV_KNOB_CURVE_QUAD:
-			value=0;
+			value= mark < 0.5 ?
+				((min+max)/2) - (pow((2*mark)-1,2) * ((max-min)/2)):
+				((min+max)/2) + (pow((2*mark)-1,2) * ((max-min)/2));
 			break;
 		case INV_KNOB_CURVE_LINEAR:
 		default:
@@ -851,7 +853,9 @@ inv_value_to_angle(float value, gint curve, float min, float max)
 			angle=(4.0*INV_PI*(log10(value)-log10(min)))/(3*(log10(max)-log10(min))) ;
 			break;
 		case INV_KNOB_CURVE_QUAD:
-			angle=0;
+			angle= value < (max+min)/2 ?
+				4.0*INV_PI*(1-pow(((min+max)-(2*value))/(max-min),0.5))/6 :
+				4.0*INV_PI*(pow(((2*value)-(min+max))/(max-min),0.5)+1)/6 ;
 			break;
 		case INV_KNOB_CURVE_LINEAR:
 		default:
@@ -876,7 +880,7 @@ inv_choose_light_dark(GdkColor *bg,GdkColor *light,GdkColor *dark)
 static float
 inv_value_from_motion(float x_delta, float y_delta, float current, gint curve, float min, float max)
 {
-	float sens,value;
+	float sens,value,pos;
 
 	sens=1/(75*(1+fabs(x_delta/10)));
 
@@ -886,7 +890,12 @@ inv_value_from_motion(float x_delta, float y_delta, float current, gint curve, f
 			value = pow(10,log10(current) + (y_delta * sens * (log10(max)-log10(min))));
 			break;
 		case INV_KNOB_CURVE_QUAD:
-			value=0;
+			pos= current < (max+min)/2 ?
+				(1-pow(((min+max)-(2*current))/(max-min),0.5))/2 :
+				(pow(((2*current)-(min+max))/(max-min),0.5)+1)/2 ;
+			value= pos + (y_delta * sens) < 0.5 ?
+				((min+max)/2) - (pow((2*(pos + (y_delta * sens)))-1,2) * ((max-min)/2)):
+				((min+max)/2) + (pow((2*(pos + (y_delta * sens)))-1,2) * ((max-min)/2));
 			break;
 		case INV_KNOB_CURVE_LINEAR:
 		default:

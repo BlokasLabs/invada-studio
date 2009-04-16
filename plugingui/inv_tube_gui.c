@@ -145,7 +145,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDrive),"motion-notify-event",G_CALLBACK(on_inv_tube_drive_knob_motion),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobDC), INV_KNOB_SIZE_LARGE);
-	inv_knob_set_curve(INV_KNOB (pluginGui->knobDC), INV_KNOB_CURVE_LINEAR);
+	inv_knob_set_curve(INV_KNOB (pluginGui->knobDC), INV_KNOB_CURVE_QUAD);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobDC), INV_KNOB_MARKINGS_3); 
 	inv_knob_set_highlight(INV_KNOB (pluginGui->knobDC), INV_KNOB_HIGHLIGHT_C);
 	inv_knob_set_units(INV_KNOB (pluginGui->knobDC), "");

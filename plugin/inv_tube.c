@@ -186,8 +186,8 @@ static void runMonoITube(LV2_Handle instance, uint32_t SampleCount)
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 		fAudioL=*(pfAudioInputL++);
 		OutL= fPhase <= 0 ? 
-				(fAudioL*(1-fMix)) + ITube_do(fAudioL + fDCOffset,fDrive)*fMix :
-				(fAudioL*(1-fMix)) - ITube_do(fAudioL + fDCOffset,fDrive)*fMix ;
+				(fAudioL*(1-fMix)) + (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix :
+				(fAudioL*(1-fMix)) - (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix ;
 		*(pfAudioOutputL++) = OutL;
 
 		//evelope on in and out for meters
@@ -242,14 +242,14 @@ static void runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 		fAudioL=*(pfAudioInputL++);
 		OutL = fPhase <= 0 ? 
-				(fAudioL*(1-fMix)) + (ITube_do(fAudioL + fDCOffset,fDrive)-(fDCOffset/2))*fMix :
-				(fAudioL*(1-fMix)) - (ITube_do(fAudioL + fDCOffset,fDrive)-(fDCOffset/2))*fMix ;
+				(fAudioL*(1-fMix)) + (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix :
+				(fAudioL*(1-fMix)) - (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix ;
 		*(pfAudioOutputL++) = OutL;
 		  
 		fAudioR=*(pfAudioInputR++);
 		OutR = fPhase <= 0 ? 
-				(fAudioR*(1-fMix)) + (ITube_do(fAudioR + fDCOffset,fDrive)-(fDCOffset/2))*fMix :
-				(fAudioR*(1-fMix)) - (ITube_do(fAudioR + fDCOffset,fDrive)-(fDCOffset/2))*fMix ;
+				(fAudioR*(1-fMix)) + (ITube_do(fAudioR + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix :
+				(fAudioR*(1-fMix)) - (ITube_do(fAudioR + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix ;
 		*(pfAudioOutputR++) = OutR;
 
 		//evelope on in and out for meters
