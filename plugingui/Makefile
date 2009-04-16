@@ -27,6 +27,7 @@ LDFLAGS		=	-shared -Lwidgets -lc -lm -linv_widgets
 
 GUIS		=	inv_filter_gui.so \
 			inv_input_gui.so \
+			inv_tube_gui.so \
 
 
 all:	$(GUIS) 
@@ -35,6 +36,7 @@ all:	$(GUIS)
  
 inv_filter_gui.so:     inv_filter_gui.o	../plugin/inv_filter.h	inv_filter_gui.h   
 inv_input_gui.so:     inv_input_gui.o	../plugin/inv_input.h	inv_input_gui.h   
+inv_tube_gui.so:     inv_tube_gui.o	../plugin/inv_tube.h	inv_tube_gui.h 
 
 
 # OTHER TARGETS

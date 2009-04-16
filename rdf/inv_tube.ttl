@@ -3,6 +3,35 @@
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
+
+<http://invadarecords.com/plugins/lv2/tube/gui>
+    a uiext:GtkUI;
+    uiext:binary <inv_tube_gui.so>;
+    uiext:requiredFeature uiext:makeResident ;
+
+    uiext:portNotification [ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/mono> ;
+        uiext:portIndex 4 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/mono> ;
+        uiext:portIndex 5 ;
+    ] ;
+
+    uiext:portNotification [ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/stereo> ;
+        uiext:portIndex 4 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/stereo> ;
+        uiext:portIndex 5 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/stereo> ;
+        uiext:portIndex 8 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/stereo> ;
+        uiext:portIndex 9 ;
+    ] .
+
 
 <http://invadarecords.com/plugins/lv2/tube/mono> 
     a lv2:Plugin, lv2:DistortionPlugin ;
@@ -14,6 +43,7 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
+    uiext:ui <http://invadarecords.com/plugins/lv2/tube/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -49,13 +79,29 @@
 	lv2:maximum 100.0 ;
 	units:unit :pc ;
     ] , [
-	a lv2:InputPort, lv2:AudioPort ;
+	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 4 ;
+	lv2:symbol "meterIn" ;
+	lv2:name "In" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 5 ;
+	lv2:symbol "meterOut" ;
+	lv2:name "Out" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:InputPort, lv2:AudioPort ;
+	lv2:index 6 ;
 	lv2:symbol "in" ;
 	lv2:name "In" ;
     ] , [
 	a lv2:OutputPort,  lv2:AudioPort ;
-	lv2:index 5 ;
+	lv2:index 7 ;
 	lv2:symbol "out" ;
 	lv2:name "Out" ;
     ]
@@ -71,6 +117,7 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
+    uiext:ui <http://invadarecords.com/plugins/lv2/tube/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -106,23 +153,55 @@
 	lv2:maximum 100.0 ;
 	units:unit :pc ;
     ] , [
-	a lv2:InputPort, lv2:AudioPort ;
+	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 4 ;
+	lv2:symbol "meterInL" ;
+	lv2:name "L In" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 5 ;
+	lv2:symbol "meterOutL" ;
+	lv2:name "L Out" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:InputPort, lv2:AudioPort ;
+	lv2:index 6 ;
 	lv2:symbol "inL" ;
 	lv2:name "L In" ;
     ] , [
 	a lv2:OutputPort,  lv2:AudioPort ;
-	lv2:index 5 ;
+	lv2:index 7 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 8 ;
+	lv2:symbol "meterInR" ;
+	lv2:name "R In" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 9 ;
+	lv2:symbol "meterOutR" ;
+	lv2:name "R Out" ;
+	lv2:minimum -60.0 ;
+	lv2:maximum 6.0 ;
+	units:unit :db ;
    ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 6 ;
+	lv2:index 10 ;
 	lv2:symbol "inR" ;
 	lv2:name "R In" ;
     ] , [
 	a lv2:OutputPort,  lv2:AudioPort ;
-	lv2:index 7 ;
+	lv2:index 11 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
     ]

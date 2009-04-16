@@ -18,6 +18,24 @@
 
 */
 
+#define ITUBE_GUI_URI		"http://invadarecords.com/plugins/lv2/tube/gui"
+#define ITUBE_MONO_URI		"http://invadarecords.com/plugins/lv2/tube/mono"
+#define ITUBE_STEREO_URI	"http://invadarecords.com/plugins/lv2/tube/stereo"
+#define ITUBE_DRIVE 		0
+#define ITUBE_DCOFFSET		1
+#define ITUBE_PHASE		2
+#define ITUBE_MIX		3
+#define ITUBE_METER_INL  	4
+#define ITUBE_METER_OUTL 	5
+#define ITUBE_AUDIO_INL  	6
+#define ITUBE_AUDIO_OUTL 	7
+#define ITUBE_METER_INR  	8  /* not used in mono mode */
+#define ITUBE_METER_OUTR 	9  /* not used in mono mode */
+#define ITUBE_AUDIO_INR  	10 /* not used in mono mode */
+#define ITUBE_AUDIO_OUTR 	11 /* not used in mono mode */
+
+
+
 /* control conversion function */
 float convertParam(unsigned long param, float value, double sr);
 

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Mon Apr 13 16:04:42 2009 -->
+<!--Generated with glade3 3.4.5 on Fri Apr 17 00:47:12 2009 -->
 <interface>
   <object class="GtkWindow" id="filter_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -117,7 +117,7 @@
                 <child type="label">
                   <object class="GtkLabel" id="label1">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Meters</property>
+                    <property name="label" translatable="yes">Levels</property>
                     <property name="use_markup">True</property>
                   </object>
                 </child>
@@ -182,11 +182,11 @@
                 <property name="n_columns">3</property>
                 <property name="row_spacing">2</property>
                 <child>
-                  <object class="GtkFrame" id="frame-frequency">
+                  <object class="GtkFrame" id="frame-gain">
                     <property name="visible">True</property>
                     <property name="label_xalign">0.5</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment_frequency_knob">
+                      <object class="GtkAlignment" id="alignment_gain_knob">
                         <property name="visible">True</property>
                         <property name="xscale">0</property>
                         <property name="yscale">0</property>
@@ -200,14 +200,16 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="label6">
+                      <object class="GtkLabel" id="label8">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Frequency</property>
+                        <property name="label" translatable="yes">Gain</property>
                         <property name="use_markup">True</property>
                       </object>
                     </child>
                   </object>
                   <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
                     <property name="x_options">GTK_EXPAND</property>
                     <property name="y_options">GTK_FILL</property>
                     <property name="x_padding">2</property>
@@ -279,11 +281,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame-gain">
+                  <object class="GtkFrame" id="frame-frequency">
                     <property name="visible">True</property>
                     <property name="label_xalign">0.5</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment_gain_knob">
+                      <object class="GtkAlignment" id="alignment_frequency_knob">
                         <property name="visible">True</property>
                         <property name="xscale">0</property>
                         <property name="yscale">0</property>
@@ -297,16 +299,14 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="label8">
+                      <object class="GtkLabel" id="label6">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Gain</property>
+                        <property name="label" translatable="yes">Frequency</property>
                         <property name="use_markup">True</property>
                       </object>
                     </child>
                   </object>
                   <packing>
-                    <property name="left_attach">1</property>
-                    <property name="right_attach">2</property>
                     <property name="x_options">GTK_EXPAND</property>
                     <property name="y_options">GTK_FILL</property>
                     <property name="x_padding">2</property>

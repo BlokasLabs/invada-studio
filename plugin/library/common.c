@@ -62,8 +62,8 @@ float IEnvelope(float value, float envelope, int mode, double sr)
 			break;
 
 		case INVADA_METER_PHASE:  
-			/* 1ms attack, 100ms decay */
-			EnvelopeDelta=(valueA > envelope)   ? 0.015 * (valueA - envelope)   : 0.00015 * (valueA - envelope);
+			/* 10ms attack, 10ms decay */
+			EnvelopeDelta=(valueA > envelope)   ? 0.0015 * (valueA - envelope)   : 0.0015 * (valueA - envelope);
 			break;
 		default:
 			EnvelopeDelta=0;

@@ -7,7 +7,8 @@
 G_BEGIN_DECLS
 
 #define INV_METER_DRAW_ALL 0
-#define INV_METER_DRAW_DATA 1
+#define INV_METER_DRAW_L 1
+#define INV_METER_DRAW_R 2
 
 #define INV_METER(obj) GTK_CHECK_CAST(obj, inv_meter_get_type (), InvMeter)
 #define INV_METER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_meter_get_type(), InvMeterClass)
@@ -24,6 +25,9 @@ struct _InvMeter {
 	gint  channels;
 	float LdB;
 	float RdB;
+
+	gint lastLpos;
+	gint lastRpos;
 
 	float mOff60[3];
 	float mOn60[3];  /* delta */

@@ -253,8 +253,8 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 		EnvOutL += IEnvelope(fAudioL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutR += IEnvelope(fAudioR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 
-		if(fabs(fAudioL) > 0.00000001 || fabs(fAudioR) > 0.00000001) {
-			CurrentPhase = fabs(fAudioL+fAudioR) > 0.00000001 ? atan(fabs((fAudioL-fAudioR)/(fAudioL+fAudioR))) : PI_ON_2;
+		if(fabs(fAudioL) > 0.001 || fabs(fAudioR) > 0.001) {  // -60 db
+			CurrentPhase = fabs(fAudioL+fAudioR) > 0.000001 ? atan(fabs((fAudioL-fAudioR)/(fAudioL+fAudioR))) : PI_ON_2;
 		} else {
 			CurrentPhase =0;
 		}
