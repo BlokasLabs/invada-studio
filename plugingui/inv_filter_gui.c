@@ -27,7 +27,8 @@
 #include <lv2.h>
 #include "lv2_ui.h"
 #include "widgets/knob.h"
-#include "widgets/meter.h"
+#include "widgets/lamp.h"
+#include "widgets/meter-peak.h"
 #include "widgets/display-FrequencyGain.h"
 #include "../plugin/inv_filter.h"
 #include "inv_filter_gui.h"
@@ -43,7 +44,7 @@ typedef struct {
 	GtkWidget	*display;
 	GtkWidget	*knobFreq;
 	GtkWidget	*knobGain;
-//	GtkWidget	*switchandlightClip;
+	GtkWidget	*lampNoClip;
 
 	gint		InChannels;
 	gint		OutChannels;
@@ -70,13 +71,17 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	GtkWidget       *window;
 	GtkWidget	*tempObject;
 
+	char 		*file;
+
 	GError *err = NULL;
 
 	gtk_init (NULL,NULL);
 
 	builder = gtk_builder_new ();
-// TODO change this to use the supplied bundle path
-	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_filter_gui.xml", &err);
+	file = g_strdup_printf("%s/gtk/inv_filter_gui.xml",bundle_path);
+	gtk_builder_add_from_file (builder, file, &err);
+	free(file);
+
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
 
 	/* get pointers to some useful widgets from the design */
@@ -103,6 +108,10 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_gain_knob"));
 	pluginGui->knobGain = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobGain);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_noclip_lamp"));
+	pluginGui->lampNoClip = inv_lamp_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->lampNoClip);
 
 	/* customise for the plugin */
 	if(!strcmp(plugin_uri,IFILTER_MONO_LPF_URI)) 
@@ -171,6 +180,9 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_filter_gain_knob_motion),pluginGui);
 
+	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
+	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),2.0);
+
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
 	gtk_container_remove(GTK_CONTAINER(window), pluginGui->windowContainer);
@@ -222,6 +234,9 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 				break;
 			case IFILTER_METER_OUTR:
 				if(pluginGui->OutChannels==2) inv_meter_set_RdB(INV_METER (pluginGui->meterOut),value);
+				break;
+			case IFILTER_METER_DRIVE:
+				inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),value);
 				break;
 		}
 	}

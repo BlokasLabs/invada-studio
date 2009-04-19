@@ -1,8 +1,15 @@
-@prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix units: <http://lv2plug.in/ns/extension/units#> .
+@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
+
+
+<http://invadarecords.com/plugins/lv2/compressor/gui>
+    a uiext:GtkUI;
+    uiext:binary <inv_compressor_gui.so>;
+    uiext:requiredFeature uiext:makeResident .
 
 <http://invadarecords.com/plugins/lv2/compressor/mono> 
     a lv2:Plugin, lv2:CompressorPlugin ;
@@ -14,6 +21,7 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
+    uiext:ui <http://invadarecords.com/plugins/lv2/compressor/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -28,19 +36,19 @@
 	lv2:index 1 ;
 	lv2:symbol "attack" ;
 	lv2:name "Attack" ;
-	lv2:default 0.01 ;
-	lv2:minimum 0.01 ;
-	lv2:maximum 750 ;
-	units:unit :ms ;
+	lv2:default 0.00001 ;
+	lv2:minimum 0.00001 ;
+	lv2:maximum 0.750 ;
+	units:unit :s ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
 	lv2:symbol "release" ;
 	lv2:name "Release" ;
-	lv2:default 1.0 ;
-	lv2:minimum 1.0 ;
-	lv2:maximum 5000 ;
-	units:unit :ms ;
+	lv2:default 0.001 ;
+	lv2:minimum 0.001 ;
+	lv2:maximum 5.0 ;
+	units:unit :s ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 3 ;
@@ -105,6 +113,7 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
+    uiext:ui <http://invadarecords.com/plugins/lv2/compressor/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -119,19 +128,19 @@
 	lv2:index 1 ;
 	lv2:symbol "attack" ;
 	lv2:name "Attack" ;
-	lv2:default 0.01 ;
-	lv2:minimum 0.01 ;
-	lv2:maximum 750 ;
-	units:unit :ms ;
+	lv2:default 0.00001 ;
+	lv2:minimum 0.00001 ;
+	lv2:maximum 0.750 ;
+	units:unit :s ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
 	lv2:symbol "release" ;
 	lv2:name "Release" ;
-	lv2:default 1.0 ;
-	lv2:minimum 1.0 ;
-	lv2:maximum 5000 ;
-	units:unit :ms ;
+	lv2:default 0.001 ;
+	lv2:minimum 0.001 ;
+	lv2:maximum 5.0 ;
+	units:unit :s ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 3 ;

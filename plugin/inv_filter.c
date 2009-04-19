@@ -47,6 +47,7 @@ typedef struct {
 	float * MeterOutputL;
 	float * MeterInputR; 
 	float * MeterOutputR;
+	float * MeterDrive;
 
 	double SampleRate;
 
@@ -65,7 +66,8 @@ typedef struct {
 	float EnvInLLast; 
 	float EnvOutLLast; 
 	float EnvInRLast; 
-	float EnvOutRLast; 
+	float EnvOutRLast;
+	float EnvDriveLast;  
 
 } IFilter;
 
@@ -120,6 +122,9 @@ static void connectPortIFilter(LV2_Handle instance, uint32_t port, void *data)
 		case IFILTER_METER_OUTR:
 			plugin->MeterOutputR = data;
 			break;
+		case IFILTER_METER_DRIVE:
+			plugin->MeterDrive = data;
+			break;
 	}
 }
 
@@ -135,6 +140,7 @@ static void activateIFilter(LV2_Handle instance)
 	plugin->EnvOutLLast = 0; 
 	plugin->EnvInRLast = 0; 
 	plugin->EnvOutRLast = 0; 
+	plugin->EnvDriveLast = 0; 
 
 	/* defaults */
 	plugin->LastFreq = 1000;      
@@ -152,9 +158,10 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
 	float * pfAudioOutputL;
-	float InL,OutL,EnvInL,EnvOutL;
+	float InL,OutL,EnvInL,EnvOutL,EnvDrive;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioLSum;
+	float drive=0;
 	unsigned long lSampleIndex;
 
 	IFilter *plugin = (IFilter *)instance;
@@ -174,6 +181,7 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	fAudioLSum = plugin->AudioLLast;
 	EnvInL     = plugin->EnvInLLast;
 	EnvOutL    = plugin->EnvOutLLast;
+	EnvDrive   = plugin->EnvDriveLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
 	{
@@ -181,12 +189,13 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		fAudioLSum = ((fSamples-1) * fAudioLSum + InL) / fSamples;  
 		fAudioL = fAudioLSum*fGain; 
 
-		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;
+		OutL=fNoClip > 0 ? InoClip(fAudioL, &drive) : fAudioL;
 		*(pfAudioOutputL++)= OutL; 
 
 		//evelope on in and out for meters
 		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 
 	}
 
@@ -194,10 +203,12 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  // and store values for next loop
 	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
 }
 
 
@@ -212,6 +223,9 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float InR,OutR,EnvInR,EnvOutR;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioR,fAudioLSum,fAudioRSum;
+	float drive,EnvDrive;
+	float driveL=0;
+	float driveR=0;
 	unsigned long lSampleIndex;
 
 	IFilter *plugin = (IFilter *)instance;
@@ -236,6 +250,7 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	EnvInR     = plugin->EnvInRLast;
 	EnvOutL    = plugin->EnvOutLLast;
 	EnvOutR    = plugin->EnvOutRLast;
+	EnvDrive   = plugin->EnvDriveLast;
 
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
 	{
@@ -246,8 +261,8 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		fAudioL = fAudioLSum*fGain; 
 		fAudioR = fAudioRSum*fGain; 
 		  
-		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
-		OutR=fNoClip > 0 ? InoClip(fAudioR) : fAudioR;
+		OutL=fNoClip > 0 ? InoClip(fAudioL,&driveL) : fAudioL;  
+		OutR=fNoClip > 0 ? InoClip(fAudioR,&driveR) : fAudioR;
 		*(pfAudioOutputL++)=OutL;
 		*(pfAudioOutputR++)=OutR;
 
@@ -256,6 +271,9 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+
+		drive = driveL > driveR ? driveL : driveR;
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 		
 	}
   
@@ -266,12 +284,14 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	plugin->EnvInRLast = (fabs(EnvInR)<1.0e-10)  ? 0.f : EnvInR; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
 	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
 	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
 	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
 }
 
 
@@ -281,9 +301,10 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
 	float * pfAudioOutputL;
-	float InL,OutL,EnvInL,EnvOutL;
+	float InL,OutL,EnvInL,EnvOutL,EnvDrive;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioLSum;
+	float drive=0;
 	unsigned long lSampleIndex;
 
 	IFilter *plugin = (IFilter *)instance;
@@ -303,6 +324,7 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	fAudioLSum = plugin->AudioLLast;
 	EnvInL     = plugin->EnvInLLast;
 	EnvOutL    = plugin->EnvOutLLast;
+	EnvDrive   = plugin->EnvDriveLast;
 
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
 	{
@@ -311,22 +333,25 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		fAudioLSum = ((fSamples-1) * fAudioLSum + InL) / fSamples;  
 		fAudioL = (InL - fAudioLSum)*fGain;
 
-		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
+		OutL=fNoClip > 0 ? InoClip(fAudioL,&drive) : fAudioL;  
 		*(pfAudioOutputL++)=OutL;
 
 		//evelope on in and out for meters
 		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 	}
 
 	// store values for next loop
 	plugin->AudioLLast = (fabs(fAudioLSum)<1.0e-10)  ? 0.f : fAudioLSum;  
 	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
 }
 
 
@@ -341,6 +366,9 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float InR,OutR,EnvInR,EnvOutR;
 	float fSamples,fGain,fNoClip;
 	float fAudioL,fAudioR,fAudioLSum,fAudioRSum;
+	float drive,EnvDrive;
+	float driveL=0;
+	float driveR=0;
 	unsigned long lSampleIndex;
 
 	IFilter *plugin = (IFilter *)instance;
@@ -365,6 +393,7 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	EnvInR     = plugin->EnvInRLast;
 	EnvOutL    = plugin->EnvOutLLast;
 	EnvOutR    = plugin->EnvOutRLast;
+	EnvDrive   = plugin->EnvDriveLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
 	{
@@ -375,8 +404,8 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		fAudioL = (InL - fAudioLSum)*fGain;
 		fAudioR = (InR - fAudioRSum)*fGain;
 		
-		OutL=fNoClip > 0 ? InoClip(fAudioL) : fAudioL;  
-		OutR=fNoClip > 0 ? InoClip(fAudioR) : fAudioR;
+		OutL=fNoClip > 0 ? InoClip(fAudioL,&driveL) : fAudioL;  
+		OutR=fNoClip > 0 ? InoClip(fAudioR,&driveR) : fAudioR;
 		*(pfAudioOutputL++)=OutL;
 		*(pfAudioOutputR++)=OutR;
 
@@ -385,6 +414,9 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+
+		drive = driveL > driveR ? driveL : driveR;
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 	}
 
 	// store values for next loop
@@ -394,12 +426,14 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	plugin->EnvInRLast = (fabs(EnvInR)<1.0e-10)  ? 0.f : EnvInR; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
 	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
 	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
 	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
 }
 
 

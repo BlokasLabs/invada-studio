@@ -50,6 +50,7 @@ typedef struct {
 	float *MeterOutputL;
 	float *MeterOutputR;
 	float *MeterPhase;
+	float *MeterDrive;
 
 	/* stuff we need to remember to reduce cpu */ 
 	double SampleRate; 
@@ -73,6 +74,7 @@ typedef struct {
 	float EnvOutLLast; 
 	float EnvOutRLast; 
 	float EnvPhaseLast; 
+	float EnvDriveLast; 
 
 
 } IInput;
@@ -141,6 +143,9 @@ static void connectPortIInput(LV2_Handle instance, uint32_t port, void *data)
 		case IINPUT_METER_PHASE:
 			plugin->MeterPhase = data;
 			break;
+		case IINPUT_METER_DRIVE:
+			plugin->MeterDrive = data;
+			break;
 	}
 }
 
@@ -157,12 +162,13 @@ static void activateIInput(LV2_Handle instance)
 	plugin->LastGain   = 0;
 	plugin->LastPan    = 0;  
 	plugin->LastWidth  = 0;  
-	plugin->LastNoClip = 0; 
+	plugin->LastNoClip = 1; 
 	plugin->EnvInLLast = 0; 
 	plugin->EnvOutLLast = 0; 
 	plugin->EnvInRLast = 0; 
 	plugin->EnvOutRLast = 0; 
 	plugin->EnvPhaseLast = 0; 
+	plugin->EnvDriveLast = 0; 
 
 	plugin->ConvertedPhaseL = convertParam(IINPUT_PHASEL, plugin->LastPhaseL,  plugin->SampleRate);
 	plugin->ConvertedPhaseR = convertParam(IINPUT_PHASER, plugin->LastPhaseR,  plugin->SampleRate);
@@ -182,9 +188,12 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputR;
 	float fPhaseL,fPhaseR,fGain,fPan,fLPan,fRPan,fWidth,fMono,fStereoL,fStereoR,fNoClip;
 	float fAudioL,fAudioR;
+	float drive;
+	float driveL=0;
+	float driveR=0;
 	float InL,EnvInL,EnvOutL;
 	float InR,EnvInR,EnvOutR;
-	float CurrentPhase,EnvPhase;
+	float CurrentPhase,EnvPhase,EnvDrive;
 	uint32_t lSampleIndex;
 
 	IInput *plugin = (IInput *)instance;
@@ -218,6 +227,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	EnvOutL    = plugin->EnvOutLLast;
 	EnvOutR    = plugin->EnvOutRLast;
 	EnvPhase   = plugin->EnvPhaseLast;
+	EnvDrive   = plugin->EnvDriveLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
@@ -242,8 +252,8 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 			fAudioR = (1-fWidth)*fAudioR + fWidth*fStereoR;
 		}
 
-		fAudioL = fNoClip > 0 ? InoClip(fAudioL) : fAudioL;
-		fAudioR = fNoClip > 0 ? InoClip(fAudioR) : fAudioR;
+		fAudioL = fNoClip > 0 ? InoClip(fAudioL,&driveL) : fAudioL;
+		fAudioR = fNoClip > 0 ? InoClip(fAudioR,&driveR) : fAudioR;
 		*(pfAudioOutputL++) = fAudioL;
 		*(pfAudioOutputR++) = fAudioR;
 
@@ -259,6 +269,9 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 			CurrentPhase =0;
 		}
 		EnvPhase += IEnvelope(CurrentPhase,EnvPhase,INVADA_METER_PHASE,plugin->SampleRate);
+
+		drive = driveL > driveR ? driveL : driveR;
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 	}
 
 	// store values for next loop
@@ -267,6 +280,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
 	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
 	plugin->EnvPhaseLast = (fabs(EnvPhase)<1.0e-10)  ? 0.f : EnvPhase; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
@@ -274,6 +288,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
 	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
 	*(plugin->MeterPhase)=EnvPhase;
+	*(plugin->MeterDrive)=EnvDrive;
 }
 
 

@@ -18,23 +18,9 @@
 
 */
 
-#define ICOMP_GUI_URI		"http://invadarecords.com/plugins/lv2/compressor/gui"
-#define ICOMP_MONO_URI		"http://invadarecords.com/plugins/lv2/compressor/mono"
-#define ICOMP_STEREO_URI	"http://invadarecords.com/plugins/lv2/compressor/stereo"
-#define ICOMP_RMS 		0
-#define ICOMP_ATTACK 		1
-#define ICOMP_RELEASE 		2
-#define ICOMP_THRESH 		3
-#define ICOMP_RATIO 		4
-#define ICOMP_GAIN 		5
-#define ICOMP_NOCLIP 		6
-#define ICOMP_METER 		7
-#define ICOMP_AUDIO_INPUTL  	8
-#define ICOMP_AUDIO_OUTPUTL 	9
-#define ICOMP_AUDIO_INPUTR  	10  /* not used in mono mode */
-#define ICOMP_AUDIO_OUTPUTR 	11  /* not used in mono mode */
-
-float convertParam(unsigned long param, float value, double sr);
-
-
-
+static void on_inv_comp_rms_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_comp_attack_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_comp_release_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_comp_threshold_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_comp_ratio_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_comp_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);

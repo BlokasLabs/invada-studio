@@ -1,6 +1,6 @@
 #include "stdlib.h"
 #include "string.h"
-#include "meter.h"
+#include "meter-peak.h"
 
 
 static void 	inv_meter_class_init(InvMeterClass *klass);
@@ -223,48 +223,51 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 
 	cr = gdk_cairo_create(widget->window);
 
-	if(mode==INV_METER_DRAW_ALL) {
-		cairo_set_source_rgb(cr, 0, 0, 0);
-		cairo_paint(cr);
-
-		cairo_new_path(cr);
-
-		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
-		cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
-		cairo_set_line_width(cr,1);
-
-		gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
-		cairo_move_to(cr, 0, 23);
-		cairo_line_to(cr, 0, 0);
-		cairo_line_to(cr, 148, 0);
-		cairo_stroke(cr);
-
-		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
-		cairo_move_to(cr, 0, 23);
-		cairo_line_to(cr, 148, 23);
-		cairo_line_to(cr, 148, 0);
-		cairo_stroke(cr);
-
-		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
-		cairo_new_path(cr);
-
-		cairo_set_source_rgb(cr, 1, 1, 1);
-		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,8);
-		if(channels==1) {
-			cairo_move_to(cr,3,14);
-			cairo_show_text(cr,"M");
-		}
-		if(channels==2) {
-			cairo_move_to(cr,3,9);
-			cairo_show_text(cr,"L");
-			cairo_move_to(cr,3,19);
-			cairo_show_text(cr,"R");
-		}
-	}
-
 	switch(mode) {
 		case INV_METER_DRAW_ALL:
+
+			cairo_set_source_rgb(cr, 0, 0, 0);
+			cairo_paint(cr);
+
+			cairo_new_path(cr);
+
+			cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
+			cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
+			cairo_set_line_width(cr,1);
+
+			gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+			cairo_move_to(cr, 0, 23);
+			cairo_line_to(cr, 0, 0);
+			cairo_line_to(cr, 148, 0);
+			cairo_stroke(cr);
+
+			gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+			cairo_move_to(cr, 0, 23);
+			cairo_line_to(cr, 148, 23);
+			cairo_line_to(cr, 148, 0);
+			cairo_stroke(cr);
+
+			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
+			cairo_new_path(cr);
+
+			cairo_set_source_rgb(cr, 1, 1, 1);
+			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_set_font_size(cr,8);
+
+			switch(channels)
+			{
+				case 1:
+					cairo_move_to(cr,3,14);
+					cairo_show_text(cr,"M");
+					break;
+				case 2:
+					cairo_move_to(cr,3,9);
+					cairo_show_text(cr,"L");
+					cairo_move_to(cr,3,19);
+					cairo_show_text(cr,"R");
+					break; 
+			}
+
 			for ( i = 1; i <= 67; i++) 
 			{
 				switch(channels)
@@ -296,6 +299,7 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 			INV_METER(widget)->lastLpos = Lpos;
 			INV_METER(widget)->lastRpos = Rpos;
 			break;
+
 		case INV_METER_DRAW_L:
 			min = lastLpos < Lpos ? lastLpos : Lpos;
 			max = lastLpos > Lpos ? lastLpos : Lpos;
@@ -321,6 +325,7 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 			}
 			INV_METER(widget)->lastLpos = Lpos;
 			break;
+
 		case INV_METER_DRAW_R:
 			min = lastRpos < Rpos ? lastRpos : Rpos;
 			max = lastRpos > Rpos ? lastRpos : Rpos;
@@ -341,9 +346,6 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 
 	}
   	cairo_destroy(cr);
-
-
-
 }
 
 

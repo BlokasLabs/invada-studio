@@ -30,10 +30,11 @@
 #define IFILTER_METER_OUTL 	4
 #define IFILTER_AUDIO_INL  	5
 #define IFILTER_AUDIO_OUTL 	6
-#define IFILTER_METER_INR  	7  /* not used in mono mode */
-#define IFILTER_METER_OUTR 	8  /* not used in mono mode */
-#define IFILTER_AUDIO_INR  	9  /* not used in mono mode */
-#define IFILTER_AUDIO_OUTR 	10 /* not used in mono mode */
+#define IFILTER_METER_DRIVE 	7
+#define IFILTER_METER_INR  	8   /* not used in mono mode */
+#define IFILTER_METER_OUTR 	9   /* not used in mono mode */
+#define IFILTER_AUDIO_INR  	10  /* not used in mono mode */
+#define IFILTER_AUDIO_OUTR 	11  /* not used in mono mode */
 
 
 

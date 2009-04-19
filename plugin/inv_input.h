@@ -35,6 +35,7 @@
 #define IINPUT_METER_OUTL 	12
 #define IINPUT_METER_OUTR 	13 
 #define IINPUT_METER_PHASE 	14 
+#define IINPUT_METER_DRIVE 	15 
 
 /* control conversion function */
 float convertParam(unsigned long param, float value, double sr);

@@ -55,8 +55,14 @@ struct _InvKnob {
 	float min;
 	float max;
 	float value;
+	float lastvalue;
 	float click_x;
 	float click_y;
+
+	GdkPixbuf *img_small;
+	GdkPixbuf *img_med;
+	GdkPixbuf *img_large;
+
 };
 
 struct _InvKnobClass {

@@ -31,6 +31,7 @@
 #define INVADA_METER_VU 0
 #define INVADA_METER_PEAK 1
 #define INVADA_METER_PHASE 2
+#define INVADA_METER_LAMP 3
 
 /* param change detect function */
 void checkParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
@@ -39,7 +40,7 @@ void checkParamChange(unsigned long param, float * control, float * last, float 
 float IEnvelope(float value, float envelope, int mode, double sr);
 
 /* soft clipping function */
-float InoClip(float in);
+float InoClip(float in, float *drive);
 
 /* distortion function */
 float ITube_do(float in, float Drive);

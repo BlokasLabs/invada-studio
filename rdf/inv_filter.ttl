@@ -16,6 +16,9 @@
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/lpf/mono> ;
         uiext:portIndex 4 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/lpf/mono> ;
+        uiext:portIndex 7 ;
     ] ;
 
     uiext:portNotification [ 
@@ -24,6 +27,9 @@
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/hpf/mono> ;
         uiext:portIndex 4 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/hpf/mono> ;
+        uiext:portIndex 7 ;
     ] ;
 
     uiext:portNotification [ 
@@ -38,6 +44,9 @@
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/lpf/stereo> ;
         uiext:portIndex 8 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/lpf/stereo> ;
+        uiext:portIndex 9 ;
     ] ;
 
 
@@ -53,6 +62,9 @@
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/hpf/stereo> ;
         uiext:portIndex 8 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/filter/hpf/stereo> ;
+        uiext:portIndex 9 ;
     ] .
 
 
@@ -119,8 +131,12 @@
 	lv2:index 6 ;
 	lv2:symbol "out" ;
 	lv2:name "Out" ;
-    ]
-.
+   ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 7 ;
+	lv2:symbol "lampDrive" ;
+	lv2:name "Drive" ;
+   ] .
 
 <http://invadarecords.com/plugins/lv2/filter/lpf/stereo>
     a lv2:Plugin, lv2:LowpassPlugin ;
@@ -185,9 +201,14 @@
 	lv2:index 6 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
-    ] , [
+   ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 7 ;
+	lv2:symbol "lampDrive" ;
+	lv2:name "Drive" ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 8 ;
 	lv2:symbol "meterInR" ;
 	lv2:name "R In" ;
 	lv2:minimum -60.0 ;
@@ -195,7 +216,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 8 ;
+	lv2:index 9 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
 	lv2:minimum -60.0 ;
@@ -203,16 +224,15 @@
 	units:unit :db ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 9 ;
+	lv2:index 10 ;
 	lv2:symbol "inR" ;
 	lv2:name "R In" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 10 ;
+	lv2:index 11 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
-    ]
-.
+    ] .
 
 <http://invadarecords.com/plugins/lv2/filter/hpf/mono>
     a lv2:Plugin, lv2:HighpassPlugin ;
@@ -277,8 +297,12 @@
 	lv2:index 6 ;
 	lv2:symbol "out" ;
 	lv2:name "Out" ;
-    ]
-.
+   ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 7 ;
+	lv2:symbol "lampDrive" ;
+	lv2:name "Drive" ;
+   ] .
 
 <http://invadarecords.com/plugins/lv2/filter/hpf/stereo>
     a lv2:Plugin, lv2:HighpassPlugin ;
@@ -343,9 +367,14 @@
 	lv2:index 6 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
-    ] , [
+   ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 7 ;
+	lv2:symbol "lampDrive" ;
+	lv2:name "Drive" ;
+   ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 8 ;
 	lv2:symbol "meterInR" ;
 	lv2:name "R In" ;
 	lv2:minimum -60.0 ;
@@ -353,7 +382,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 8 ;
+	lv2:index 9 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
 	lv2:minimum -60.0 ;
@@ -361,14 +390,13 @@
 	units:unit :db ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 9 ;
+	lv2:index 10 ;
 	lv2:symbol "inR" ;
 	lv2:name "R In" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 10 ;
+	lv2:index 11 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
-    ]
-.
+    ] .
 

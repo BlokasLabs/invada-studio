@@ -2,6 +2,9 @@
 #include "math.h"
 #include "string.h"
 #include "knob.h"
+#include "knob-img_small.xpm"
+#include "knob-img_medium.xpm"
+#include "knob-img_large.xpm"
 
 
 static void 	inv_knob_class_init(InvKnobClass *klass);
@@ -190,8 +193,13 @@ inv_knob_init(InvKnob *knob)
 	knob->min       = 0.0;
 	knob->max       = 1.0;
 	knob->value     = 0.5;
+	knob->lastvalue = 0.5;
 	knob->click_x	=0;
 	knob->click_y	=0;
+
+     	knob->img_small=gdk_pixbuf_new_from_xpm_data((const char **)knob_img_small_xpm);
+     	knob->img_med=gdk_pixbuf_new_from_xpm_data((const char **)knob_img_medium_xpm);
+     	knob->img_large=gdk_pixbuf_new_from_xpm_data((const char **)knob_img_large_xpm);
 
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(knob), GTK_CAN_FOCUS);
 }
@@ -319,9 +327,11 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 	char		*chigh;
 	float		min;
 	float		max;
-	float 		value;
+	float 		value,lastvalue;
+	GdkPixbuf 	*img;
 	GtkStateType	state;
 	GtkStyle	*style;
+	cairo_pattern_t *pat;
 
 	gint i;
 	float xc,yc,r,ll,ls,tb,angle;
@@ -346,7 +356,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 	min = INV_KNOB(widget)->min;
 	max = INV_KNOB(widget)->max;
 	value = INV_KNOB(widget)->value;
-
+	lastvalue = INV_KNOB(widget)->lastvalue;
 
 	xc=(size/2)+2;
 	r=size/2;
@@ -357,6 +367,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 			ls=3;
 			ll=7;
 			tb=11;
+			img = INV_KNOB(widget)->img_small;
 			break;
 		case INV_KNOB_SIZE_MEDIUM:
 			yc=(size/2)+22;
@@ -364,6 +375,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 			ls=5;
 			ll=9;
 			tb=12;
+			img = INV_KNOB(widget)->img_med;
 			break;
 		case INV_KNOB_SIZE_LARGE:
 		default:
@@ -372,6 +384,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 			ls=7;
 			ll=11;
 			tb=13;
+			img = INV_KNOB(widget)->img_large;
 			break;
 	}
 
@@ -622,53 +635,69 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 		cairo_new_path(cr);
 
-
 	}
 
-	gdk_cairo_set_source_color(cr,&style->base[state]);
-	cairo_rectangle(cr, 4, yc+r+ll+9, 2*r-4, tb);
-	cairo_fill(cr);
+	if(value!=lastvalue || mode==INV_KNOB_DRAW_ALL)
+	{
+		gdk_cairo_set_source_color(cr,&style->base[state]);
+		cairo_rectangle(cr, 4, yc+r+ll+9, 2*r-4, tb);
+		cairo_fill(cr);
 
-	cairo_set_font_size(cr,fontsize);
-	gdk_cairo_set_source_color(cr,&style->text[state]);
-	switch(markings) {
-		case INV_KNOB_MARKINGS_3:
-		case INV_KNOB_MARKINGS_4:	
-		case INV_KNOB_MARKINGS_5:	
-		case INV_KNOB_MARKINGS_10:
-		case INV_KNOB_MARKINGS_CUST10:  
-		case INV_KNOB_MARKINGS_CUST12: 
-			inv_knob_label(1,label, units, human, value);
-			break;
-		case INV_KNOB_MARKINGS_PAN:
-			inv_knob_label_pan(label, value, min, max);
-			break;
+		cairo_set_font_size(cr,fontsize);
+		gdk_cairo_set_source_color(cr,&style->text[state]);
+		switch(markings) {
+			case INV_KNOB_MARKINGS_3:
+			case INV_KNOB_MARKINGS_4:	
+			case INV_KNOB_MARKINGS_5:	
+			case INV_KNOB_MARKINGS_10:
+			case INV_KNOB_MARKINGS_CUST10:  
+			case INV_KNOB_MARKINGS_CUST12: 
+				inv_knob_label(1,label, units, human, value);
+				break;
+			case INV_KNOB_MARKINGS_PAN:
+				inv_knob_label_pan(label, value, min, max);
+				break;
+		}
+		cairo_text_extents (cr,label,&extents);
+		cairo_move_to(cr,xc-(extents.width/2)-1,yc+r+ll+11+extents.height);
+		cairo_show_text(cr,label);
+
+		cairo_new_path(cr);
+
+
+		cairo_set_line_width(cr,1);
+		gdk_cairo_set_source_color(cr,&style->bg[GTK_STATE_NORMAL]);
+		cairo_arc(cr,xc,yc,r-7.5,0,2*INV_PI);
+		cairo_stroke(cr);
+
+		cairo_save(cr);
+
+		angle=inv_value_to_angle(value,curve,min,max);
+		cairo_translate(cr,xc,yc);
+		cairo_rotate(cr,angle+0.03);
+		cairo_arc(cr,0,0,r-9,0,2*INV_PI);
+		cairo_clip(cr);
+		gdk_cairo_set_source_pixbuf(cr,img, -(r-9), -(r-9));
+		cairo_paint(cr);
+
+		cairo_restore(cr);
+
+		pat = cairo_pattern_create_linear (0.0, 0.0,  xc*2, yc*2);
+		cairo_pattern_add_color_stop_rgba (pat, 0.0, 0.00, 0.00, 1.00, 1);
+		cairo_pattern_add_color_stop_rgba (pat, 0.32, 0.91, 0.89, 0.83, 1);
+		cairo_pattern_add_color_stop_rgba (pat, 0.5, 0.43, 0.32, 0.26, 1);
+		cairo_pattern_add_color_stop_rgba (pat, 0.68, 0.10, 0.05, 0.04, 1);
+		cairo_pattern_add_color_stop_rgba (pat, 1.0, 0.00, 0.00, 1.00, 1);
+		cairo_set_source (cr, pat);
+		cairo_set_line_width(cr,2.0);
+		cairo_arc(cr,xc,yc,r-8.5,0,2*INV_PI);
+
+		cairo_stroke(cr);
+
+		INV_KNOB(widget)->lastvalue=value;
 	}
-	cairo_text_extents (cr,label,&extents);
-	cairo_move_to(cr,xc-(extents.width/2)-1,yc+r+ll+11+extents.height);
-	cairo_show_text(cr,label);
-
-	cairo_new_path(cr);
-
-	/* knob -8 */
-	angle=inv_value_to_angle(value,curve,min,max);
-	cairo_set_line_width(cr,1.0);
-
-	gdk_cairo_set_source_color(cr,&style->bg[state]);
-	cairo_arc(cr,xc,yc,r-7,0,2*INV_PI);
-	cairo_fill(cr);
-
-	gdk_cairo_set_source_color(cr,&style->fg[state]);
-	cairo_arc(cr,xc,yc,r-8,0,2*INV_PI);
-	cairo_stroke(cr);
-
-	cairo_set_line_width(cr,2.0);
-	cairo_set_source_rgb(cr, 0, 0.1, 1);
-	cairo_move_to(cr,xc-(r-9)*sin(angle+(INV_PI/3)), yc + (r-9)*cos(angle+(INV_PI/3)));
-	cairo_line_to(cr,xc-(r-19)*sin(angle+(INV_PI/3)), yc + (r-19)*cos(angle+(INV_PI/3)));
-	cairo_stroke(cr);
-
-  	cairo_destroy(cr);
+	cairo_destroy(cr);
+	
 }
 
 

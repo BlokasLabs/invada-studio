@@ -27,23 +27,6 @@
 #include "inv_compressor.h"
 
 
-/* The port numbers for the plugin: */
-
-
-#define ICOMP_MONO_URI		"http://invadarecords.com/plugins/lv2/compressor/mono";
-#define ICOMP_STEREO_URI	"http://invadarecords.com/plugins/lv2/compressor/stereo";
-#define ICOMP_RMS 		0
-#define ICOMP_ATTACK 		1
-#define ICOMP_RELEASE 		2
-#define ICOMP_THRESH 		3
-#define ICOMP_RATIO 		4
-#define ICOMP_GAIN 		5
-#define ICOMP_NOCLIP 		6
-#define ICOMP_METER 		7
-#define ICOMP_AUDIO_INPUTL  	8
-#define ICOMP_AUDIO_OUTPUTL 	9
-#define ICOMP_AUDIO_INPUTR  	10  /* not used in mono mode */
-#define ICOMP_AUDIO_OUTPUTR 	11  /* not used in mono mode */
 
 
 static LV2_Descriptor *ICompMonoDescriptor = NULL;
@@ -161,8 +144,8 @@ static void activateIComp(LV2_Handle instance)
 
 	/* default values */
 	plugin->LastRms    =0.5;         
-	plugin->LastAttack =0.01;
-	plugin->LastRelease=1;  
+	plugin->LastAttack =0.00001;
+	plugin->LastRelease=0.001;  
 	plugin->LastThresh =0; 
 	plugin->LastRatio  =1;
 	plugin->LastGain   =0;
@@ -185,6 +168,7 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float fAudioL,fEnvelope,fRms,fRmsSize;
 	float fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
+	float drive=0;
 	unsigned long lSampleIndex;
 			   
 	IComp *plugin = (IComp *)instance;
@@ -224,7 +208,7 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 		// work out the gain	  
 		fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0) )) : 1;
 
-		*(pfAudioOutputL++) = fNoClip > 0 ? InoClip(fAudioL*fCompGain * fGain ) : fAudioL*fCompGain * fGain ;
+		*(pfAudioOutputL++) = fNoClip > 0 ? InoClip(fAudioL*fCompGain * fGain,&drive ) : fAudioL*fCompGain * fGain ;
 	}
 	// remember for next time round
 	plugin->Envelope = (fabs(fEnvelope)<1.0e-10)  ? 0.f : fEnvelope; 
@@ -244,6 +228,7 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputR;
 	float fAudioL,fAudioR,fMaxAudio,fEnvelope,fRms,fRmsSize;
 	float fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
+	float drive=0;
 	unsigned long lSampleIndex;
 			   
 	IComp *plugin = (IComp *)instance;
@@ -288,8 +273,8 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 		// work out the gain	  
 		fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0))) : 1;
 
-		*(pfAudioOutputL++) = fNoClip > 0 ? InoClip(fAudioL*fCompGain*fGain) : fAudioL*fCompGain*fGain ;
-		*(pfAudioOutputR++) = fNoClip > 0 ? InoClip(fAudioR*fCompGain*fGain) : fAudioR*fCompGain*fGain ;
+		*(pfAudioOutputL++) = fNoClip > 0 ? InoClip(fAudioL*fCompGain*fGain,&drive) : fAudioL*fCompGain*fGain ;
+		*(pfAudioOutputR++) = fNoClip > 0 ? InoClip(fAudioR*fCompGain*fGain,&drive) : fAudioR*fCompGain*fGain ;
 	}
 	// remember for next time round
 	plugin->Envelope = (fabs(fEnvelope)<1.0e-10)  ? 0.f : fEnvelope; 
@@ -367,13 +352,20 @@ float convertParam(unsigned long param, float value, double sr) {
 				result= ((float)sr/20)+1;
 			break;
 		case ICOMP_ATTACK:
-		case ICOMP_RELEASE:
-			if(value<0.01)
+			if(value<0.00001)
 				result= 1 - pow(10, -301.0301 / ((float)sr * 0.01)); 
-			else if (value <2000)
-				result= 1 - pow(10, -301.0301 / ((float)sr * value)); 
+			else if (value <0.750)
+				result= 1 - pow(10, -301.0301 / ((float)sr * value*1000.0)); 
 			else
-				result= 1 - pow(10, -301.0301 / ((float)sr * 2000)); 
+				result= 1 - pow(10, -301.0301 / ((float)sr * 750.0)); 
+			break;
+		case ICOMP_RELEASE:
+			if(value<0.001)
+				result= 1 - pow(10, -301.0301 / ((float)sr * 1)); 
+			else if (value <5)
+				result= 1 - pow(10, -301.0301 / ((float)sr * value*1000.0)); 
+			else
+				result= 1 - pow(10, -301.0301 / ((float)sr * 5000.0)); 
 			break;
 		case ICOMP_THRESH:
 		case ICOMP_RATIO:
@@ -381,7 +373,7 @@ float convertParam(unsigned long param, float value, double sr) {
 			if(value<-36)
 				result= pow(10, -1.8);
 			else if (value < 36)
-				result= pow(10, value/20);
+				result= pow(10, value/20.0);
 			else
 				result= pow(10, 1.8);
 			break;

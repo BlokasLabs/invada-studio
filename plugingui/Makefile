@@ -25,7 +25,8 @@ CFLAGS		=	-I. `pkg-config --cflags gtk+-2.0`  -O3 -Wall -fomit-frame-pointer -fs
 LDFLAGS		=	-shared -Lwidgets -lc -lm -linv_widgets
 
 
-GUIS		=	inv_filter_gui.so \
+GUIS		=	inv_compressor_gui.so \
+			inv_filter_gui.so \
 			inv_input_gui.so \
 			inv_tube_gui.so \
 
@@ -33,10 +34,11 @@ GUIS		=	inv_filter_gui.so \
 all:	$(GUIS) 
      
 # RULES TO BUILD GUIS FROM C CODE
- 
-inv_filter_gui.so:     inv_filter_gui.o	../plugin/inv_filter.h	inv_filter_gui.h   
-inv_input_gui.so:     inv_input_gui.o	../plugin/inv_input.h	inv_input_gui.h   
-inv_tube_gui.so:     inv_tube_gui.o	../plugin/inv_tube.h	inv_tube_gui.h 
+
+inv_compressor_gui.so: inv_compressor_gui.o	../plugin/inv_compressor.h	inv_compressor_gui.h   
+inv_filter_gui.so:     inv_filter_gui.o		../plugin/inv_filter.h		inv_filter_gui.h   
+inv_input_gui.so:      inv_input_gui.o		../plugin/inv_input.h		inv_input_gui.h   
+inv_tube_gui.so:       inv_tube_gui.o		../plugin/inv_tube.h		inv_tube_gui.h 
 
 
 # OTHER TARGETS

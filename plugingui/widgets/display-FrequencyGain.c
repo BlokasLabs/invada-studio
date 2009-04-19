@@ -1,4 +1,5 @@
 
+#include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include "display-FrequencyGain.h"
@@ -20,21 +21,35 @@ GtkType
 inv_display_fg_get_type(void)
 {
 	static GtkType inv_display_fg_type = 0;
+	char *name;
+	int i;
 
-	if (!inv_display_fg_type) {
-		static const GtkTypeInfo inv_display_fg_info = {
-		  "InvDisplayFG",
-		  sizeof(InvDisplayFG),
-		  sizeof(InvDisplayFGClass),
-		  (GtkClassInitFunc) inv_display_fg_class_init,
-		  (GtkObjectInitFunc) inv_display_fg_init,
-		  NULL,
-		  NULL,
-		  (GtkClassInitFunc) NULL
+
+	if (!inv_display_fg_type) 
+	{
+		static const GTypeInfo type_info = {
+			sizeof(InvDisplayFGClass),
+			NULL, /* base_init */
+			NULL, /* base_finalize */
+			(GClassInitFunc)inv_display_fg_class_init,
+			NULL, /* class_finalize */
+			NULL, /* class_data */
+			sizeof(InvDisplayFG),
+			0,    /* n_preallocs */
+			(GInstanceInitFunc)inv_display_fg_init
 		};
-	inv_display_fg_type = gtk_type_unique(GTK_TYPE_WIDGET, &inv_display_fg_info);
+		for (i = 0; ; i++) {
+			name = g_strdup_printf("InvDisplayFG-%p-%d",inv_display_fg_class_init, i);
+			if (g_type_from_name(name)) {
+				free(name);
+				continue;
+			}
+			inv_display_fg_type = g_type_register_static(GTK_TYPE_WIDGET,name,&type_info,(GTypeFlags)0);
+			free(name);
+			break;
+		}
 	}
-  return inv_display_fg_type;
+	return inv_display_fg_type;
 }
 
 void

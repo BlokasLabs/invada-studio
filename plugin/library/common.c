@@ -65,6 +65,10 @@ float IEnvelope(float value, float envelope, int mode, double sr)
 			/* 10ms attack, 10ms decay */
 			EnvelopeDelta=(valueA > envelope)   ? 0.0015 * (valueA - envelope)   : 0.0015 * (valueA - envelope);
 			break;
+		case INVADA_METER_LAMP:  
+			/* 10ms attack, 100ms decay */
+			EnvelopeDelta=(valueA > envelope)   ? 0.0015 * (valueA - envelope)   : 0.00005 * (valueA - envelope);
+			break;
 		default:
 			EnvelopeDelta=0;
 	}
@@ -73,15 +77,18 @@ float IEnvelope(float value, float envelope, int mode, double sr)
 
 
 /* this function is linear between -0.7 & 0.7 (approx -3db) and returns a value bewteen 0.7 and 1 for an input from 0.7 to infinity */
-float InoClip(float in)
+float InoClip(float in, float * drive)
 {
 	float out; 
-	if ( fabs(in) < 0.7 ) 
-	  out = in;
-	else 
+	if ( fabs(in) < 0.7 ) {
+	  	out = in;
+		*drive=0;
+	} else { 
 	  out = (in>0) ? 
 	            (  0.7 + 0.3 * (1-pow(2.718281828, 3.33333333*(0.7-in)))):
 	            ( -0.7 - 0.3 * (1-pow(2.718281828, 3.33333333*(0.7+in))));
+		*drive=fabs(in) - fabs(out);
+	}
 	return out;
 }
 

@@ -27,7 +27,7 @@
 #include <lv2.h>
 #include "lv2_ui.h"
 #include "widgets/knob.h"
-#include "widgets/meter.h"
+#include "widgets/meter-peak.h"
 #include "../plugin/inv_tube.h"
 #include "inv_tube_gui.h"
 
@@ -71,13 +71,17 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	GtkWidget       *window;
 	GtkWidget	*tempObject;
 
+	char 		*file;
+
 	GError *err = NULL;
 
 	gtk_init (NULL,NULL);
 
 	builder = gtk_builder_new ();
-// TODO change this to use the supplied bundle path
-	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_tube_gui.xml", &err);
+	file = g_strdup_printf("%s/gtk/inv_tube_gui.xml",bundle_path);
+	gtk_builder_add_from_file (builder, file, &err);
+	free(file);
+
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "tube_window"));
 
 	/* get pointers to some useful widgets from the design */
@@ -134,7 +138,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
-	inv_knob_set_size(INV_KNOB (pluginGui->knobDrive), INV_KNOB_SIZE_LARGE);
+	inv_knob_set_size(INV_KNOB (pluginGui->knobDrive), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobDrive), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobDrive), INV_KNOB_MARKINGS_4);
 	inv_knob_set_highlight(INV_KNOB (pluginGui->knobDrive), INV_KNOB_HIGHLIGHT_L);
@@ -144,7 +148,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDrive), pluginGui->drive);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDrive),"motion-notify-event",G_CALLBACK(on_inv_tube_drive_knob_motion),pluginGui);
 
-	inv_knob_set_size(INV_KNOB (pluginGui->knobDC), INV_KNOB_SIZE_LARGE);
+	inv_knob_set_size(INV_KNOB (pluginGui->knobDC), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobDC), INV_KNOB_CURVE_QUAD);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobDC), INV_KNOB_MARKINGS_3); 
 	inv_knob_set_highlight(INV_KNOB (pluginGui->knobDC), INV_KNOB_HIGHLIGHT_C);
@@ -154,7 +158,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDC), pluginGui->dc);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDC),"motion-notify-event",G_CALLBACK(on_inv_tube_dc_knob_motion),pluginGui);
 
-	inv_knob_set_size(INV_KNOB (pluginGui->knobBlend), INV_KNOB_SIZE_LARGE);
+	inv_knob_set_size(INV_KNOB (pluginGui->knobBlend), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobBlend), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobBlend), INV_KNOB_MARKINGS_5); 
 	inv_knob_set_highlight(INV_KNOB (pluginGui->knobBlend), INV_KNOB_HIGHLIGHT_C);

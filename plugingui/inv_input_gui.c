@@ -27,8 +27,10 @@
 #include <lv2.h>
 #include "lv2_ui.h"
 #include "widgets/knob.h"
-#include "widgets/meter.h"
+#include "widgets/lamp.h"
+#include "widgets/meter-peak.h"
 #include "widgets/meter-phase.h"
+#include "widgets/switch-toggle.h"
 #include "../plugin/inv_input.h"
 #include "inv_input_gui.h"
 
@@ -41,16 +43,22 @@ typedef struct {
 	GtkWidget	*meterIn;
 	GtkWidget	*meterOut;
 	GtkWidget	*meterPhase;
+	GtkWidget	*togglePhaseL;
+	GtkWidget	*togglePhaseR;
 	GtkWidget	*knobGain;
 	GtkWidget	*knobPan;
 	GtkWidget	*knobWidth;
-//	GtkWidget	*switchandlightClip;
+	GtkWidget	*toggleNoClip;
+	GtkWidget	*lampNoClip;
 
 	gint		InChannels;
 	gint		OutChannels;
+	float 		phaseL;
+	float 		phaseR;
 	float		gain;
 	float		pan;
 	float		width;
+	float 		noClip;
 
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
@@ -73,13 +81,17 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	GtkWidget       *window;
 	GtkWidget	*tempObject;
 
+	char 		*file;
+
 	GError *err = NULL;
 
 	gtk_init (NULL,NULL);
 
 	builder = gtk_builder_new ();
-// TODO change this to use the supplied bundle path
-	gtk_builder_add_from_file (builder, "/usr/local/lib/lv2/invada.lv2/gtk/inv_input_gui.xml", &err);
+	file = g_strdup_printf("%s/gtk/inv_input_gui.xml",bundle_path);
+	gtk_builder_add_from_file (builder, file, &err);
+	free(file);
+
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "input_window"));
 
 	/* get pointers to some useful widgets from the design */
@@ -99,6 +111,14 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	pluginGui->meterPhase = inv_phase_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterPhase);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_phaseL"));
+	pluginGui->togglePhaseL = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->togglePhaseL);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_phaseR"));
+	pluginGui->togglePhaseR = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->togglePhaseR);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_gain_knob"));
 	pluginGui->knobGain = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobGain);
@@ -111,11 +131,22 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	pluginGui->knobWidth = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobWidth);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_noclip_toggle"));
+	pluginGui->toggleNoClip = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->toggleNoClip);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_noclip_lamp"));
+	pluginGui->lampNoClip = inv_lamp_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->lampNoClip);
+
 	pluginGui->InChannels=2;
 	pluginGui->OutChannels=2;
+	pluginGui->phaseL=0.0;
+	pluginGui->phaseR=0.0;
 	pluginGui->gain=0.0;
 	pluginGui->pan=0.0;
 	pluginGui->width=0.0;
+	pluginGui->noClip=0.0;
 
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
@@ -126,6 +157,24 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
 	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
+
+	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR),"Left");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, "Normal");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  "Reversed");
+
+	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR),"Right");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, "Normal");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  "Reversed");
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
@@ -140,7 +189,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_size(INV_KNOB (pluginGui->knobPan), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobPan), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobPan), INV_KNOB_MARKINGS_PAN); 
-	inv_knob_set_highlight(INV_KNOB (pluginGui->knobGain), INV_KNOB_HIGHLIGHT_C);
+	inv_knob_set_highlight(INV_KNOB (pluginGui->knobPan), INV_KNOB_HIGHLIGHT_C);
 	inv_knob_set_units(INV_KNOB (pluginGui->knobPan), "");
 	inv_knob_set_min(INV_KNOB (pluginGui->knobPan), -1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobPan), 1.0);
@@ -150,7 +199,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_size(INV_KNOB (pluginGui->knobWidth), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobWidth), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobWidth), INV_KNOB_MARKINGS_CUST10); 
-	inv_knob_set_highlight(INV_KNOB (pluginGui->knobGain), INV_KNOB_HIGHLIGHT_C);
+	inv_knob_set_highlight(INV_KNOB (pluginGui->knobWidth), INV_KNOB_HIGHLIGHT_C);
 	inv_knob_set_units(INV_KNOB (pluginGui->knobWidth), "");
 	inv_knob_set_custom(INV_KNOB (pluginGui->knobWidth), 0, "Mono");
 	inv_knob_set_custom(INV_KNOB (pluginGui->knobWidth), 1, "Normal");
@@ -159,6 +208,17 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_max(INV_KNOB (pluginGui->knobWidth), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_input_width_knob_motion),pluginGui);
+
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 1.0, 0.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, "Off");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
+
+	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
+	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),2.0);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
@@ -216,6 +276,9 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 				break;
 			case IINPUT_METER_PHASE:
 				inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),value);
+				break;
+			case IINPUT_METER_DRIVE:
+				inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),value);
 				break;
 		}
 	}
