@@ -158,23 +158,25 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 
 	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
 
-	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR),"Left");
-	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL),"Left");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, "Normal");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  1.0);
-	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  "Reversed");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseL),"button-release-event",G_CALLBACK(on_inv_input_phaseL_toggle_button_release),pluginGui);
 
 	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR),"Right");
-	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, "Normal");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  1.0);
-	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  "Reversed");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseR),"button-release-event",G_CALLBACK(on_inv_input_phaseR_toggle_button_release),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
@@ -209,13 +211,14 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_input_width_knob_motion),pluginGui);
 
-	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
-	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 1.0, 0.0, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, "Off");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  1.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_input_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),2.0);
@@ -250,6 +253,22 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 		value=* (float *) buffer;
 		switch(port)
 		{
+			case IINPUT_PHASEL:
+				pluginGui->phaseL=value;
+				if(value < 0.5) {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON);
+				}
+				break;
+			case IINPUT_PHASER:
+				pluginGui->phaseR=value;
+				if(value < 0.5) {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON);
+				}
+				break;
 			case IINPUT_GAIN:
 				pluginGui->gain=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
@@ -262,6 +281,13 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 				pluginGui->width=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
 				break;
+			case IINPUT_NOCLIP:
+				pluginGui->noClip=value;
+				if(value < 0.5) {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
+				}
 			case IINPUT_METER_INL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
 				break;
@@ -314,6 +340,25 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 
 /*****************************************************************************/
 
+static void on_inv_input_phaseL_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+
+	IInputGui *pluginGui = (IInputGui *) data;
+
+	pluginGui->phaseL=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IINPUT_PHASEL, 4, 0, &pluginGui->phaseL);
+	return;
+}
+
+static void on_inv_input_phaseR_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+
+	IInputGui *pluginGui = (IInputGui *) data;
+
+	pluginGui->phaseR=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IINPUT_PHASER, 4, 0, &pluginGui->phaseR);
+	return;
+}
 
 static void on_inv_input_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
@@ -340,6 +385,16 @@ static void on_inv_input_width_knob_motion(GtkWidget *widget, GdkEvent *event, g
 
 	pluginGui->width=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, IINPUT_WIDTH, 4, 0, &pluginGui->width);
+	return;
+}
+
+static void on_inv_input_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+
+	IInputGui *pluginGui = (IInputGui *) data;
+
+	pluginGui->noClip=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IINPUT_NOCLIP, 4, 0, &pluginGui->noClip);
 	return;
 }
 
