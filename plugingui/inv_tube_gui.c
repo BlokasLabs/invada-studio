@@ -27,7 +27,9 @@
 #include <lv2.h>
 #include "lv2_ui.h"
 #include "widgets/knob.h"
+#include "widgets/lamp.h"
 #include "widgets/meter-peak.h"
+#include "widgets/switch-toggle.h"
 #include "../plugin/inv_tube.h"
 #include "inv_tube_gui.h"
 
@@ -40,14 +42,16 @@ typedef struct {
 	GtkWidget	*meterIn;
 	GtkWidget	*meterOut;
 	GtkWidget	*knobDrive;
+	GtkWidget	*lampDrive;
 	GtkWidget	*knobDC;
+	GtkWidget	*togglePhase;
 	GtkWidget	*knobBlend;
-//	GtkWidget	*switchandlightClip;
 
 	gint		InChannels;
 	gint		OutChannels;
 	float		drive;
 	float		dc;
+	float		phase;
 	float		blend;
 
 	LV2UI_Write_Function 	write_function;
@@ -101,9 +105,17 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	pluginGui->knobDrive = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobDrive);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_drive_lamp"));
+	pluginGui->lampDrive = inv_lamp_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->lampDrive);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_dc_knob"));
 	pluginGui->knobDC = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobDC);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_phase_toggle"));
+	pluginGui->togglePhase = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->togglePhase);
 
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_blend_knob"));
 	pluginGui->knobBlend = inv_knob_new ();
@@ -126,6 +138,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 
 	pluginGui->drive=0.0;
 	pluginGui->dc=0.0;
+	pluginGui->phase=0;
 	pluginGui->blend=75;
 
 
@@ -148,6 +161,9 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDrive), pluginGui->drive);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDrive),"motion-notify-event",G_CALLBACK(on_inv_tube_drive_knob_motion),pluginGui);
 
+	inv_lamp_set_value(INV_LAMP (pluginGui->lampDrive),0.0);
+	inv_lamp_set_scale(INV_LAMP (pluginGui->lampDrive),1.0);
+
 	inv_knob_set_size(INV_KNOB (pluginGui->knobDC), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobDC), INV_KNOB_CURVE_QUAD);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobDC), INV_KNOB_MARKINGS_3); 
@@ -157,6 +173,15 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_max(INV_KNOB (pluginGui->knobDC), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDC), pluginGui->dc);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDC),"motion-notify-event",G_CALLBACK(on_inv_tube_dc_knob_motion),pluginGui);
+
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF, "Normal");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ON,  "Reversed");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->togglePhase),"button-release-event",G_CALLBACK(on_inv_tube_phase_toggle_button_release),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobBlend), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobBlend), INV_KNOB_CURVE_LINEAR);
@@ -205,6 +230,14 @@ static void port_eventITubeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_s
 			case ITUBE_DCOFFSET:
 				pluginGui->dc=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobDC), pluginGui->dc);
+				break;
+			case ITUBE_PHASE:
+				pluginGui->phase=value;
+				if(value <= 0.0) {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ON);
+				}
 				break;
 			case ITUBE_MIX:
 				pluginGui->blend=value;
@@ -273,6 +306,16 @@ static void on_inv_tube_dc_knob_motion(GtkWidget *widget, GdkEvent *event, gpoin
 
 	pluginGui->dc=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ITUBE_DCOFFSET, 4, 0, &pluginGui->dc);
+	return;
+}
+
+static void on_inv_tube_phase_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+
+	ITubeGui *pluginGui = (ITubeGui *) data;
+
+	pluginGui->phase=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, ITUBE_PHASE, 4, 0, &pluginGui->phase);
 	return;
 }
 

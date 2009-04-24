@@ -162,7 +162,7 @@ static void activateIInput(LV2_Handle instance)
 	plugin->LastGain   = 0;
 	plugin->LastPan    = 0;  
 	plugin->LastWidth  = 0;  
-	plugin->LastNoClip = 1; 
+	plugin->LastNoClip = 0; 
 	plugin->EnvInLLast = 0; 
 	plugin->EnvOutLLast = 0; 
 	plugin->EnvInRLast = 0; 

@@ -9,9 +9,10 @@ static void 	inv_meter_size_request(GtkWidget *widget, GtkRequisition *requisiti
 static void 	inv_meter_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static void 	inv_meter_realize(GtkWidget *widget);
 static gboolean inv_meter_expose(GtkWidget *widget,GdkEventExpose *event);
-static void 	inv_meter_paint(GtkWidget *widget, gint mode);
+static void 	inv_meter_paint(GtkWidget *widget, gint drawmode);
 static void	inv_meter_destroy(GtkObject *object);
-static void	inv_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B);
+static void	inv_meter_colour_tozero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B);
+static void	inv_meter_colour_fromzero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B);
 
 
 GtkType
@@ -53,6 +54,12 @@ void
 inv_meter_set_channels(InvMeter *meter, gint num)
 {
 	meter->channels = num;
+}
+
+void
+inv_meter_set_mode(InvMeter *meter, gint num)
+{
+	meter->mode = num;
 }
 
 void
@@ -100,6 +107,7 @@ inv_meter_class_init(InvMeterClass *klass)
 static void
 inv_meter_init(InvMeter *meter)
 {
+	meter->mode=INV_METER_DRAW_MODE_TOZERO;
 	meter->channels = 1;
 	meter->LdB = -90;
 	meter->RdB = -90;
@@ -134,7 +142,7 @@ inv_meter_size_request(GtkWidget *widget,
 	g_return_if_fail(requisition != NULL);
 
 	requisition->width = 149;
-	requisition->height = 24;
+	requisition->height = 36;
 }
 
 
@@ -173,7 +181,7 @@ inv_meter_realize(GtkWidget *widget)
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
 	attributes.width = 149;
-	attributes.height = 24;
+	attributes.height = 36;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
 	attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
@@ -206,28 +214,49 @@ inv_meter_expose(GtkWidget *widget, GdkEventExpose *event)
 
 
 static void
-inv_meter_paint(GtkWidget *widget, gint mode)
+inv_meter_paint(GtkWidget *widget, gint drawmode)
 {
+	gint 		mode;
+	gint 		channels;
+	gint 		Lpos=0;
+	gint 		Rpos=0;
+	gint 		lastLpos;
+	gint 		lastRpos;
+
 	cairo_t 	*cr;
 	gint 		Lon,Ron,min,max,i;
 	float 		R,G,B;
 	GtkStyle	*style;
+	char 		label[10];
+	cairo_text_extents_t extents;
 
 	style = gtk_widget_get_style(widget);
-	gint channels = INV_METER(widget)->channels;
-	gint Lpos = (gint)(INV_METER(widget)->LdB+60.25);
-	gint Rpos = (gint)(INV_METER(widget)->RdB+60.25);
+	mode = INV_METER(widget)->mode;
+	channels = INV_METER(widget)->channels;
 
-	gint lastLpos = INV_METER(widget)->lastLpos;
-	gint lastRpos = INV_METER(widget)->lastRpos;
+	switch(mode) {
+		case INV_METER_DRAW_MODE_TOZERO:
+			Lpos = (gint)(INV_METER(widget)->LdB+60.01);  /* -60 to +6 db step 1db  = 67 points*/
+			Rpos = (gint)(INV_METER(widget)->RdB+60.01);
+			break;
+		case INV_METER_DRAW_MODE_FROMZERO:
+			Lpos = (gint)(2*(INV_METER(widget)->LdB)+71.01); /* -35.5 to 0 db step 0.5db = 71 points */
+			Rpos = (gint)(2*(INV_METER(widget)->RdB)+71.01);
+			break;
+	}
+
+
+	lastLpos = INV_METER(widget)->lastLpos;
+	lastRpos = INV_METER(widget)->lastRpos;
 
 	cr = gdk_cairo_create(widget->window);
 
-	switch(mode) {
+	switch(drawmode) {
 		case INV_METER_DRAW_ALL:
 
 			cairo_set_source_rgb(cr, 0, 0, 0);
-			cairo_paint(cr);
+			cairo_rectangle(cr, 0, 0, 149, 24);
+			cairo_fill(cr);
 
 			cairo_new_path(cr);
 
@@ -250,96 +279,206 @@ inv_meter_paint(GtkWidget *widget, gint mode)
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 			cairo_new_path(cr);
 
+			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
+			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_set_font_size(cr,8);
+
+			switch(mode) {
+				case INV_METER_DRAW_MODE_TOZERO: 
+					for(i=0;i<=5;i++) {
+						cairo_rectangle(cr, 10+(i*24), 25, 1, 2);
+						cairo_fill(cr);
+
+						sprintf(label,"%i",(12*i)-60);
+						cairo_text_extents (cr,label,&extents);
+						if(i==5) {
+							cairo_move_to(cr,9+(i*24)-(extents.width/2),35);
+						} else {
+							cairo_move_to(cr,9+(i*24)-(2*extents.width/3),35);
+						}
+						cairo_show_text(cr,label);
+					}
+					break;
+
+				case INV_METER_DRAW_MODE_FROMZERO:
+					for(i=0;i<=5;i++) {
+						cairo_rectangle(cr, 24+(i*24), 25, 1, 2);
+						cairo_fill(cr);
+
+						sprintf(label,"%i",30-(6*i));
+						cairo_text_extents (cr,label,&extents);
+						cairo_move_to(cr,23+(i*24)-(extents.width/2),35);
+						cairo_show_text(cr,label);
+
+					}
+					break;
+			}
+
 			cairo_set_source_rgb(cr, 1, 1, 1);
 			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_set_font_size(cr,8);
 
-			switch(channels)
-			{
-				case 1:
-					cairo_move_to(cr,3,14);
-					cairo_show_text(cr,"M");
+			switch(mode) {
+				case INV_METER_DRAW_MODE_TOZERO:
+					switch(channels)
+					{
+						case 1:
+							cairo_move_to(cr,3,14);
+							cairo_show_text(cr,"M");
+							break;
+						case 2:
+							cairo_move_to(cr,3,9);
+							cairo_show_text(cr,"L");
+							cairo_move_to(cr,3,19);
+							cairo_show_text(cr,"R");
+							break; 
+					}
+
+					for ( i = 1; i <= 67; i++) 
+					{
+						switch(channels)
+						{
+							case 1:
+								Lon = i <= Lpos ? 1 : 0;
+
+								inv_meter_colour_tozero(widget, i, Lon, &R, &G,&B);
+								cairo_set_source_rgb(cr, R, G, B);
+								cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
+								cairo_fill(cr);
+								break;
+							case 2:
+								Lon = i <= Lpos ? 1 : 0;
+								Ron = i <= Rpos ? 1 : 0;
+
+								inv_meter_colour_tozero(widget, i, Lon, &R, &G,&B);
+								cairo_set_source_rgb(cr, R, G, B);
+								cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
+								cairo_fill(cr);
+
+								inv_meter_colour_tozero(widget, i, Ron, &R, &G,&B);
+								cairo_set_source_rgb(cr, R, G, B);
+								cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
+								cairo_fill(cr);
+								break; 
+						}
+					}
 					break;
-				case 2:
-					cairo_move_to(cr,3,9);
-					cairo_show_text(cr,"L");
-					cairo_move_to(cr,3,19);
-					cairo_show_text(cr,"R");
-					break; 
-			}
 
-			for ( i = 1; i <= 67; i++) 
-			{
-				switch(channels)
-				{
-					case 1:
-						Lon = i <= Lpos ? 1 : 0;
+				case INV_METER_DRAW_MODE_FROMZERO:
+					for ( i = 1; i <= 71; i++) 
+					{
+						switch(channels)
+						{
+							case 1:
+								Lon = i > Lpos ? 1 : 0;
 
-						inv_meter_colour(widget, i, Lon, &R, &G,&B);
-						cairo_set_source_rgb(cr, R, G, B);
-						cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
-						cairo_fill(cr);
-						break;
-					case 2:
-						Lon = i <= Lpos ? 1 : 0;
-						Ron = i <= Rpos ? 1 : 0;
+								inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+								cairo_set_source_rgb(cr, R, G, B);
+								cairo_rectangle(cr, 2+(i*2), 3, 1, 18);
+								cairo_fill(cr);
+								break;
+							case 2:
+								Lon = i > Lpos ? 1 : 0;
+								Ron = i > Rpos ? 1 : 0;
 
-						inv_meter_colour(widget, i, Lon, &R, &G,&B);
-						cairo_set_source_rgb(cr, R, G, B);
-						cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
-						cairo_fill(cr);
+								inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+								cairo_set_source_rgb(cr, R, G, B);
+								cairo_rectangle(cr, 2+(i*2), 3, 1, 8);
+								cairo_fill(cr);
 
-						inv_meter_colour(widget, i, Ron, &R, &G,&B);
-						cairo_set_source_rgb(cr, R, G, B);
-						cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
-						cairo_fill(cr);
-						break; 
-				}
+								inv_meter_colour_fromzero(widget, i, Ron, &R, &G,&B);
+								cairo_set_source_rgb(cr, R, G, B);
+								cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
+								cairo_fill(cr);
+								break; 
+						}
+					}
+					break;
 			}
 			INV_METER(widget)->lastLpos = Lpos;
 			INV_METER(widget)->lastRpos = Rpos;
 			break;
 
 		case INV_METER_DRAW_L:
-			min = lastLpos < Lpos ? lastLpos : Lpos;
-			max = lastLpos > Lpos ? lastLpos : Lpos;
-			if(min<1) min=1;
-			if(max<1) max=1;
-			if(min != max || max == 1 ) {
-				for ( i = min ; i <= max; i++) 
-				{
-					Lon = i <= Lpos ? 1 : 0;
-					inv_meter_colour(widget, i, Lon, &R, &G,&B);
-					cairo_set_source_rgb(cr, R, G, B);
-					switch(channels)
-					{
-						case 1:
-							cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
-							break;
-						case 2:
-							cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
-							break; 
+			switch(mode) {
+				case INV_METER_DRAW_MODE_TOZERO:
+					min = lastLpos < Lpos ? lastLpos : Lpos;
+					max = lastLpos > Lpos ? lastLpos : Lpos;
+					if(min<1) min=1;
+					if(max<1) max=1;
+					if(min>67) min=67;
+					if(max>67) max=67;
+					if(min != max || max == 1 ) {
+						for ( i = min ; i <= max; i++) 
+						{
+							Lon = i <= Lpos ? 1 : 0;
+							inv_meter_colour_tozero(widget, i, Lon, &R, &G,&B);
+							cairo_set_source_rgb(cr, R, G, B);
+							switch(channels)
+							{
+								case 1:
+									cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
+									break;
+								case 2:
+									cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
+									break; 
+							}
+							cairo_fill(cr);
+						}
 					}
-					cairo_fill(cr);
-				}
+					break;
+				case INV_METER_DRAW_MODE_FROMZERO:
+					for ( i = 1; i <= 71; i++) 
+					{
+						Lon = i > Lpos ? 1 : 0;
+						inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+						cairo_set_source_rgb(cr, R, G, B);
+						switch(channels)
+						{
+							case 1:
+								cairo_rectangle(cr, 2+(i*2), 3, 1, 18);
+								break;
+							case 2:
+								cairo_rectangle(cr, 2+(i*2), 3, 1, 8);
+								break; 
+						}
+						cairo_fill(cr);
+					}
+					break;
 			}
 			INV_METER(widget)->lastLpos = Lpos;
 			break;
 
 		case INV_METER_DRAW_R:
-			min = lastRpos < Rpos ? lastRpos : Rpos;
-			max = lastRpos > Rpos ? lastRpos : Rpos;
-			if(min<1) min=1;
-			if(max<1) max=1;
-			if(min != max || max == 1 ) {
-				for ( i = min ; i <= max; i++) 
-				{
-					Ron = i <= Rpos ? 1 : 0;
-					inv_meter_colour(widget, i, Ron, &R, &G, &B);
-					cairo_set_source_rgb(cr, R, G, B);
-					cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
-					cairo_fill(cr);
-				}
+			switch(mode) {
+				case INV_METER_DRAW_MODE_TOZERO:
+					min = lastRpos < Rpos ? lastRpos : Rpos;
+					max = lastRpos > Rpos ? lastRpos : Rpos;
+					if(min<1) min=1;
+					if(max<1) max=1;
+					if(min>67) min=67;
+					if(max>67) max=67;
+					if(min != max || max == 1 ) {
+						for ( i = min ; i <= max; i++) 
+						{
+							Ron = i <= Rpos ? 1 : 0;
+							inv_meter_colour_tozero(widget, i, Ron, &R, &G, &B);
+							cairo_set_source_rgb(cr, R, G, B);
+							cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
+							cairo_fill(cr);
+						}
+					}
+					break;
+				case INV_METER_DRAW_MODE_FROMZERO:
+					for ( i = 1; i <= 71; i++) 
+					{
+						Lon = i > Lpos ? 1 : 0;
+						inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+						cairo_set_source_rgb(cr, R, G, B);
+						cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
+						cairo_fill(cr);
+					}
+					break;
 			}
 			INV_METER(widget)->lastRpos = Rpos;
 			break;
@@ -368,15 +507,9 @@ inv_meter_destroy(GtkObject *object)
 }
 
 static void	
-inv_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B)
+inv_meter_colour_tozero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B)
 {
 
-/* 
-66 =  +6dB
-60 =   0dB
-51 =  -9dB
-42 = -18dB
-*/
 
 	float r1,r2;
 
@@ -420,6 +553,13 @@ inv_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G, float
 	float overOnG = INV_METER(widget)->overOn[1];
 	float overOnB = INV_METER(widget)->overOn[2];
 
+/* 
+66 =  +6dB
+60 =   0dB
+51 =  -9dB
+42 = -18dB
+*/
+
 	if(pos < 42) 
 	{
 		r1=(42.0-(float)pos)/42.0;
@@ -451,6 +591,101 @@ inv_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G, float
 		*R=overOffR + (on * overOnR) ;
 		*G=overOffG + (on * overOnG) ;
 		*B=overOffB + (on * overOnB) ;
+	}	
+}
+
+static void	
+inv_meter_colour_fromzero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B)
+{
+
+
+
+	float r1,r2;
+
+	float mOff60R = INV_METER(widget)->mOff60[0];
+	float mOff60G = INV_METER(widget)->mOff60[1];
+	float mOff60B = INV_METER(widget)->mOff60[2];
+
+	float mOn60R = INV_METER(widget)->mOn60[0];
+	float mOn60G = INV_METER(widget)->mOn60[1];
+	float mOn60B = INV_METER(widget)->mOn60[2];
+
+	float mOff12R = INV_METER(widget)->mOff12[0];
+	float mOff12G = INV_METER(widget)->mOff12[1];
+	float mOff12B = INV_METER(widget)->mOff12[2];
+
+	float mOn12R = INV_METER(widget)->mOn12[0];
+	float mOn12G = INV_METER(widget)->mOn12[1];
+	float mOn12B = INV_METER(widget)->mOn12[2];
+
+	float mOff6R = INV_METER(widget)->mOff6[0];
+	float mOff6G = INV_METER(widget)->mOff6[1];
+	float mOff6B = INV_METER(widget)->mOff6[2];
+
+	float mOn6R = INV_METER(widget)->mOn6[0];
+	float mOn6G = INV_METER(widget)->mOn6[1];
+	float mOn6B = INV_METER(widget)->mOn6[2];
+
+	float mOff0R = INV_METER(widget)->mOff0[0];
+	float mOff0G = INV_METER(widget)->mOff0[1];
+	float mOff0B = INV_METER(widget)->mOff0[2];
+
+	float mOn0R = INV_METER(widget)->mOn0[0];
+	float mOn0G = INV_METER(widget)->mOn0[1];
+	float mOn0B = INV_METER(widget)->mOn0[2];
+
+	float overOffR = INV_METER(widget)->overOff[0];
+	float overOffG = INV_METER(widget)->overOff[1];
+	float overOffB = INV_METER(widget)->overOff[2];
+
+	float overOnR = INV_METER(widget)->overOn[0];
+	float overOnG = INV_METER(widget)->overOn[1];
+	float overOnB = INV_METER(widget)->overOn[2];
+/* 
+72 =   0dB
+60 =  -6dB
+48 = -12dB
+24 = -18dB
+*/
+	if(pos < 24) 
+	{
+		r1=(24.0-(float)pos)/24.0;
+		r2=(float)pos/24.0;
+		*R=(r1 * overOffR + (r2 * mOff0R))  + (on * ((r1 * overOnR) + (r2 * mOn0R))) ;
+		*G=(r1 * overOffG + (r2 * mOff0G))  + (on * ((r1 * overOnG) + (r2 * mOn0G))) ;
+		*B=(r1 * overOffB + (r2 * mOff0B))  + (on * ((r1 * overOnB) + (r2 * mOn0B))) ;
+	} 
+
+	else if (pos < 48)
+	{
+		r1=(48.0-(float)pos)/24.0;
+		r2=((float)pos-24.0)/24.0;
+		*R=(r1 * mOff0R + (r2 * mOff6R))  + (on * ((r1 * mOn0R) + (r2 * mOn6R))) ;
+		*G=(r1 * mOff0G + (r2 * mOff6G))  + (on * ((r1 * mOn0G) + (r2 * mOn6G))) ;
+		*B=(r1 * mOff0B + (r2 * mOff6B))  + (on * ((r1 * mOn0B) + (r2 * mOn6B))) ;
+	}
+
+	else if (pos < 60)
+	{
+		r1=(60.0-(float)pos)/12.0;
+		r2=((float)pos-48.0)/12.0;
+		*R=(r1 * mOff6R + (r2 * mOff12R))  + (on * ((r1 * mOn6R) + (r2 * mOn12R))) ;
+		*G=(r1 * mOff6G + (r2 * mOff12G))  + (on * ((r1 * mOn6G) + (r2 * mOn12G))) ;
+		*B=(r1 * mOff6B + (r2 * mOff12B))  + (on * ((r1 * mOn6B) + (r2 * mOn12B))) ;
+	}
+	else if (pos < 72)
+	{
+		r1=(72.0-(float)pos)/12.0;
+		r2=((float)pos-60.0)/12.0;
+		*R=(r1 * mOff12R + (r2 * mOff60R))  + (on * ((r1 * mOn12R) + (r2 * mOn60R))) ;
+		*G=(r1 * mOff12G + (r2 * mOff60G))  + (on * ((r1 * mOn12G) + (r2 * mOn60G))) ;
+		*B=(r1 * mOff12B + (r2 * mOff60B))  + (on * ((r1 * mOn12B) + (r2 * mOn60B))) ;
+	}
+	else
+	{
+		*R=mOff60R  + (on * mOn60R) ;
+		*G=mOff60G  + (on * mOn60G) ;
+		*B=mOff60B  + (on * mOn60B) ;
 	}	
 }
 

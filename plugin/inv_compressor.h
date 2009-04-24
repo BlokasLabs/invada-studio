@@ -28,11 +28,16 @@
 #define ICOMP_RATIO 		4
 #define ICOMP_GAIN 		5
 #define ICOMP_NOCLIP 		6
-#define ICOMP_METER 		7
-#define ICOMP_AUDIO_INPUTL  	8
-#define ICOMP_AUDIO_OUTPUTL 	9
-#define ICOMP_AUDIO_INPUTR  	10  /* not used in mono mode */
-#define ICOMP_AUDIO_OUTPUTR 	11  /* not used in mono mode */
+#define ICOMP_METER_GR 		7
+#define ICOMP_METER_DRIVE	8
+#define ICOMP_METER_INL		9
+#define ICOMP_METER_OUTL	10
+#define ICOMP_AUDIO_INPUTL  	11
+#define ICOMP_AUDIO_OUTPUTL 	12
+#define ICOMP_METER_INR		13  /* not used in mono mode */
+#define ICOMP_METER_OUTR	14  /* not used in mono mode */
+#define ICOMP_AUDIO_INPUTR  	15  /* not used in mono mode */
+#define ICOMP_AUDIO_OUTPUTR 	16  /* not used in mono mode */
 
 float convertParam(unsigned long param, float value, double sr);
 

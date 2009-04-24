@@ -255,7 +255,7 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 		{
 			case IINPUT_PHASEL:
 				pluginGui->phaseL=value;
-				if(value < 0.5) {
+				if(value <= 0.0) {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
 				} else {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON);
@@ -263,7 +263,7 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 				break;
 			case IINPUT_PHASER:
 				pluginGui->phaseR=value;
-				if(value < 0.5) {
+				if(value <= 0.0) {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
 				} else {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON);
@@ -283,11 +283,12 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 				break;
 			case IINPUT_NOCLIP:
 				pluginGui->noClip=value;
-				if(value < 0.5) {
+				if(value <= 0.0) {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
 				} else {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
 				}
+				break;
 			case IINPUT_METER_INL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
 				break;

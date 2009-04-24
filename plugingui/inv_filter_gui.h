@@ -20,3 +20,4 @@
 
 static void on_inv_filter_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_filter_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_filter_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);

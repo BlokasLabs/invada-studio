@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Fri Apr 17 21:39:59 2009 -->
+<!--Generated with glade3 3.4.5 on Fri Apr 24 05:47:20 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="tube_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -56,24 +56,30 @@
                     <property name="left_padding">4</property>
                     <property name="right_padding">4</property>
                     <child>
-                      <widget class="GtkHBox" id="hbox1">
+                      <widget class="GtkTable" id="table1">
                         <property name="visible">True</property>
+                        <property name="n_rows">2</property>
+                        <property name="n_columns">2</property>
                         <child>
-                          <widget class="GtkLabel" id="label4">
+                          <widget class="GtkAlignment" id="alignment_meter_out">
                             <property name="visible">True</property>
-                            <property name="label" translatable="yes">In</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
-                            <property name="width_chars">4</property>
+                            <property name="xscale">0</property>
+                            <property name="yscale">0</property>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </widget>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                            <property name="y_options"></property>
                           </packing>
                         </child>
                         <child>
                           <widget class="GtkAlignment" id="alignment_meter_in">
                             <property name="visible">True</property>
-                            <property name="xalign">0</property>
                             <property name="xscale">0</property>
                             <property name="yscale">0</property>
                             <child>
@@ -81,34 +87,35 @@
                             </child>
                           </widget>
                           <packing>
-                            <property name="position">1</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
+                            <property name="y_options"></property>
                           </packing>
                         </child>
                         <child>
                           <widget class="GtkLabel" id="label5">
                             <property name="visible">True</property>
-                            <property name="label" translatable="yes">Out</property>
+                            <property name="yalign">0.20000000298023224</property>
+                            <property name="label" translatable="yes">Audio Out</property>
                             <property name="justify">GTK_JUSTIFY_RIGHT</property>
                             <property name="width_chars">5</property>
                           </widget>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
+                            <property name="left_attach">1</property>
+                            <property name="right_attach">2</property>
+                            <property name="y_options"></property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkAlignment" id="alignment_meter_out">
+                          <widget class="GtkLabel" id="label4">
                             <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="xscale">0</property>
-                            <property name="yscale">0</property>
-                            <child>
-                              <placeholder/>
-                            </child>
+                            <property name="yalign">0.20000000298023224</property>
+                            <property name="label" translatable="yes">Audio In</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="width_chars">4</property>
                           </widget>
                           <packing>
-                            <property name="position">3</property>
+                            <property name="y_options"></property>
                           </packing>
                         </child>
                       </widget>
@@ -157,7 +164,7 @@
                         <property name="xscale">0</property>
                         <property name="yscale">0</property>
                         <child>
-                          <widget class="GtkVBox" id="vbox2">
+                          <widget class="GtkHBox" id="hbox1">
                             <property name="visible">True</property>
                             <child>
                               <widget class="GtkAlignment" id="alignment_drive_knob">
@@ -174,7 +181,7 @@
                               </widget>
                             </child>
                             <child>
-                              <widget class="GtkAlignment" id="alignment_drive_meter">
+                              <widget class="GtkAlignment" id="alignment_drive_lamp">
                                 <property name="visible">True</property>
                                 <property name="xscale">0</property>
                                 <property name="yscale">0</property>
@@ -293,7 +300,7 @@
                     <property name="visible">True</property>
                     <property name="label_xalign">0.5</property>
                     <child>
-                      <widget class="GtkAlignment" id="alignment_phase_switch">
+                      <widget class="GtkAlignment" id="alignment_phase_toggle">
                         <property name="visible">True</property>
                         <property name="xscale">0</property>
                         <property name="yscale">0</property>
@@ -309,7 +316,7 @@
                     <child>
                       <widget class="GtkLabel" id="label8">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Ø</property>
+                        <property name="label" translatable="yes">Tube Ø</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>

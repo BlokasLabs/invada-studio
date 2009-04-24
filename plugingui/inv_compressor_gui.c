@@ -26,9 +26,11 @@
 #include <gtk/gtk.h>
 #include <lv2.h>
 #include "lv2_ui.h"
+#include "widgets/display-Compressor.h"
 #include "widgets/knob.h"
 #include "widgets/lamp.h"
 #include "widgets/meter-peak.h"
+#include "widgets/switch-toggle.h"
 #include "../plugin/inv_compressor.h"
 #include "inv_compressor_gui.h"
 
@@ -39,6 +41,7 @@ typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
 	GtkWidget	*meterIn;
+	GtkWidget	*meterGR;
 	GtkWidget	*meterOut;
 	GtkWidget	*display;
 	GtkWidget	*knobRms;
@@ -47,9 +50,11 @@ typedef struct {
 	GtkWidget	*knobThreshold;
 	GtkWidget	*knobRatio;
 	GtkWidget	*knobGain;
+	GtkWidget	*toggleNoClip;
 	GtkWidget	*lampNoClip;
 
 	gint		InChannels;
+	gint		GRChannels;
 	gint		OutChannels;
 	float		rms;
 	float		attack;
@@ -57,6 +62,7 @@ typedef struct {
 	float		threshold;
 	float		ratio;
 	float		gain;
+	float 		noClip;
 
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
@@ -100,10 +106,17 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	pluginGui->meterIn = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterIn);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_gr"));
+	pluginGui->meterGR = inv_meter_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterGR);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_out"));
 	pluginGui->meterOut = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterOut);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_comp_display"));
+	pluginGui->display = inv_display_comp_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->display);
 
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_rms_knob"));
 	pluginGui->knobRms = inv_knob_new ();
@@ -129,6 +142,10 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	pluginGui->knobGain = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobGain);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_noclip_toggle"));
+	pluginGui->toggleNoClip = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->toggleNoClip);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_noclip_lamp"));
 	pluginGui->lampNoClip = inv_lamp_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->lampNoClip);
@@ -147,20 +164,35 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Invada Compressor (stereo)</b>");
 	}
 
+	pluginGui->GRChannels=1;
 	pluginGui->rms=0.5;
 	pluginGui->attack=0.00001;
 	pluginGui->release=0.001;
 	pluginGui->threshold=0.0;
 	pluginGui->ratio=1.0;
 	pluginGui->gain=0.0;
+	pluginGui->noClip=0.0;
 
+	inv_meter_set_mode(INV_METER (pluginGui->meterIn), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterIn),-90);
 
+	inv_meter_set_mode(INV_METER (pluginGui->meterGR), INV_METER_DRAW_MODE_FROMZERO);
+	inv_meter_set_channels(INV_METER (pluginGui->meterGR), pluginGui->GRChannels);
+	inv_meter_set_LdB(INV_METER (pluginGui->meterGR),0);
+
+	inv_meter_set_mode(INV_METER (pluginGui->meterOut), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
+
+	inv_display_comp_set_rms(INV_DISPLAY_COMP (pluginGui->display), pluginGui->rms);
+	inv_display_comp_set_attack(INV_DISPLAY_COMP (pluginGui->display), pluginGui->attack);
+	inv_display_comp_set_release(INV_DISPLAY_COMP (pluginGui->display), pluginGui->release);
+	inv_display_comp_set_threshold(INV_DISPLAY_COMP (pluginGui->display), pluginGui->threshold);
+	inv_display_comp_set_ratio(INV_DISPLAY_COMP (pluginGui->display), pluginGui->ratio);
+	inv_display_comp_set_gain(INV_DISPLAY_COMP (pluginGui->display), pluginGui->gain);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobRms), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobRms), INV_KNOB_CURVE_LINEAR);
@@ -224,6 +256,15 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_comp_gain_knob_motion),pluginGui);
 
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, "Off");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_comp_noClip_toggle_button_release),pluginGui);
+
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),2.0);
 
@@ -260,44 +301,59 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 			case ICOMP_RMS:
 				pluginGui->rms=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobRms), pluginGui->rms);
+				inv_display_comp_set_rms(INV_DISPLAY_COMP (pluginGui->display), pluginGui->rms);
 				break;
 			case ICOMP_ATTACK:
 				pluginGui->attack=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobAttack), pluginGui->attack);
+				inv_display_comp_set_attack(INV_DISPLAY_COMP (pluginGui->display), pluginGui->attack);
 				break;
 			case ICOMP_RELEASE:
 				pluginGui->release=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobRelease), pluginGui->release);
+				inv_display_comp_set_release(INV_DISPLAY_COMP (pluginGui->display), pluginGui->release);
 				break;
 			case ICOMP_THRESH:
 				pluginGui->threshold=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobThreshold), pluginGui->threshold);
+				inv_display_comp_set_threshold(INV_DISPLAY_COMP (pluginGui->display), pluginGui->threshold);
 				break;
 			case ICOMP_RATIO:
 				pluginGui->ratio=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobRatio), pluginGui->ratio);
+				inv_display_comp_set_ratio(INV_DISPLAY_COMP (pluginGui->display), pluginGui->ratio);
 				break;
 			case ICOMP_GAIN:
 				pluginGui->gain=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
+				inv_display_comp_set_gain(INV_DISPLAY_COMP (pluginGui->display), pluginGui->gain);
 				break;
-/*
-			case IFILTER_METER_INL:
+			case ICOMP_NOCLIP:
+				pluginGui->noClip=value;
+				if(value <= 0.0) {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
+				}
+				break;
+			case ICOMP_METER_GR:
+				inv_meter_set_LdB(INV_METER (pluginGui->meterGR),value);
+				break;
+			case ICOMP_METER_INL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
 				break;
-			case IFILTER_METER_INR:
+			case ICOMP_METER_INR:
 				if(pluginGui->InChannels==2) inv_meter_set_RdB(INV_METER (pluginGui->meterIn),value);
 				break;
-			case IFILTER_METER_OUTL:
+			case ICOMP_METER_OUTL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterOut),value);
 				break;
-			case IFILTER_METER_OUTR:
+			case ICOMP_METER_OUTR:
 				if(pluginGui->OutChannels==2) inv_meter_set_RdB(INV_METER (pluginGui->meterOut),value);
 				break;
-			case IFILTER_METER_DRIVE:
+			case ICOMP_METER_DRIVE:
 				inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),value);
 				break;
-*/
 		}
 	}
 }
@@ -388,5 +444,13 @@ static void on_inv_comp_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpo
 	return;
 }
 
+static void on_inv_comp_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
 
+	IFilterGui *pluginGui = (IFilterGui *) data;
+
+	pluginGui->noClip=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, ICOMP_NOCLIP, 4, 0, &pluginGui->noClip);
+	return;
+}
 

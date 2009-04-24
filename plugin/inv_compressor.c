@@ -49,6 +49,11 @@ typedef struct {
 	float * AudioOutputBufferL;
 	float * AudioInputBufferR; 
 	float * AudioOutputBufferR;
+	float * MeterInputL;
+	float * MeterOutputL;
+	float * MeterInputR; 
+	float * MeterOutputR;
+	float * MeterDrive;
 
 	double SampleRate; 
 
@@ -68,6 +73,11 @@ typedef struct {
 	float ConvertedRatio;
 	float ConvertedGain;
 	float ConvertedNoClip;
+	float EnvInLLast; 
+	float EnvOutLLast; 
+	float EnvInRLast; 
+	float EnvOutRLast;
+	float EnvDriveLast;  
 
 	/* this stuff needs to be remembered between run calls */
 	float Envelope; 
@@ -115,7 +125,7 @@ static void connectPortIComp(LV2_Handle instance, uint32_t port, void *data)
 		case ICOMP_NOCLIP:
 			plugin->ControlNoClip = data;
 			break;
-		case ICOMP_METER:
+		case ICOMP_METER_GR:
 			plugin->ControlMeter = data;
 			break;
 		case ICOMP_AUDIO_INPUTL:
@@ -129,6 +139,21 @@ static void connectPortIComp(LV2_Handle instance, uint32_t port, void *data)
 			break;
 		case ICOMP_AUDIO_OUTPUTR:
 			plugin->AudioOutputBufferR = data;
+			break;
+		case ICOMP_METER_INL:
+			plugin->MeterInputL = data;
+			break;
+		case ICOMP_METER_INR:
+			plugin->MeterInputR = data;
+			break;
+		case ICOMP_METER_OUTL:
+			plugin->MeterOutputL = data;
+			break;
+		case ICOMP_METER_OUTR:
+			plugin->MeterOutputR = data;
+			break;
+		case ICOMP_METER_DRIVE:
+			plugin->MeterDrive = data;
 			break;
 	}
 }
@@ -150,6 +175,11 @@ static void activateIComp(LV2_Handle instance)
 	plugin->LastRatio  =1;
 	plugin->LastGain   =0;
 	plugin->LastNoClip =1;
+	plugin->EnvInLLast = 0; 
+	plugin->EnvOutLLast = 0; 
+	plugin->EnvInRLast = 0; 
+	plugin->EnvOutRLast = 0; 
+	plugin->EnvDriveLast = 0; 
 
 	plugin->ConvertedRms    =convertParam(ICOMP_RMS,     plugin->LastRms,     plugin->SampleRate);
 	plugin->ConvertedAttack =convertParam(ICOMP_ATTACK,  plugin->LastAttack,  plugin->SampleRate);
@@ -166,6 +196,7 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
 	float * pfAudioOutputL;
+	float OutL,EnvInL,EnvOutL,EnvDrive;
 	float fAudioL,fEnvelope,fRms,fRmsSize;
 	float fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
 	float drive=0;
@@ -194,6 +225,9 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	fEnvelope = plugin->Envelope;   
 	fRms      = plugin->Rms;
 	fCompGain = 1; // this is set before it is used unless we are given no samples in which case it doesn't matter
+	EnvInL     = plugin->EnvInLLast;
+	EnvOutL    = plugin->EnvOutLLast;
+	EnvDrive   = plugin->EnvDriveLast;
 
 	pfAudioInputL  = plugin->AudioInputBufferL;
 	pfAudioOutputL = plugin->AudioOutputBufferL;
@@ -208,13 +242,27 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 		// work out the gain	  
 		fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0) )) : 1;
 
-		*(pfAudioOutputL++) = fNoClip > 0 ? InoClip(fAudioL*fCompGain * fGain,&drive ) : fAudioL*fCompGain * fGain ;
+		OutL= fNoClip > 0 ? InoClip(fAudioL*fCompGain * fGain,&drive ) : fAudioL*fCompGain * fGain ;
+		*(pfAudioOutputL++) =OutL;
+
+		//evelope on in and out for meters
+		EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
 	}
 	// remember for next time round
 	plugin->Envelope = (fabs(fEnvelope)<1.0e-10)  ? 0.f : fEnvelope; 
 	plugin->Rms = (fabs(fRms)<1.0e-10)  ? 0.f : fRms; 
+	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
-	// update the meter. 0.015848932=-36dB (the max gain reduction this compressor can do)
+	// update the meters
+	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
+	// 0.015848932=-36dB (the max gain reduction this compressor can do)
 	*(plugin->ControlMeter)=(fCompGain > 0.015848932) ? 20*log10(fCompGain) : -36.0;
 }
 
@@ -228,7 +276,11 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputR;
 	float fAudioL,fAudioR,fMaxAudio,fEnvelope,fRms,fRmsSize;
 	float fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
-	float drive=0;
+	float OutL,EnvInL,EnvOutL;
+	float OutR,EnvInR,EnvOutR;
+	float drive,EnvDrive;
+	float driveL=0;
+	float driveR=0;
 	unsigned long lSampleIndex;
 			   
 	IComp *plugin = (IComp *)instance;
@@ -254,6 +306,11 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	fEnvelope = plugin->Envelope;   
 	fRms      = plugin->Rms;
 	fCompGain = 1; // this is set before it is used unless we are given no samples in which case it doesn't matter
+	EnvInL     = plugin->EnvInLLast;
+	EnvInR     = plugin->EnvInRLast;
+	EnvOutL    = plugin->EnvOutLLast;
+	EnvOutR    = plugin->EnvOutRLast;
+	EnvDrive   = plugin->EnvDriveLast;
 
 	pfAudioInputL  = plugin->AudioInputBufferL;
 	pfAudioInputR  = plugin->AudioInputBufferR;
@@ -273,14 +330,36 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 		// work out the gain	  
 		fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0))) : 1;
 
-		*(pfAudioOutputL++) = fNoClip > 0 ? InoClip(fAudioL*fCompGain*fGain,&drive) : fAudioL*fCompGain*fGain ;
-		*(pfAudioOutputR++) = fNoClip > 0 ? InoClip(fAudioR*fCompGain*fGain,&drive) : fAudioR*fCompGain*fGain ;
+		OutL = fNoClip > 0 ? InoClip(fAudioL*fCompGain*fGain,&driveL) : fAudioL*fCompGain*fGain ;
+		OutR = fNoClip > 0 ? InoClip(fAudioR*fCompGain*fGain,&driveR) : fAudioR*fCompGain*fGain ;
+		*(pfAudioOutputL++) = OutL ;
+		*(pfAudioOutputR++) = OutR ;
+
+		//evelope on in and out for meters
+		EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvInR  += IEnvelope(fAudioR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+
+		drive = driveL > driveR ? driveL : driveR;
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 	}
 	// remember for next time round
 	plugin->Envelope = (fabs(fEnvelope)<1.0e-10)  ? 0.f : fEnvelope; 
 	plugin->Rms = (fabs(fRms)<1.0e-10)  ? 0.f : fRms; 
+	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
+	plugin->EnvInRLast = (fabs(EnvInR)<1.0e-10)  ? 0.f : EnvInR; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
-	// update the meter
+	// update the meters
+	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
+	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
+	// 0.015848932=-36dB (the max gain reduction this compressor can do)
 	*(plugin->ControlMeter)=(fCompGain > 0.015848932) ? 20*log10(fCompGain) : -36.0;
 }
 

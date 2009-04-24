@@ -276,6 +276,7 @@ inv_switch_toggle_paint(GtkWidget *widget)
 	char		*off_text;
 	char		*label;
 
+	gint			i;
 	float 			max,grey;
 	cairo_t 		*cr;
 	GtkStyle		*style;
@@ -335,9 +336,6 @@ inv_switch_toggle_paint(GtkWidget *widget)
 	} else {
 		gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
 	}
-	cairo_move_to(cr, 31, 14);
-	cairo_line_to(cr, 31, 49);
-	cairo_stroke(cr);
 
 	switch(state) {
 		case INV_SWITCH_TOGGLE_ON:
@@ -403,6 +401,26 @@ inv_switch_toggle_paint(GtkWidget *widget)
 			break;
 	}
 
+	cairo_save(cr);
+
+	cairo_move_to(cr,32,48);
+	for(i=1;i<=6;i++) {
+		cairo_line_to(cr,32+17*sin(i*INV_PI/3),32+17*cos(i*INV_PI/3));
+	}
+	cairo_clip(cr);
+
+	pat = cairo_pattern_create_linear (0.0, 0.0,  64.0, 64.0);
+	cairo_pattern_add_color_stop_rgba (pat, 0.0, 1.00, 1.00, 1.00, 1);
+	cairo_pattern_add_color_stop_rgba (pat, 0.32, 0.91, 0.89, 0.83, 1);
+	cairo_pattern_add_color_stop_rgba (pat, 0.5, 0.43, 0.32, 0.26, 1);
+	cairo_pattern_add_color_stop_rgba (pat, 0.68, 0.10, 0.05, 0.04, 1);
+	cairo_pattern_add_color_stop_rgba (pat, 1.0, 0.00, 0.00, 0.00, 1);
+	cairo_set_source (cr, pat);
+	cairo_set_line_width(cr,5);
+	cairo_arc(cr,32,32,14.5,0,2*INV_PI);
+	cairo_stroke(cr);
+
+	cairo_restore(cr);
 
   	cairo_destroy(cr);
 }

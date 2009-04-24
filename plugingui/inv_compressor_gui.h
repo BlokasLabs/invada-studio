@@ -24,3 +24,4 @@ static void on_inv_comp_release_knob_motion(GtkWidget *widget, GdkEvent *event, 
 static void on_inv_comp_threshold_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_comp_ratio_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_comp_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_comp_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);

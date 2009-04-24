@@ -21,4 +21,5 @@
 
 static void on_inv_tube_drive_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_tube_dc_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_tube_phase_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_tube_blend_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);

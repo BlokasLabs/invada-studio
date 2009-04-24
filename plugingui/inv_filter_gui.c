@@ -30,6 +30,7 @@
 #include "widgets/lamp.h"
 #include "widgets/meter-peak.h"
 #include "widgets/display-FrequencyGain.h"
+#include "widgets/switch-toggle.h"
 #include "../plugin/inv_filter.h"
 #include "inv_filter_gui.h"
 
@@ -44,12 +45,14 @@ typedef struct {
 	GtkWidget	*display;
 	GtkWidget	*knobFreq;
 	GtkWidget	*knobGain;
+	GtkWidget	*toggleNoClip;
 	GtkWidget	*lampNoClip;
 
 	gint		InChannels;
 	gint		OutChannels;
 	float		freq;
 	float		gain;
+	float 		noClip;
 
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
@@ -109,6 +112,10 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	pluginGui->knobGain = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobGain);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_noclip_toggle"));
+	pluginGui->toggleNoClip = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->toggleNoClip);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_noclip_lamp"));
 	pluginGui->lampNoClip = inv_lamp_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->lampNoClip);
@@ -148,6 +155,7 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	}
 	pluginGui->freq=1000.0;
 	pluginGui->gain=0.0;
+	pluginGui->noClip=0.0;
 
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
@@ -179,6 +187,15 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 12.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_filter_gain_knob_motion),pluginGui);
+
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, "Off");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_filter_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),2.0);
@@ -222,6 +239,14 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 				pluginGui->gain=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
 				inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), pluginGui->gain);
+				break;
+			case IFILTER_NOCLIP:
+				pluginGui->noClip=value;
+				if(value <= 0.0) {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
+				}
 				break;
 			case IFILTER_METER_INL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
@@ -292,5 +317,13 @@ static void on_inv_filter_gain_knob_motion(GtkWidget *widget, GdkEvent *event, g
 	return;
 }
 
+static void on_inv_filter_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
 
+	IFilterGui *pluginGui = (IFilterGui *) data;
+
+	pluginGui->noClip=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IFILTER_NOCLIP, 4, 0, &pluginGui->noClip);
+	return;
+}
 
