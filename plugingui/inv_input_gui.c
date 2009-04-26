@@ -158,22 +158,22 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 
 	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
 
-	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL),"Left");
+	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL),"LEFT");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, "Normal");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  1.0);
-	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  "Reversed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseL),"button-release-event",G_CALLBACK(on_inv_input_phaseL_toggle_button_release),pluginGui);
 
-	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR),"Right");
+	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR),"RIGHT");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, "Normal");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  1.0);
-	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  "Reversed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseR),"button-release-event",G_CALLBACK(on_inv_input_phaseR_toggle_button_release),pluginGui);
@@ -221,7 +221,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_input_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
-	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),2.0);
+	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),1.0);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);

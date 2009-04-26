@@ -16,6 +16,9 @@
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/mono> ;
         uiext:portIndex 5 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/mono> ;
+        uiext:portIndex 6 ;
     ] ;
 
     uiext:portNotification [ 
@@ -26,10 +29,13 @@
         uiext:portIndex 5 ;
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/stereo> ;
-        uiext:portIndex 8 ;
+        uiext:portIndex 6 ;
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/stereo> ;
         uiext:portIndex 9 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/stereo> ;
+        uiext:portIndex 10 ;
     ] .
 
 
@@ -81,6 +87,11 @@
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 4 ;
+	lv2:symbol "meterDrive" ;
+	lv2:name "Drive Lamp" ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 5 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
 	lv2:minimum -60.0 ;
@@ -88,7 +99,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 5 ;
+	lv2:index 6 ;
 	lv2:symbol "meterOut" ;
 	lv2:name "Out" ;
 	lv2:minimum -60.0 ;
@@ -96,12 +107,12 @@
 	units:unit :db ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 6 ;
+	lv2:index 7 ;
 	lv2:symbol "in" ;
 	lv2:name "In" ;
     ] , [
 	a lv2:OutputPort,  lv2:AudioPort ;
-	lv2:index 7 ;
+	lv2:index 8 ;
 	lv2:symbol "out" ;
 	lv2:name "Out" ;
     ]
@@ -155,6 +166,11 @@
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 4 ;
+	lv2:symbol "meterDrive" ;
+	lv2:name "Drive Lamp" ;
+    ] , [
+	a lv2:OutputPort, lv2:ControlPort ;
+	lv2:index 5 ;
 	lv2:symbol "meterInL" ;
 	lv2:name "L In" ;
 	lv2:minimum -60.0 ;
@@ -162,7 +178,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 5 ;
+	lv2:index 6 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
 	lv2:minimum -60.0 ;
@@ -170,17 +186,17 @@
 	units:unit :db ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 6 ;
+	lv2:index 7 ;
 	lv2:symbol "inL" ;
 	lv2:name "L In" ;
     ] , [
 	a lv2:OutputPort,  lv2:AudioPort ;
-	lv2:index 7 ;
+	lv2:index 8 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 8 ;
+	lv2:index 9 ;
 	lv2:symbol "meterInR" ;
 	lv2:name "R In" ;
 	lv2:minimum -60.0 ;
@@ -188,7 +204,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 9 ;
+	lv2:index 10 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
 	lv2:minimum -60.0 ;
@@ -196,12 +212,12 @@
 	units:unit :db ;
    ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 10 ;
+	lv2:index 11 ;
 	lv2:symbol "inR" ;
 	lv2:name "R In" ;
     ] , [
 	a lv2:OutputPort,  lv2:AudioPort ;
-	lv2:index 11 ;
+	lv2:index 12 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
     ]

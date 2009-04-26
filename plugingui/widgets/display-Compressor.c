@@ -391,7 +391,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 
 		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
 		cairo_set_font_size(cr,9);
-		sprintf(label,"Orignal");
+		sprintf(label,"Original");
 		cairo_move_to(cr,435,152);
 		cairo_show_text(cr,label);
 

@@ -48,6 +48,7 @@ typedef struct {
 	float * MeterOutputL;
 	float * MeterInputR; 
 	float * MeterOutputR;
+	float * MeterDrive;
 
 	double SampleRate; 
 
@@ -67,6 +68,7 @@ typedef struct {
 	float EnvOutLLast; 
 	float EnvInRLast; 
 	float EnvOutRLast; 
+	float EnvDriveLast;
  
 } ITube;
 
@@ -127,6 +129,9 @@ static void connectPortITube(LV2_Handle instance, uint32_t port, void *data)
 		case ITUBE_METER_OUTR:
 			plugin->MeterOutputR = data;
 			break;
+		case ITUBE_METER_DRIVE:
+			plugin->MeterDrive = data;
+			break;
 	}
 }
 
@@ -147,6 +152,7 @@ static void activateITube(LV2_Handle instance)
 	plugin->EnvOutLLast = 0; 
 	plugin->EnvInRLast = 0; 
 	plugin->EnvOutRLast = 0; 
+	plugin->EnvDriveLast = 0; 
 
 	plugin->ConvertedDrive    = convertParam(ITUBE_DRIVE,    plugin->LastDrive,     plugin->SampleRate);
 	plugin->ConvertedDcoffset = convertParam(ITUBE_DCOFFSET, plugin->LastDcoffset,  plugin->SampleRate);
@@ -161,7 +167,8 @@ static void runMonoITube(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioInputL;
 	float * pfAudioOutputL;
 	float OutL,EnvInL,EnvOutL;
-	float fAudioL, fDrive, fDCOffset, fPhase, fMix;
+	float TubeOut,drive,EnvDrive;
+	float fAudioL, fDrive, fDCOffset, DCOffsetADJ, fPhase, fMix;
 	uint32_t lSampleIndex;
 			   
 	ITube *plugin = (ITube *)instance;
@@ -176,31 +183,39 @@ static void runMonoITube(LV2_Handle instance, uint32_t SampleCount)
 	fDrive    = plugin->ConvertedDrive;
 	fDCOffset = plugin->ConvertedDcoffset;
 	fPhase    = plugin->ConvertedPhase;
-	fMix      = plugin->ConvertedMix;	
+	fMix      = plugin->ConvertedMix;
+
+	DCOffsetADJ=ITube_do(fDCOffset,fDrive);	
 			   
 	pfAudioInputL = plugin->AudioInputBufferL;
 	pfAudioOutputL = plugin->AudioOutputBufferL;
 	EnvInL     = plugin->EnvInLLast;
 	EnvOutL    = plugin->EnvOutLLast;
+	EnvDrive   = plugin->EnvDriveLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 		fAudioL=*(pfAudioInputL++);
+		TubeOut=ITube_do(fAudioL+fDCOffset,fDrive)-DCOffsetADJ;
 		OutL= fPhase <= 0 ? 
-				(fAudioL*(1-fMix)) + (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix :
-				(fAudioL*(1-fMix)) - (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix ;
+				(fAudioL*(1-fMix)) + TubeOut*fMix :
+				(fAudioL*(1-fMix)) - TubeOut*fMix ;
 		*(pfAudioOutputL++) = OutL;
 
 		//evelope on in and out for meters
 		EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		drive = fabs(fabs(fabs((fAudioL+fDCOffset)*fDrive) - fabs(fDCOffset*fDrive)) - fabs(TubeOut));
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 	}
 	// remember for next time round  
 	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
 }
 
 static void runStereoITube(LV2_Handle instance, uint32_t SampleCount) 
@@ -212,7 +227,10 @@ static void runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputR;
 	float OutL,EnvInL,EnvOutL;
 	float OutR,EnvInR,EnvOutR;
-	float fAudioL, fAudioR, fDrive, fDCOffset, fPhase, fMix;
+	float TubeOutL,TubeOutR,drive,EnvDrive;
+	float driveL=0;
+	float driveR=0;
+	float fAudioL, fAudioR, fDrive, fDCOffset, DCOffsetADJ, fPhase, fMix;
 	uint32_t lSampleIndex;
 			   
 	ITube *plugin = (ITube *)instance;
@@ -228,6 +246,8 @@ static void runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 	fDCOffset = plugin->ConvertedDcoffset;
 	fPhase    = plugin->ConvertedPhase;
 	fMix      = plugin->ConvertedMix;
+
+	DCOffsetADJ=ITube_do(fDCOffset,fDrive);
   
 	pfAudioInputL = plugin->AudioInputBufferL;
 	pfAudioInputR = plugin->AudioInputBufferR;
@@ -238,18 +258,21 @@ static void runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 	EnvInR     = plugin->EnvInRLast;
 	EnvOutL    = plugin->EnvOutLLast;
 	EnvOutR    = plugin->EnvOutRLast;
+	EnvDrive   = plugin->EnvDriveLast;
   
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 		fAudioL=*(pfAudioInputL++);
+		TubeOutL=ITube_do(fAudioL+fDCOffset,fDrive)-DCOffsetADJ;
 		OutL = fPhase <= 0 ? 
-				(fAudioL*(1-fMix)) + (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix :
-				(fAudioL*(1-fMix)) - (ITube_do(fAudioL + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix ;
+				(fAudioL*(1-fMix)) + TubeOutL*fMix :
+				(fAudioL*(1-fMix)) - TubeOutL*fMix ;
 		*(pfAudioOutputL++) = OutL;
 		  
 		fAudioR=*(pfAudioInputR++);
+		TubeOutR=ITube_do(fAudioR+fDCOffset,fDrive)-DCOffsetADJ;
 		OutR = fPhase <= 0 ? 
-				(fAudioR*(1-fMix)) + (ITube_do(fAudioR + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix :
-				(fAudioR*(1-fMix)) - (ITube_do(fAudioR + fDCOffset,fDrive)-ITube_do(fDCOffset,fDrive))*fMix ;
+				(fAudioR*(1-fMix)) + TubeOutR*fMix :
+				(fAudioR*(1-fMix)) - TubeOutR*fMix ;
 		*(pfAudioOutputR++) = OutR;
 
 		//evelope on in and out for meters
@@ -258,18 +281,25 @@ static void runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 
+		driveL = fabs(fabs(fabs((fAudioL+fDCOffset)*fDrive) - fabs(fDCOffset*fDrive)) - fabs(TubeOutL));
+		driveR = fabs(fabs(fabs((fAudioR+fDCOffset)*fDrive) - fabs(fDCOffset*fDrive)) - fabs(TubeOutR));
+		drive = driveL > driveR ? driveL : driveR;
+		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
 	}
 	// store values for next loop
 	plugin->EnvInLLast = (fabs(EnvInL)<1.0e-10)  ? 0.f : EnvInL; 
 	plugin->EnvInRLast = (fabs(EnvInR)<1.0e-10)  ? 0.f : EnvInR; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
 	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+	plugin->EnvDriveLast = (fabs(EnvDrive)<1.0e-10)  ? 0.f : EnvDrive; 
 
 	// update the meters
 	*(plugin->MeterInputL) =(EnvInL  > 0.001) ? 20*log10(EnvInL)  : -90.0;
 	*(plugin->MeterInputR) =(EnvInR  > 0.001) ? 20*log10(EnvInR)  : -90.0;
 	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
 	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
+	*(plugin->MeterDrive)=EnvDrive;
 }
 
 

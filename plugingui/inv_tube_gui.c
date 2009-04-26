@@ -255,6 +255,9 @@ static void port_eventITubeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_s
 			case ITUBE_METER_OUTR:
 				if(pluginGui->OutChannels==2)  inv_meter_set_RdB(INV_METER (pluginGui->meterOut),value);
 				break;
+			case ITUBE_METER_DRIVE:
+				inv_lamp_set_value(INV_LAMP (pluginGui->lampDrive),value);
+				break;
 		}
 	}
 }

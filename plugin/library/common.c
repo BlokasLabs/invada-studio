@@ -87,7 +87,7 @@ float InoClip(float in, float * drive)
 	  out = (in>0) ? 
 	            (  0.7 + 0.3 * (1-pow(2.718281828, 3.33333333*(0.7-in)))):
 	            ( -0.7 - 0.3 * (1-pow(2.718281828, 3.33333333*(0.7+in))));
-		*drive=fabs(in) - fabs(out);
+		*drive=fabs(in) - fabs(out); /* out is always going to be lower than in */
 	}
 	return out;
 }

@@ -9,7 +9,7 @@ static void 	inv_switch_toggle_size_request(GtkWidget *widget, GtkRequisition *r
 static void 	inv_switch_toggle_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static void 	inv_switch_toggle_realize(GtkWidget *widget);
 static gboolean inv_switch_toggle_expose(GtkWidget *widget,GdkEventExpose *event);
-static void 	inv_switch_toggle_paint(GtkWidget *widget);
+static void 	inv_switch_toggle_paint(GtkWidget *widget, gint mode);
 static gboolean	inv_switch_toggle_button_press_event (GtkWidget *widget, GdkEventButton *event);
 static gboolean inv_switch_toggle_button_release_event (GtkWidget *widget, GdkEventButton *event);
 static void	inv_switch_toggle_destroy(GtkObject *object);
@@ -63,7 +63,7 @@ inv_switch_toggle_toggle(InvSwitchToggle *switch_toggle)
 		switch_toggle->value = switch_toggle->on_value;
 	}
 	if(GTK_WIDGET_REALIZED(switch_toggle))
-		inv_switch_toggle_paint(GTK_WIDGET(switch_toggle));
+		inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_DATA);
 }
 
 float
@@ -85,7 +85,7 @@ inv_switch_toggle_set_state(InvSwitchToggle *switch_toggle, gint state)
 			break;
 	}
 	if(GTK_WIDGET_REALIZED(switch_toggle))
-		inv_switch_toggle_paint(GTK_WIDGET(switch_toggle));
+		inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_DATA);
 }
 
 void inv_switch_toggle_set_value(InvSwitchToggle *switch_toggle, gint state, float value)
@@ -191,7 +191,12 @@ inv_switch_toggle_size_request(GtkWidget *widget,
 	g_return_if_fail(INV_IS_SWITCH_TOGGLE(widget));
 	g_return_if_fail(requisition != NULL);
 
-	requisition->width = 64;
+	if(strlen(INV_SWITCH_TOGGLE(widget)->label)>0) {
+		requisition->width = 76;
+	} else {
+		requisition->width = 64;
+	}
+	
 	requisition->height = 64;
 }
 
@@ -230,7 +235,11 @@ inv_switch_toggle_realize(GtkWidget *widget)
 	attributes.window_type = GDK_WINDOW_CHILD;
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
-	attributes.width = 64;
+	if(strlen(INV_SWITCH_TOGGLE(widget)->label)>0) {
+		attributes.width = 76;
+	} else {
+		attributes.width = 64;
+	}
 	attributes.height = 64;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
@@ -260,14 +269,14 @@ inv_switch_toggle_expose(GtkWidget *widget, GdkEventExpose *event)
 	g_return_val_if_fail(INV_IS_SWITCH_TOGGLE(widget), FALSE);
 	g_return_val_if_fail(event != NULL, FALSE);
 
-	inv_switch_toggle_paint(widget);
+	inv_switch_toggle_paint(widget,INV_SWITCH_TOGGLE_DRAW_ALL);
 
 	return FALSE;
 }
 
 
 static void
-inv_switch_toggle_paint(GtkWidget *widget)
+inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 {
 	gint 		state;
 	gint 		laststate;
@@ -277,7 +286,8 @@ inv_switch_toggle_paint(GtkWidget *widget)
 	char		*label;
 
 	gint			i;
-	float 			max,grey;
+	float 			indent,topdent,max,grey;
+	char 			character[2];
 	cairo_t 		*cr;
 	GtkStyle		*style;
 	cairo_text_extents_t 	extents;
@@ -298,38 +308,64 @@ inv_switch_toggle_paint(GtkWidget *widget)
 	label = INV_SWITCH_TOGGLE(widget)->label;
 
 	cr = gdk_cairo_create(widget->window);
-/*
-	cairo_set_source_rgb(cr, 0, 0, 0);
-	cairo_paint(cr);
-*/
+
+	indent = strlen(label)>0 ? 12.0 : 0.0;
+
+	if(mode==INV_SWITCH_TOGGLE_DRAW_ALL) {
+
+
+		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
+		cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
+		cairo_set_line_width(cr,1);
+
+		gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+		cairo_move_to(cr, indent, 13);
+		cairo_line_to(cr, 63+indent, 13);
+		cairo_line_to(cr, 63+indent, 0);
+		cairo_move_to(cr, indent, 63);
+		cairo_line_to(cr, 63+indent, 63);
+		cairo_line_to(cr, 63+indent, 50);
+		cairo_stroke(cr);
+
+		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+		cairo_move_to(cr, indent, 13);
+		cairo_line_to(cr, indent, 0);
+		cairo_line_to(cr, 63+indent, 0);
+		cairo_move_to(cr, indent, 63);
+		cairo_line_to(cr, indent, 50);
+		cairo_line_to(cr, 63+indent, 50);
+		cairo_stroke(cr);
+
+		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
+		cairo_new_path(cr);
+
+		if(strlen(label)>0) {
+			if(inv_switch_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
+				gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+			} else {
+				gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+			}
+			cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
+			cairo_set_line_width(cr,1);
+			cairo_rectangle(cr, 0, 1, 9, 62);
+			cairo_stroke(cr);
+
+			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
+			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
+			cairo_set_font_size(cr,8);
+			topdent=41.0-(8.0*(float)(strlen(label))/2);
+			for(i=0; i<strlen(label); i++) {
+				character[0]=label[i];
+				character[1]='\0';
+				cairo_move_to(cr,2, topdent+((float)i*8.0));
+				cairo_show_text(cr,character);
+			}
+		}
+	}
 
 	cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(cr,9);
-
-	cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
-	cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
-	cairo_set_line_width(cr,1);
-
-	gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
-	cairo_move_to(cr, 0, 13);
-	cairo_line_to(cr, 63, 13);
-	cairo_line_to(cr, 63, 0);
-	cairo_move_to(cr, 0, 63);
-	cairo_line_to(cr, 63, 63);
-	cairo_line_to(cr, 63, 50);
-	cairo_stroke(cr);
-
-	gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
-	cairo_move_to(cr, 0, 13);
-	cairo_line_to(cr, 0, 0);
-	cairo_line_to(cr, 63, 0);
-	cairo_move_to(cr, 0, 63);
-	cairo_line_to(cr, 0, 50);
-	cairo_line_to(cr, 63, 50);
-	cairo_stroke(cr);
-
-	cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
-	cairo_new_path(cr);
 
 	if(inv_switch_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
 		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
@@ -345,45 +381,45 @@ inv_switch_toggle_paint(GtkWidget *widget)
 			grey=max/3;
 
 			cairo_set_source_rgb(cr, grey/3, grey/3, grey/3);
-			cairo_rectangle(cr, 1, 1, 62, 12);
+			cairo_rectangle(cr, 1+indent, 1, 62, 12);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, grey, grey, grey);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31-(extents.width/2), extents.height + 3);
+			cairo_move_to(cr,31+indent-(extents.width/2), extents.height + 3);
 			cairo_show_text(cr,off_text);
 
-			pat = cairo_pattern_create_linear (0.0, 0.0,  64.0, 0.0);
+			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
 			cairo_pattern_add_color_stop_rgba (pat, 0.0, onR/6, onG/6, onB/6, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.2, onR/4, onG/4, onB/4, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.3, onR/3, onG/3, onB/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.5, onR/2, onG/2, onB/2, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.8, onR/4, onG/4, onB/4, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.7, onR/3, onG/3, onB/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 1.0, onR/6, onG/6, onB/6, 1);
 			cairo_set_source (cr, pat);
-			cairo_rectangle(cr, 1, 51, 62, 12);
+			cairo_rectangle(cr, 1+indent, 51, 62, 12);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, onR, onG, onB);
 			cairo_text_extents (cr,on_text,&extents);
-			cairo_move_to(cr,31-(extents.width/2), 61);
+			cairo_move_to(cr,31+indent-(extents.width/2), 61);
 			cairo_show_text(cr,on_text);
 			break;
 
 		case INV_SWITCH_TOGGLE_OFF:
 
-			pat = cairo_pattern_create_linear (0.0, 0.0,  64.0, 0.0);
+			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
 			cairo_pattern_add_color_stop_rgba (pat, 0.0, offR/6, offG/6, offB/6, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.2, offR/4, offG/4, offB/4, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.3, offR/3, offG/3, offB/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.5, offR/2, offG/2, offB/2, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.8, offR/4, offG/4, offB/4, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.7, offR/3, offG/3, offB/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 1.0, offR/6, offG/6, offB/6, 1);
 			cairo_set_source (cr, pat);
-			cairo_rectangle(cr, 1, 1, 62, 12);
+			cairo_rectangle(cr, 1+indent, 1, 62, 12);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, offR, offG, offB);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31-(extents.width/2), extents.height + 3);
+			cairo_move_to(cr,31+indent-(extents.width/2), extents.height + 3);
 			cairo_show_text(cr,off_text);
 
 			max = onR > onG ? onR : onG;
@@ -391,25 +427,25 @@ inv_switch_toggle_paint(GtkWidget *widget)
 			grey=max/3;
 
 			cairo_set_source_rgb(cr, grey/3, grey/3, grey/3);
-			cairo_rectangle(cr, 1, 51, 62, 12);
+			cairo_rectangle(cr, 1+indent, 51, 62, 12);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, grey, grey, grey);
 			cairo_text_extents (cr,on_text,&extents);
-			cairo_move_to(cr,31-(extents.width)/2, 61);
+			cairo_move_to(cr,31+indent-(extents.width)/2, 61);
 			cairo_show_text(cr,on_text);
 			break;
 	}
 
 	cairo_save(cr);
 
-	cairo_move_to(cr,32,48);
+	cairo_move_to(cr,32+indent,48.5);
 	for(i=1;i<=6;i++) {
-		cairo_line_to(cr,32+17*sin(i*INV_PI/3),32+17*cos(i*INV_PI/3));
+		cairo_line_to(cr,32+indent+17*sin(i*INV_PI/3),32.5+17*cos(i*INV_PI/3));
 	}
 	cairo_clip(cr);
 
-	pat = cairo_pattern_create_linear (0.0, 0.0,  64.0, 64.0);
+	pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 64.0);
 	cairo_pattern_add_color_stop_rgba (pat, 0.0, 1.00, 1.00, 1.00, 1);
 	cairo_pattern_add_color_stop_rgba (pat, 0.32, 0.91, 0.89, 0.83, 1);
 	cairo_pattern_add_color_stop_rgba (pat, 0.5, 0.43, 0.32, 0.26, 1);
@@ -417,7 +453,7 @@ inv_switch_toggle_paint(GtkWidget *widget)
 	cairo_pattern_add_color_stop_rgba (pat, 1.0, 0.00, 0.00, 0.00, 1);
 	cairo_set_source (cr, pat);
 	cairo_set_line_width(cr,5);
-	cairo_arc(cr,32,32,14.5,0,2*INV_PI);
+	cairo_arc(cr,32+indent,32.5,14.5,0,2*INV_PI);
 	cairo_stroke(cr);
 
 	cairo_restore(cr);
@@ -432,7 +468,7 @@ inv_switch_toggle_button_press_event (GtkWidget *widget, GdkEventButton *event)
 	gtk_widget_set_state(widget,GTK_STATE_ACTIVE);
     	gtk_widget_grab_focus(widget);
 
-	inv_switch_toggle_paint(widget);
+	inv_switch_toggle_paint(widget,INV_SWITCH_TOGGLE_DRAW_ALL);
 
 	return TRUE;
 }

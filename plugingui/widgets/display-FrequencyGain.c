@@ -247,7 +247,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 
 		for(i=1; i<5;i++) 
 		{
@@ -288,7 +288,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		for(i=0;i<11;i+=2)
 		{
 			j=12-(i*6);
