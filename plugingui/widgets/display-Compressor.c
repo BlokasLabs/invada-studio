@@ -365,25 +365,21 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-		for(i=0;i<9;i+=2)
+		for(i=0;i<8;i+=2)
 		{
-			sprintf(label,"%3idB",12-(i*6));
-			cairo_move_to(cr,569,20+(i*14));
+			sprintf(label,"%3idB",-(i*6));
+			cairo_move_to(cr,569,34+(i*14));
 			cairo_show_text(cr,label);
 
-			sprintf(label,"%idB",12-(i*6));
+			sprintf(label,"%idB",-(i*6));
 			switch(i) {
-
 				case 0:
-				case 4:
-				case 6:
-					cairo_move_to(cr,555-(i*20),141);
+					cairo_move_to(cr,540-(i*20),141);
 					break;
 				case 2:
-					cairo_move_to(cr,559-(i*20),141);
-					break;
-				case 8:
-					cairo_move_to(cr,561-(i*20),141);
+				case 4:
+				case 6:
+					cairo_move_to(cr,535-(i*20),141);
 					break;
 			}
 			cairo_show_text(cr,label);
@@ -462,27 +458,25 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
 		cairo_rectangle(cr, 406, 17, 160, 112 );
 		cairo_fill(cr);
-
 		for(i=1;i<8;i+=2) {
 			cairo_set_source_rgb(cr, 0.20, 0.20, 0.20);
-			cairo_rectangle(cr, 406+(i*20), 17, 1, 112);
+			cairo_rectangle(cr, 386+(i*20), 17, 1, 112);
 			cairo_fill(cr);
-			cairo_rectangle(cr, 406, 17+(i*14), 160, 1);
+			cairo_rectangle(cr, 406, 3+(i*14), 160, 1);
 			cairo_fill(cr);
 		}
-
-		for(i=0;i<8;i+=2) {
+		for(i=0;i<7;i+=2) {
 			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
-			cairo_rectangle(cr, 406+(i*20), 17, 1, 112);
+			cairo_rectangle(cr, 426+(i*20), 17, 1, 112);
 			cairo_fill(cr);
-			cairo_rectangle(cr, 406, 17+(i*14), 160, 1);
+			cairo_rectangle(cr, 406, 31+(i*14), 160, 1);
 			cairo_fill(cr);
 		}
 
 		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-		cairo_rectangle(cr, 526, 17, 1, 112);
+		cairo_rectangle(cr, 546, 17, 1, 112);
 		cairo_fill(cr);
-		cairo_rectangle(cr, 406, 45, 160, 1);
+		cairo_rectangle(cr, 406, 31, 160, 1);
 		cairo_fill(cr);
 
 		cairo_rectangle(cr, 406, 17, 160, 112 );
@@ -492,8 +486,8 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
 		cairo_set_line_width(cr,2);
 		cairo_move_to(cr, 406                 , 129-(14*gain/6));
-		cairo_line_to(cr, 526+(20*threshold/6), 45-(14*gain/6)-(14*threshold/6));
-		cairo_line_to(cr, 566                 , 45-(14*gain/6)-(14*threshold/6)+(14*(threshold-12)/(ratio*6)));
+		cairo_line_to(cr, 546+(20*threshold/6), 31-(14*gain/6)-(14*threshold/6));
+		cairo_line_to(cr, 566                 , 31-(14*gain/6)-(14*threshold/6)+(14*(threshold-6)/(ratio*6)));
 		cairo_stroke(cr);
 
 		/* original signal */

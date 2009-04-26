@@ -41,6 +41,9 @@ struct _InvSwitchToggle {
 
 	char label[15];
 
+	GdkPixbuf *img_on;
+	GdkPixbuf *img_off;
+
 };
 
 struct _InvSwitchToggleClass {

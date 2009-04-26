@@ -2,6 +2,8 @@
 #include "math.h"
 #include "string.h"
 #include "switch-toggle.h"
+#include "switch-toggle-img_off.xpm"
+#include "switch-toggle-img_on.xpm"
 
 static void 	inv_switch_toggle_class_init(InvSwitchToggleClass *klass);
 static void 	inv_switch_toggle_init(InvSwitchToggle *switch_toggle);
@@ -179,6 +181,9 @@ inv_switch_toggle_init(InvSwitchToggle *switch_toggle)
 	strcpy(switch_toggle->off_text,"");
 	strcpy(switch_toggle->label,"");
 
+     	switch_toggle->img_on=gdk_pixbuf_new_from_xpm_data((const char **)switch_toggle_img_on_xpm);
+     	switch_toggle->img_off=gdk_pixbuf_new_from_xpm_data((const char **)switch_toggle_img_off_xpm);
+
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(switch_toggle), GTK_CAN_FOCUS);
 }
 
@@ -284,6 +289,8 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 	char		*on_text;
 	char		*off_text;
 	char		*label;
+	GdkPixbuf 	*img_on;
+	GdkPixbuf 	*img_off;
 
 	gint			i;
 	float 			indent,topdent,max,grey;
@@ -306,6 +313,8 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 	on_text = INV_SWITCH_TOGGLE(widget)->on_text;
 	off_text = INV_SWITCH_TOGGLE(widget)->off_text;
 	label = INV_SWITCH_TOGGLE(widget)->label;
+	img_on = INV_SWITCH_TOGGLE(widget)->img_on;
+	img_off = INV_SWITCH_TOGGLE(widget)->img_off;
 
 	cr = gdk_cairo_create(widget->window);
 
@@ -403,6 +412,16 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 			cairo_text_extents (cr,on_text,&extents);
 			cairo_move_to(cr,31+indent-(extents.width/2), 61);
 			cairo_show_text(cr,on_text);
+
+			cairo_save(cr);
+			cairo_arc(cr,32+indent,32.5,12,0,2*INV_PI);
+			cairo_clip(cr);
+
+			gdk_cairo_set_source_pixbuf(cr,img_on, 32+indent-12.5, 32.5-12.5);
+			cairo_paint(cr);
+
+			cairo_restore(cr);
+
 			break;
 
 		case INV_SWITCH_TOGGLE_OFF:
@@ -434,6 +453,16 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 			cairo_text_extents (cr,on_text,&extents);
 			cairo_move_to(cr,31+indent-(extents.width)/2, 61);
 			cairo_show_text(cr,on_text);
+
+			cairo_save(cr);
+			cairo_arc(cr,32+indent,32.5,12,0,2*INV_PI);
+			cairo_clip(cr);
+
+			gdk_cairo_set_source_pixbuf(cr,img_off, 32+indent-12.5, 32.5-12.5);
+			cairo_paint(cr);
+
+			cairo_restore(cr);
+
 			break;
 	}
 

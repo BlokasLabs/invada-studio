@@ -394,11 +394,6 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 		value=min;
 	else if (value > max)
 		value=max;
-		
-/*
-	cairo_set_source_rgb(cr, 0, 0, 0);
-	cairo_paint(cr);
-*/
 
 	if(mode==INV_KNOB_DRAW_ALL) {
 

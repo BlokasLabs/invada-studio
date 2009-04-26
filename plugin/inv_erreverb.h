@@ -18,6 +18,28 @@
 
 */
 
+
+#define IERR_GUI_URI	"http://invadarecords.com/plugins/lv2/erreverb/gui"
+#define IERR_MONO_URI	"http://invadarecords.com/plugins/lv2/erreverb/mono"
+#define IERR_SUM_URI	"http://invadarecords.com/plugins/lv2/erreverb/sum"
+#define IERR_ROOMLENGTH	0
+#define IERR_ROOMWIDTH 	1
+#define IERR_ROOMHEIGHT	2
+#define IERR_SOURCELR 	3
+#define IERR_SOURCEFB 	4
+#define IERR_DESTLR 	5
+#define IERR_DESTFB 	6
+#define IERR_HPF 	7
+#define IERR_WARMTH 	8
+#define IERR_DIFFUSION 	9
+#define IERR_AUDIO_OUTL 10
+#define IERR_AUDIO_OUTR 11 
+#define IERR_AUDIO_INL  12
+#define IERR_METER_IN   13
+#define IERR_METER_OUTL 14
+#define IERR_METER_OUTR 15
+#define IERR_AUDIO_INR  16   /* not used in mono in mode */ 
+
 #define REVERB_SPACE_SIZE 2   /* size in seconds */
 #define MAX_ER            100 /* maximun number of early reflections to calculate */
 #define SPEED_OF_SOUND    330 /* speed of sound in air in meters/second */

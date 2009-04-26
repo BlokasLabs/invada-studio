@@ -328,13 +328,16 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	{
 		switch(i) 
 		{
-			case 0:
 			case 2:
+				break;
+			case 0:
 			case 4:
 			case 6:
 			case 8:
 			case 10:
 				cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+				cairo_rectangle(cr, 4, 8+(i*8), 373, 1);
+				cairo_fill(cr);
 				break;
 			case 1: 
 			case 3: 
@@ -342,10 +345,11 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 			case 7: 
 			case 9: 
 				cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+				cairo_rectangle(cr, 4, 8+(i*8), 373, 1);
+				cairo_fill(cr);
 				break;
 		}	
-		cairo_rectangle(cr, 4, 8+(i*8), 373, 1);
-		cairo_fill(cr);
+
 	}
 
 	/* horizontal axis labeled lines */
@@ -368,10 +372,12 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		}
 	}
 
+	/* 0db line */
+	cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+	cairo_rectangle(cr, 4, 24, 373, 1);
+	cairo_fill(cr);
+
 	/* filter */
-
-
-
 	cairo_rectangle(cr, 4, 4, 373, 90 );
 	cairo_clip(cr);
 
@@ -381,75 +387,75 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	switch(type)
 	{
 		case INV_DISPLAYFG_MODE_LPF:
-			x=get_point(20.0, 20000.0, freq/10, 358);
+			x=get_point(20.0, 20000.0, freq*0.3, 358);
 			y=(12-gain)/6;
 			if(10+x > 4) 
 			{
-				cairo_move_to(cr, 4, 9+(y*8));
-				cairo_line_to(cr, 10+x, 9+(y*8));
+				cairo_move_to(cr, 4, 8.5+(y*8));
+				cairo_line_to(cr, 10+x, 8.5+(y*8));
 			} else {
-				cairo_move_to(cr, 10+x, 9+(y*8));
+				cairo_move_to(cr, 10+x, 8.5+(y*8));
 			}
-			gain=gain -2;
-			x=get_point(20.0, 20000.0, freq*0.3, 358);
-			y=(12-gain)/6;
-			cairo_line_to(cr, 10+x, 9+(y*8));
-
-			gain=gain -2;
+			gain=gain -1;
 			x=get_point(20.0, 20000.0, freq*0.7, 358);
 			y=(12-gain)/6;
-			cairo_line_to(cr, 10+x, 9+(y*8));
+			cairo_line_to(cr, 10+x, 8.5+(y*8));
 
-			gain=gain -2;
+			gain=gain -1;
+			x=get_point(20.0, 20000.0, freq*0.9, 358);
+			y=(12-gain)/6;
+			cairo_line_to(cr, 10+x, 8.5+(y*8));
+
+			gain=gain -1;
 			x=get_point(20.0, 20000.0, freq, 358);
 			y=(12-gain)/6;
-			cairo_line_to(cr, 10+x, 9+(y*8));
+			cairo_line_to(cr, 10+x, 8.5+(y*8));
 
 			i=0;
 			while(freq < 30000)
 			{
 				freq=freq*1.58;
-				gain=gain-3-i;
+				gain=gain-3;
 				x=get_point(20.0, 20000.0, freq, 358);
 				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 9+(y*8));
+				cairo_line_to(cr, 10+x, 8.5+(y*8));
 				i++;
 			}
 			break;
 		case INV_DISPLAYFG_MODE_HPF:
 
-			x=get_point(20.0, 20000.0, freq*10, 358);
+			x=get_point(20.0, 20000.0, freq/0.3, 358);
 			y=(12-gain)/6;
 			if(10+x < 376) 
 			{
-				cairo_move_to(cr, 376, 9+(y*8));
-				cairo_line_to(cr, 10+x, 9+(y*8));
+				cairo_move_to(cr, 376, 8.5+(y*8));
+				cairo_line_to(cr, 10+x, 8.5+(y*8));
 			} else {
-				cairo_move_to(cr, 10+x, 9+(y*8));
+				cairo_move_to(cr, 10+x, 8.5+(y*8));
 			}
-			gain=gain -2;
-			x=get_point(20.0, 20000.0, freq/0.3, 358);
-			y=(12-gain)/6;
-			cairo_line_to(cr, 10+x, 9+(y*8));
-
-			gain=gain -2;
+			gain=gain -1;
 			x=get_point(20.0, 20000.0, freq/0.7, 358);
 			y=(12-gain)/6;
-			cairo_line_to(cr, 10+x, 9+(y*8));
+			cairo_line_to(cr, 10+x, 8.5+(y*8));
 
-			gain=gain -2;
+			gain=gain -1;
+			x=get_point(20.0, 20000.0, freq/0.9, 358);
+			y=(12-gain)/6;
+			cairo_line_to(cr, 10+x, 8.5+(y*8));
+
+			gain=gain -1;
 			x=get_point(20.0, 20000.0, freq, 358);
 			y=(12-gain)/6;
-			cairo_line_to(cr, 10+x, 9+(y*8));
+			cairo_line_to(cr, 10+x, 8.5+(y*8));
 
 			i=0;
 			while(freq > 14)
 			{
 				freq=freq/1.58;
-				gain=gain-3-i;
+				gain=gain-3;
 				x=get_point(20.0, 20000.0, freq, 358);
 				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 9+(y*8));
+				cairo_line_to(cr, 10+x, 8.5+(y*8));
 				i++;
 			}
 			break;
