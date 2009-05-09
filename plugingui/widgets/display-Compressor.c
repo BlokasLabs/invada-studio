@@ -51,12 +51,6 @@ inv_display_comp_get_type(void)
 	}
 	return inv_display_comp_type;
 }
-void inv_display_comp_set_rms(InvDisplayComp *displayComp, float num);
-void inv_display_comp_set_attack(InvDisplayComp *displayComp, float num);
-void inv_display_comp_set_release(InvDisplayComp *displayComp, float num);
-void inv_display_comp_set_threshold(InvDisplayComp *displayComp, float num);
-void inv_display_comp_set_ratio(InvDisplayComp *displayComp, float num);
-void inv_display_comp_set_gain(InvDisplayComp *displayComp, float num);
 
 void
 inv_display_comp_set_rms(InvDisplayComp *displayComp, float num)

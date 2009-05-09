@@ -35,7 +35,7 @@
 #include "inv_compressor_gui.h"
 
 
-static LV2UI_Descriptor *IFilterGuiDescriptor = NULL;
+static LV2UI_Descriptor *ICompGuiDescriptor = NULL;
 
 typedef struct {
 	GtkWidget	*windowContainer;
@@ -67,13 +67,13 @@ typedef struct {
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
 
-} IFilterGui;
+} ICompGui;
 
 
 
-static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
+static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
-	IFilterGui *pluginGui = (IFilterGui *)malloc(sizeof(IFilterGui));
+	ICompGui *pluginGui = (ICompGui *)malloc(sizeof(ICompGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -281,15 +281,15 @@ static LV2UI_Handle instantiateIFilterGui(const struct _LV2UI_Descriptor* descri
 }
 
 
-static void cleanupIFilterGui(LV2UI_Handle ui)
+static void cleanupICompGui(LV2UI_Handle ui)
 {
 	return;
 }
 
 
-static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
+static void port_eventICompGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
 {
-	IFilterGui *pluginGui = (IFilterGui *)ui;
+	ICompGui *pluginGui = (ICompGui *)ui;
 
 	float value;
 
@@ -361,25 +361,25 @@ static void port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer
 
 static void init()
 {
-	IFilterGuiDescriptor =
+	ICompGuiDescriptor =
 	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
 
-	IFilterGuiDescriptor->URI 		= ICOMP_GUI_URI;
-	IFilterGuiDescriptor->instantiate 	= instantiateIFilterGui;
-	IFilterGuiDescriptor->cleanup		= cleanupIFilterGui;
-	IFilterGuiDescriptor->port_event	= port_eventIFilterGui;
-	IFilterGuiDescriptor->extension_data 	= NULL;
+	ICompGuiDescriptor->URI 		= ICOMP_GUI_URI;
+	ICompGuiDescriptor->instantiate 	= instantiateICompGui;
+	ICompGuiDescriptor->cleanup		= cleanupICompGui;
+	ICompGuiDescriptor->port_event	= port_eventICompGui;
+	ICompGuiDescriptor->extension_data 	= NULL;
 
 }
 
 
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IFilterGuiDescriptor) init();
+	if (!ICompGuiDescriptor) init();
 
 	switch (index) {
 		case 0:
-			return IFilterGuiDescriptor;
+			return ICompGuiDescriptor;
 	default:
 		return NULL;
 	}
@@ -391,7 +391,7 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 
 static void on_inv_comp_rms_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFilterGui *pluginGui = (IFilterGui *) data;
+	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->rms=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_RMS, 4, 0, &pluginGui->rms);
@@ -400,7 +400,7 @@ static void on_inv_comp_rms_knob_motion(GtkWidget *widget, GdkEvent *event, gpoi
 
 static void on_inv_comp_attack_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFilterGui *pluginGui = (IFilterGui *) data;
+	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->attack=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_ATTACK, 4, 0, &pluginGui->attack);
@@ -409,7 +409,7 @@ static void on_inv_comp_attack_knob_motion(GtkWidget *widget, GdkEvent *event, g
 
 static void on_inv_comp_release_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFilterGui *pluginGui = (IFilterGui *) data;
+	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->release=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_RELEASE, 4, 0, &pluginGui->release);
@@ -418,7 +418,7 @@ static void on_inv_comp_release_knob_motion(GtkWidget *widget, GdkEvent *event, 
 
 static void on_inv_comp_threshold_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFilterGui *pluginGui = (IFilterGui *) data;
+	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->threshold=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_THRESH, 4, 0, &pluginGui->threshold);
@@ -427,7 +427,7 @@ static void on_inv_comp_threshold_knob_motion(GtkWidget *widget, GdkEvent *event
 
 static void on_inv_comp_ratio_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFilterGui *pluginGui = (IFilterGui *) data;
+	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->ratio=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_RATIO, 4, 0, &pluginGui->ratio);
@@ -437,7 +437,7 @@ static void on_inv_comp_ratio_knob_motion(GtkWidget *widget, GdkEvent *event, gp
 static void on_inv_comp_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
-	IFilterGui *pluginGui = (IFilterGui *) data;
+	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->gain=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_GAIN, 4, 0, &pluginGui->gain);
@@ -447,7 +447,7 @@ static void on_inv_comp_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpo
 static void on_inv_comp_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
-	IFilterGui *pluginGui = (IFilterGui *) data;
+	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->noClip=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_NOCLIP, 4, 0, &pluginGui->noClip);

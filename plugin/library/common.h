@@ -18,6 +18,9 @@
 
 */
 
+#ifndef __INVADA_COMMON_H
+#define __INVADA_COMMON_H
+
 /* 2.0 * atan(1.0) */
 #define PI_ON_2 1.570796327
 
@@ -27,11 +30,25 @@
 /*2^31-2 */
 #define TWO31_MINUS2 2147483646
 
+/* maximun number of early reflections to calculate */
+#define MAX_ER            100 
+
+/* speed of sound in air in meters/second */
+#define SPEED_OF_SOUND    330 
 
 #define INVADA_METER_VU 0
 #define INVADA_METER_PEAK 1
 #define INVADA_METER_PHASE 2
 #define INVADA_METER_LAMP 3
+
+struct ERunit {
+	int Active;
+	unsigned long Delay;
+	unsigned int Reflections;
+	float AbsGain;
+	float GainL;
+	float GainR;
+};
 
 /* param change detect function */
 void checkParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
@@ -44,3 +61,16 @@ float InoClip(float in, float *drive);
 
 /* distortion function */
 float ITube_do(float in, float Drive);
+
+/* works out a single er reflection */
+void calculateSingleIReverbER(struct ERunit * er, float Width, float Length, float Height, int Phase, unsigned int reflections, float DDist, double sr);
+
+/* works out all er reflections */
+int calculateIReverbER(struct ERunit *erarray, int erMax, 
+			float width, float length, float height, 
+			float sourceLR, float sourceFB, 
+			float destLR, float destFB, float objectHeight, 
+			float diffusion,
+			double sr);
+
+#endif /*__INVADA_COMMON_H */

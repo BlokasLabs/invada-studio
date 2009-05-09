@@ -41,24 +41,12 @@
 #define IERR_AUDIO_INR  16   /* not used in mono in mode */ 
 
 #define REVERB_SPACE_SIZE 2   /* size in seconds */
-#define MAX_ER            100 /* maximun number of early reflections to calculate */
-#define SPEED_OF_SOUND    330 /* speed of sound in air in meters/second */
 #define OBJECT_HEIGHT     1.5 /* the height of the sound source and the listener */
 
-struct ERunit {
-	int Active;
-	unsigned long Delay;
-	unsigned int Reflections;
-	float AbsGain;
-	float GainL;
-	float GainR;
-};
+
 
 /* works out the reflection details */
-void calculateIReverbER(LV2_Handle instance);
-
-/* works out a single reflection */
-void calculateSingleIReverbER(struct ERunit * er, float Width, float Length, float Height, int Phase, unsigned int reflections, float DDist, double sr);
+void calculateIReverbERWrapper(LV2_Handle instance);
 
 /* control conversion function */
 float convertParam(unsigned long param, float value, double sr);

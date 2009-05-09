@@ -72,6 +72,10 @@ typedef struct {
 	float * AudioInputBufferL;
 	float * AudioInputBufferR; 
 
+	float * MeterInput;
+	float * MeterOutputL;
+	float * MeterOutputR;
+
 	double SampleRate;
 
 	/* Stuff to remember to avoid recalculating the delays every run */
@@ -85,6 +89,10 @@ typedef struct {
 	float LastHPF;
 	float LastWarmth; 
 	float LastDiffusion;
+
+	float EnvInLast; 
+	float EnvOutLLast; 
+	float EnvOutRLast;
 
 	float ConvertedHPF; 
 	float ConvertedWarmth; 
@@ -181,6 +189,15 @@ static void connectPortIReverbER(LV2_Handle instance, uint32_t port, void *data)
 		case IERR_AUDIO_INR:
 			plugin->AudioInputBufferR = data;
 			break;
+		case IERR_METER_IN:
+			plugin->MeterInput = data;
+			break;
+		case IERR_METER_OUTL:
+			plugin->MeterOutputL = data;
+			break;
+		case IERR_METER_OUTR:
+			plugin->MeterOutputR = data;
+			break;
 	}
 }
 
@@ -215,9 +232,9 @@ static void activateIReverbER(LV2_Handle instance)
 	plugin->LastSourceFB   = 0.8;
 	plugin->LastDestLR     = 0.01; 
 	plugin->LastDestFB     = 0.2;
-	plugin->LastHPF        = 0.001;
-	plugin->LastWarmth     = 0.5;
-	plugin->LastDiffusion  = 0.5;
+	plugin->LastHPF        = 1000.0;
+	plugin->LastWarmth     = 50;
+	plugin->LastDiffusion  = 50;
 
 	plugin->AudioHPFLast=0;
 	plugin->AudioIn1Last=0;
@@ -225,9 +242,13 @@ static void activateIReverbER(LV2_Handle instance)
 	plugin->AudioIn3Last=0; 
 	plugin->AudioIn4Last=0;
 
+	plugin->EnvInLast = 0; 
+	plugin->EnvOutLLast = 0; 
+	plugin->EnvOutRLast = 0; 
+
 	plugin->ConvertedHPF    = convertParam(IERR_HPF,    plugin->LastHPF,    plugin->SampleRate);  
 	plugin->ConvertedWarmth = convertParam(IERR_WARMTH, plugin->LastWarmth, plugin->SampleRate);  
-	calculateIReverbER(instance);
+	calculateIReverbERWrapper(instance);
 }
 
 
@@ -237,6 +258,9 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioInputL;
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;
+	float In,EnvIn;
+	float OutL,EnvOutL;
+	float OutR,EnvOutR;
 	float AudioIn,AudioHPF,AudioIn1,AudioIn2,AudioIn3,AudioIn4,AudioProc;
 	float HPFsamples,WarmthSamples;
 	struct ERunit * er;
@@ -272,7 +296,7 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 		  plugin->LastDestFB     = *(plugin->ControlDestFB);
 		  plugin->LastDiffusion  = *(plugin->ControlDiffusion);
 		  
-		  calculateIReverbER(instance);
+		  calculateIReverbERWrapper(instance);
 	}
 
 	/* check if any other params have changed */
@@ -302,12 +326,16 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	pfAudioOutputL 	= plugin->AudioOutputBufferL;
 	pfAudioOutputR 	= plugin->AudioOutputBufferR;
 
+	EnvIn     	= plugin->EnvInLast;
+	EnvOutL    	= plugin->EnvOutLLast;
+	EnvOutR   	= plugin->EnvOutRLast;
+
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
-		AudioIn=*(pfAudioInputL++);
+		In=*(pfAudioInputL++);
 		// apply HPF as bottom end in reverbs sounds crap
-		AudioHPF = ((HPFsamples-1) * AudioHPF + AudioIn) / HPFsamples;  
-		AudioIn = AudioIn - AudioHPF;
+		AudioHPF = ((HPFsamples-1) * AudioHPF + In) / HPFsamples;  
+		AudioIn = In - AudioHPF;
 
 		// apply simple LPF filter repeatedly to audio to simluate frequency loss with each reflection
 		AudioIn1=((WarmthSamples-1) * AudioIn1 + AudioIn) / WarmthSamples; 
@@ -334,10 +362,8 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 					AudioProc=AudioIn3;
 					break;
 				case 4:
-					AudioProc=AudioIn4;
-					break;
 				default:
-					AudioProc=0;
+					AudioProc=AudioIn4;
 					break;
 			}
 			// add the reflection into the delay space
@@ -354,14 +380,21 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 			er++;
 		}
 		// read the audio out of the delay space
-		*(pfAudioOutputL++) = *(SpaceLCur);
-		*(pfAudioOutputR++) = *(SpaceRCur);
+		OutL = *(SpaceLCur);
+		OutR = *(SpaceRCur);
+		*(pfAudioOutputL++) = OutL;
+		*(pfAudioOutputR++) = OutR;
 		// zero the spot we just read
 		*(SpaceLCur)=0;
 		*(SpaceRCur)=0;
 		// advance the pointer to the next spot
 		SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
 		SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
+
+		//evelope on in and out for meters
+		EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 	
 	}
 	// remember for next run
@@ -372,6 +405,15 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	plugin->AudioIn2Last=(fabs(AudioIn2)<1.0e-10)  ? 0.f : AudioIn2; 
 	plugin->AudioIn3Last=(fabs(AudioIn3)<1.0e-10)  ? 0.f : AudioIn3; 
 	plugin->AudioIn4Last=(fabs(AudioIn4)<1.0e-10)  ? 0.f : AudioIn4; 
+
+	plugin->EnvInLast   = (fabs(EnvIn)<1.0e-10)   ? 0.f : EnvIn; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+
+	// update the meters
+	*(plugin->MeterInput)  =(EnvIn  > 0.001) ? 20*log10(EnvIn)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
 }
 
 
@@ -382,6 +424,9 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioInputR;
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;
+	float In,EnvIn;
+	float OutL,EnvOutL;
+	float OutR,EnvOutR;
 	float AudioIn,AudioHPF,AudioIn1,AudioIn2,AudioIn3,AudioIn4,AudioProc;
 	float HPFsamples,WarmthSamples;
 	struct ERunit * er;
@@ -417,7 +462,7 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 		  plugin->LastDestFB     = *(plugin->ControlDestFB);
 		  plugin->LastDiffusion  = *(plugin->ControlDiffusion);
 		  
-		  calculateIReverbER(instance);
+		  calculateIReverbERWrapper(instance);
 	}
 
 	/* check if any other params have changed */
@@ -448,13 +493,17 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	pfAudioOutputL 	= plugin->AudioOutputBufferL;
 	pfAudioOutputR 	= plugin->AudioOutputBufferR;
 
+	EnvIn     	= plugin->EnvInLast;
+	EnvOutL    	= plugin->EnvOutLLast;
+	EnvOutR   	= plugin->EnvOutRLast;
+
 	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
-		AudioIn=( *(pfAudioInputL++) + *(pfAudioInputR++) )/2;
+		In=( *(pfAudioInputL++) + *(pfAudioInputR++) )/2;
 
 		// apply HPF as bottom end in reverbs sounds crap
-		AudioHPF = ((HPFsamples-1) * AudioHPF + AudioIn) / HPFsamples;  
-		AudioIn = AudioIn - AudioHPF;
+		AudioHPF = ((HPFsamples-1) * AudioHPF + In) / HPFsamples;  
+		AudioIn = In - AudioHPF;
 
 		// apply simple filter repeatedly to audio to simluate frequency loss with each reflection
 		AudioIn1=((WarmthSamples-1) * AudioIn1 + AudioIn) / WarmthSamples; 
@@ -481,10 +530,8 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 					AudioProc=AudioIn3;
 					break;
 				case 4:
-					AudioProc=AudioIn4;
-					break;
 				default:
-					AudioProc=0;
+					AudioProc=AudioIn4;
 					break;
 			}
 			// add the reflection into the delay space
@@ -501,14 +548,21 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 			er++;
 		}
 		// read the audio out of the delay space
-		*(pfAudioOutputL++) = *(SpaceLCur);
-		*(pfAudioOutputR++) = *(SpaceRCur);
+		OutL = *(SpaceLCur);
+		OutR = *(SpaceRCur);
+		*(pfAudioOutputL++) = OutL;
+		*(pfAudioOutputR++) = OutR;
 		// zero the spot we just read
 		*(SpaceLCur)=0;
 		*(SpaceRCur)=0;
 		// advance the pointer to the next spot
 		SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
 		SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
+
+		//evelope on in and out for meters
+		EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 	
 	}
 	// remember for next run
@@ -519,6 +573,15 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	plugin->AudioIn2Last=(fabs(AudioIn2)<1.0e-10)  ? 0.f : AudioIn2; 
 	plugin->AudioIn3Last=(fabs(AudioIn3)<1.0e-10)  ? 0.f : AudioIn3; 
 	plugin->AudioIn4Last=(fabs(AudioIn4)<1.0e-10)  ? 0.f : AudioIn4; 
+
+	plugin->EnvInLast   = (fabs(EnvIn)<1.0e-10)   ? 0.f : EnvIn; 
+	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
+	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
+
+	// update the meters
+	*(plugin->MeterInput)  =(EnvIn  > 0.001) ? 20*log10(EnvIn)  : -90.0;
+	*(plugin->MeterOutputL)=(EnvOutL > 0.001) ? 20*log10(EnvOutL) : -90.0;
+	*(plugin->MeterOutputR)=(EnvOutR > 0.001) ? 20*log10(EnvOutR) : -90.0;
 }
 
 
@@ -580,19 +643,11 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-void calculateIReverbER(LV2_Handle instance)
+void calculateIReverbERWrapper(LV2_Handle instance)
 {
 	IReverbER *plugin = (IReverbER *)instance;
 
 	float convertedWidth,convertedLength,convertedHeight,convertedSourceLR,convertedSourceFB,convertedDestLR,convertedDestFB,convertedDiffusion;
-	float SourceToLeft,SourceToRight,SourceToRear,SourceToFront;
-	float DestToLeft,DestToRight,DestToRear,DestToFront;
-	float RoofHeight,FloorDepth;
-	float DirectLength,DirectWidth,DirectHeight,DirectDistanceSQRD,DirectDistance;
-	float ERLength,ERWidth,ERHeight,MaxGain;
-
-	struct ERunit * er;
-	unsigned int Num,i;
 
 	if (plugin->LastRoomWidth < 3.0)
 		convertedWidth = 3.0;
@@ -645,343 +700,43 @@ void calculateIReverbER(LV2_Handle instance)
 
 	if (plugin->LastDiffusion < 0.0)
 		convertedDiffusion = 0.0;
-	else if (plugin->LastDiffusion <= 1.0)
-		convertedDiffusion = plugin->LastDiffusion;
+	else if (plugin->LastDiffusion <= 100.0)
+		convertedDiffusion = plugin->LastDiffusion/100;
 	else
 		convertedDiffusion = 1.0;
 
-	SourceToLeft = (1+convertedSourceLR) /2 * convertedWidth;
-	SourceToRight= (1-convertedSourceLR) /2 * convertedWidth;
-	SourceToFront= convertedSourceFB        * convertedLength;
-	SourceToRear = (1-convertedSourceFB)    * convertedLength;
-
-	DestToLeft = (1+convertedDestLR) /2 * convertedWidth;
-	DestToRight= (1-convertedDestLR) /2 * convertedWidth;
-	DestToFront= convertedDestFB        * convertedLength;
-	DestToRear = (1-convertedDestFB)    * convertedLength;
-
-	RoofHeight = convertedHeight - OBJECT_HEIGHT;
-	FloorDepth = OBJECT_HEIGHT;
-
-	DirectLength = SourceToFront-DestToFront;
-	DirectWidth = SourceToLeft-DestToLeft;
-	DirectHeight =0; // both the source and the lisenter are at the same height
-	DirectDistanceSQRD = pow(DirectLength,2)+pow(DirectWidth,2) < 1 ? 1 : pow(DirectLength,2)+pow(DirectWidth,2);
-	DirectDistance = sqrt(DirectDistanceSQRD) < 1 ? 1 : sqrt(DirectDistanceSQRD);
-
-	er=plugin->er;
-	Num=0;
-	MaxGain=0.000000000001; /* this is used to scale up the reflections so that the loudest one has a gain of 1 (0db) */
-
-	/* seed the random sequence with a version of the diffusion */
-	srand48(1+(long int)(convertedDiffusion*TWO31_MINUS2));
-  
-	// reflections from the left wall
-	// 0: S->Left->D
-	ERLength       = DirectLength;
-	ERWidth        = -(SourceToLeft + DestToLeft);
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 1, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 1: S->BackWall->Left->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = -(SourceToLeft + DestToLeft);
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 2: S->Right->Left->D
-	ERLength       = DirectLength;
-	ERWidth        = -(SourceToRight + convertedWidth + DestToLeft);
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 3: S->BackWall->Right->Left->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = -(SourceToRight + convertedWidth + DestToLeft);
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;  
-
-	// 4: S->Left->Rigtht->Left->D
-	ERLength       = DirectLength;
-	ERWidth        = -(SourceToLeft + (2 * convertedWidth) + DestToLeft);
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 5: S->BackWall->Left->Right->Left->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = -(SourceToLeft + (2 * convertedWidth) + DestToLeft);
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 4, DirectDistance,  plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;  
-
-	// reflections from the right wall
-	// 6: S->Right->D
-	ERLength       = DirectLength;
-	ERWidth        = SourceToRight + DestToRight;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 1, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 7: S->BackWall->Right->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = SourceToRight + DestToRight;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 8: S->Left->Right->D
-	ERLength       = DirectLength;
-	ERWidth        = SourceToLeft + convertedWidth + DestToRight;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 9: S->BackWall->Left->Right->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = SourceToLeft + convertedWidth + DestToRight;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 10: S->Right->Left->Right->D
-	ERLength       = DirectLength;
-	ERWidth        = SourceToRight + (2 * convertedWidth) + DestToRight;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 11: S->BackWall->Right->Left->Right->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = SourceToRight + (2 * convertedWidth) + DestToRight;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 4, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// reflections from the rear wall
-	// 12: S->BackWall->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = DirectWidth;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 1, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// 13: S->NearWall->BackWall->D
-	ERLength       = SourceToFront + convertedLength + DestToRear;
-	ERWidth        = DirectWidth;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// S->Left->NearWall->BackWall->D
-	ERLength       = SourceToFront + convertedLength + DestToRear;
-	ERWidth        = -(SourceToLeft + DestToLeft);
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// S->Right->NearWall->BackWall->D
-	ERLength       = SourceToFront + convertedLength + DestToRear;
-	ERWidth        = SourceToRight + DestToRight;
-	ERHeight       = DirectHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// reflections from the roof
-	// S->Roof->Left->D
-	ERLength       = DirectLength;
-	ERWidth        = -(SourceToLeft + DestToLeft);
-	ERHeight       = 2*RoofHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// S->Roof->Right->D
-	ERLength       = DirectLength;
-	ERWidth        = SourceToRight + DestToRight;
-	ERHeight       = 2*RoofHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 1, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// S->BackWall->Roof->Left->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = -(SourceToLeft + DestToLeft);
-	ERHeight       = 2*RoofHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// S->BackWall->Roof->Right->D
-	ERLength       = SourceToRear + DestToRear;
-	ERWidth        = SourceToRight + DestToRight;
-	ERHeight       = 2*RoofHeight;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// reflections from the floor 
-	// S->Floor->Left->D
-	ERLength       = DirectLength;
-	ERWidth        = -(SourceToLeft + DestToLeft);
-	ERHeight       = 2*FloorDepth;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// S->Floor->Right->D
-	ERLength       = DirectLength;
-	ERWidth        = SourceToRight + DestToRight;
-	ERHeight       = 2*FloorDepth;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// reflections from roof and floor
-	// S->Roof->Left->Floor->D
-	ERLength       = DirectLength;
-	ERWidth        = -(SourceToLeft + DestToLeft);
-	ERHeight       = 2*RoofHeight + 2*FloorDepth;
-	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	// S->Roof->Right->Floor->D
-	ERLength       = DirectLength;
-	ERWidth        = SourceToRight + DestToRight;
-	ERHeight       = 2*RoofHeight + 2*FloorDepth;
-	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, plugin->SampleRate);
-	if(er->AbsGain > MaxGain)
-		MaxGain=er->AbsGain;
-	er++;
-	Num++;
-
-	plugin->er_size = Num; 	
-
-
-	/* scale up and calculate l/r actual gains for run() */
-	er=plugin->er;
-	for(i=0;i<Num;i++) {
-		er->Delay=er->Delay*(1.01+drand48()*convertedDiffusion/10);
-		er->GainL=er->GainL/MaxGain;
-		er->GainR=er->GainR/MaxGain;
-		er++;
-	}
+	plugin->er_size=calculateIReverbER(plugin->er, MAX_ER, 
+					convertedWidth, convertedLength, convertedHeight, 
+					convertedSourceLR, convertedSourceFB, 
+					convertedDestLR, convertedDestFB, OBJECT_HEIGHT, 
+					convertedDiffusion,
+					plugin->SampleRate);
 }
 
 
-void calculateSingleIReverbER(struct ERunit * er, float Width, float Length, float Height, int Phase, unsigned int Reflections, float DDist, double sr) {
-
-	float ERAngle,ERDistanceSQRD,ERDistance,ERRelGain,ERRelGainL,ERRelGainR;
-	unsigned long ERRelDelay;
-
-	ERAngle        = atan(Width/Length);
-	ERDistanceSQRD = pow(Length,2) + pow(Width,2)+ pow(Height,2);
-	ERDistance     = sqrt(ERDistanceSQRD);
-	ERRelDelay     = (unsigned long)((ERDistance-DDist) * (float)sr /SPEED_OF_SOUND);
-	ERRelGain      = Phase / ERDistanceSQRD;
-	ERRelGainL     = (ERRelGain * (1 - (ERAngle/PI_ON_2)))/2;
-	ERRelGainR     = (ERRelGain * (1 + (ERAngle/PI_ON_2)))/2;
-
-	er->Active=1;
-	er->Delay=ERRelDelay;
-	er->Reflections=Reflections;
-	er->AbsGain=fabs(ERRelGain);
-	er->GainL=ERRelGainL;
-	er->GainR=ERRelGainR;
-}
 
 float convertParam(unsigned long param, float value, double sr) {
 
-	float temp;
 	float result;
 
 	switch(param)
 	{
 		case IERR_HPF:
-			temp = value / (float)sr;
-			if (temp < 0.001)
-				result = 500;
-			else if (temp <= 0.05)
-				result = 1/(2*temp);
+
+			if (value < 20)
+				result = sr/(40.0);
+			else if (value <= 2000.0)
+				result = sr/(2*value);
 			else
-				result=10;
+				result=sr/(4000.0);
 			break;
 		case IERR_WARMTH:
 			if(value<0)
 				result= 1;
-			else if (value < 1)
-				result = pow(2,value*2);
+			else if (value < 100)
+				result = pow(2,value/50);
 			else
 				result= 4;
-			break;
-			
 			break;
 		default:
 			result=0;

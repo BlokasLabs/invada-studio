@@ -20,6 +20,7 @@
 
 */
 
+#include <stdlib.h> 
 #include <math.h>
 #include <lv2.h>
 #include "common.h"
@@ -102,4 +103,361 @@ float ITube_do(float in, float Drive)
 	return out;
 }
 
+
+void calculateSingleIReverbER(struct ERunit * er, float Width, float Length, float Height, int Phase, unsigned int Reflections, float DDist, double sr) {
+
+	float ERAngle,ERDistanceSQRD,ERDistance,ERRelGain,ERRelGainL,ERRelGainR;
+	unsigned long ERRelDelay;
+
+	ERAngle        = atan(Width/Length);
+	ERDistanceSQRD = pow(Length,2) + pow(Width,2)+ pow(Height,2);
+	ERDistance     = sqrt(ERDistanceSQRD);
+	ERRelDelay     = (unsigned long)((ERDistance-DDist) * (float)sr /SPEED_OF_SOUND);
+	ERRelGain      = Phase / ERDistanceSQRD;
+	ERRelGainL     = (ERRelGain * (1 - (ERAngle/PI_ON_2)))/2;
+	ERRelGainR     = (ERRelGain * (1 + (ERAngle/PI_ON_2)))/2;
+
+	er->Active=1;
+	er->Delay=ERRelDelay;
+	er->Reflections=Reflections;
+	er->AbsGain=fabs(ERRelGain);
+	er->GainL=ERRelGainL;
+	er->GainR=ERRelGainR;
+}
+
+int calculateIReverbER(struct ERunit *erarray, int erMax, 
+			float width, float length, float height, 
+			float sourceLR, float sourceFB, 
+			float destLR, float destFB, float objectHeight, 
+			float diffusion,
+			double sr)
+{
+
+	float SourceToLeft,SourceToRight,SourceToRear,SourceToFront;
+	float DestToLeft,DestToRight,DestToRear,DestToFront;
+	float RoofHeight,FloorDepth;
+	float DirectLength,DirectWidth,DirectHeight,DirectDistanceSQRD,DirectDistance;
+	float ERLength,ERWidth,ERHeight,MaxGain;
+
+	struct ERunit *er, *er2;
+	unsigned int Num,TotalNum,i;
+
+
+	SourceToLeft = (1+sourceLR) /2 * width;
+	SourceToRight= (1-sourceLR) /2 * width;
+	SourceToFront= sourceFB        * length;
+	SourceToRear = (1-sourceFB)    * length;
+
+	DestToLeft = (1+destLR) /2 * width;
+	DestToRight= (1-destLR) /2 * width;
+	DestToFront= destFB        * length;
+	DestToRear = (1-destFB)    * length;
+
+	RoofHeight = height - objectHeight;
+	FloorDepth = objectHeight;
+
+	DirectLength = SourceToFront-DestToFront;
+	DirectWidth = SourceToLeft-DestToLeft;
+	DirectHeight =0; // both the source and the lisenter are at the same height
+	DirectDistanceSQRD = pow(DirectLength,2)+pow(DirectWidth,2) < 1 ? 1 : pow(DirectLength,2)+pow(DirectWidth,2);
+	DirectDistance = sqrt(DirectDistanceSQRD) < 1 ? 1 : sqrt(DirectDistanceSQRD);
+
+	er=erarray;
+	Num=0;
+	MaxGain=0.000000000001; /* this is used to scale up the reflections so that the loudest one has a gain of 1 (0db) */
+
+	/* seed the random sequence*/
+	srand48(314159265);
+  
+	// reflections from the left wall
+	// 0: S->Left->D
+	ERLength       = DirectLength;
+	ERWidth        = -(SourceToLeft + DestToLeft);
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 1, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 1: S->BackWall->Left->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = -(SourceToLeft + DestToLeft);
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 2: S->Right->Left->D
+	ERLength       = DirectLength;
+	ERWidth        = -(SourceToRight + width + DestToLeft);
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 3: S->BackWall->Right->Left->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = -(SourceToRight + width + DestToLeft);
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;  
+
+	// 4: S->Left->Rigth->Left->D
+	ERLength       = DirectLength;
+	ERWidth        = -(SourceToLeft + (2 * width) + DestToLeft);
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 5: S->BackWall->Left->Right->Left->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = -(SourceToLeft + (2 * width) + DestToLeft);
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 4, DirectDistance,  sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;  
+
+	// reflections from the right wall
+	// 6: S->Right->D
+	ERLength       = DirectLength;
+	ERWidth        = SourceToRight + DestToRight;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 1, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 7: S->BackWall->Right->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = SourceToRight + DestToRight;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 8: S->Left->Right->D
+	ERLength       = DirectLength;
+	ERWidth        = SourceToLeft + width + DestToRight;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 9: S->BackWall->Left->Right->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = SourceToLeft + width + DestToRight;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 10: S->Right->Left->Right->D
+	ERLength       = DirectLength;
+	ERWidth        = SourceToRight + (2 * width) + DestToRight;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 11: S->BackWall->Right->Left->Right->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = SourceToRight + (2 * width) + DestToRight;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 4, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// reflections from the rear wall
+	// 12: S->BackWall->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = DirectWidth;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 1, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 13: S->NearWall->BackWall->D
+	ERLength       = SourceToFront + length + DestToRear;
+	ERWidth        = DirectWidth;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 14: S->Left->NearWall->BackWall->D
+	ERLength       = SourceToFront + length + DestToRear;
+	ERWidth        = -(SourceToLeft + DestToLeft);
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 15: S->Right->NearWall->BackWall->D
+	ERLength       = SourceToFront + length + DestToRear;
+	ERWidth        = SourceToRight + DestToRight;
+	ERHeight       = DirectHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// reflections from the roof
+	// 16: S->Roof->Left->D
+	ERLength       = DirectLength;
+	ERWidth        = -(SourceToLeft + DestToLeft);
+	ERHeight       = 2*RoofHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 17: S->Roof->Right->D
+	ERLength       = DirectLength;
+	ERWidth        = SourceToRight + DestToRight;
+	ERHeight       = 2*RoofHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 1, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 18: S->BackWall->Roof->Left->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = -(SourceToLeft + DestToLeft);
+	ERHeight       = 2*RoofHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 19: S->BackWall->Roof->Right->D
+	ERLength       = SourceToRear + DestToRear;
+	ERWidth        = SourceToRight + DestToRight;
+	ERHeight       = 2*RoofHeight;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance,sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// reflections from the floor 
+	// 20: S->Floor->Left->D
+	ERLength       = DirectLength;
+	ERWidth        = -(SourceToLeft + DestToLeft);
+	ERHeight       = 2*FloorDepth;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 21: S->Floor->Right->D
+	ERLength       = DirectLength;
+	ERWidth        = SourceToRight + DestToRight;
+	ERHeight       = 2*FloorDepth;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, 1, 2, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// reflections from roof and floor
+	// 22: S->Roof->Left->Floor->D
+	ERLength       = DirectLength;
+	ERWidth        = -(SourceToLeft + DestToLeft);
+	ERHeight       = 2*RoofHeight + 2*FloorDepth;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 23: S->Roof->Right->Floor->D
+	ERLength       = DirectLength;
+	ERWidth        = SourceToRight + DestToRight;
+	ERHeight       = 2*RoofHeight + 2*FloorDepth;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 3, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 24: S->Roof->Left->Floor->Right->Roof->D
+	ERLength       = DirectLength;
+	ERWidth        = -(SourceToLeft + DirectWidth + DestToLeft);
+	ERHeight       = 4*RoofHeight + 2*FloorDepth;
+	calculateSingleIReverbER(er, ERWidth, ERLength,  ERHeight, -1, 5, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	// 25: S->Roof->Right->Floor->Left->Roof->D
+	ERLength       = DirectLength;
+	ERWidth        = SourceToRight + DirectWidth + DestToRight;
+	ERHeight       = 4*RoofHeight + 2*FloorDepth;
+	calculateSingleIReverbER(er, ERWidth, ERLength, ERHeight, -1, 5, DirectDistance, sr);
+	if(er->AbsGain > MaxGain)
+		MaxGain=er->AbsGain;
+	er++;
+	Num++;
+
+	er2=er;
+	er=erarray;
+	TotalNum=Num;
+	for(i=0;i<Num;i++) {
+		//create a new reflection based on the diffusion
+		if(diffusion > 0 && 4*er->AbsGain/MaxGain > 1-diffusion) {
+			er2->Active=1;
+			er2->Delay=er->Delay*(1.085+(drand48()*diffusion/7));
+			er2->Reflections=er->Reflections;
+			er2->AbsGain=er->AbsGain*diffusion*0.6/MaxGain;
+			er2->GainL=er->GainL*diffusion*0.6/MaxGain;
+			er2->GainR=er->GainR*diffusion*0.6/MaxGain;
+			TotalNum++;
+			er2++;
+		}
+
+		//scale up reflection
+		er->Delay=er->Delay*(1.01+(drand48()*diffusion/14));
+		er->AbsGain=er->AbsGain/MaxGain;
+		er->GainL=er->GainL/MaxGain;
+		er->GainR=er->GainR/MaxGain;
+		er++;
+	}
+	return TotalNum;
+}
 

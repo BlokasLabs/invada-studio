@@ -22,10 +22,11 @@
 CC		=	gcc
 LD		=	ld
 CFLAGS		=	-I. `pkg-config --cflags gtk+-2.0`  -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
-LDFLAGS		=	-shared -Lwidgets -lc -lm -linv_widgets
+LDFLAGS		=	-shared -Lwidgets -L../plugin/library -lc -lm -linv_widgets -linv_common
 
 
 GUIS		=	inv_compressor_gui.so \
+			inv_erreverb_gui.so \
 			inv_filter_gui.so \
 			inv_input_gui.so \
 			inv_tube_gui.so \
@@ -36,6 +37,7 @@ all:	$(GUIS)
 # RULES TO BUILD GUIS FROM C CODE
 
 inv_compressor_gui.so: inv_compressor_gui.o	../plugin/inv_compressor.h	inv_compressor_gui.h   
+inv_erreverb_gui.so:   inv_erreverb_gui.o	../plugin/inv_erreverb.h	inv_erreverb_gui.h   
 inv_filter_gui.so:     inv_filter_gui.o		../plugin/inv_filter.h		inv_filter_gui.h   
 inv_input_gui.so:      inv_input_gui.o		../plugin/inv_input.h		inv_input_gui.h   
 inv_tube_gui.so:       inv_tube_gui.o		../plugin/inv_tube.h		inv_tube_gui.h 
