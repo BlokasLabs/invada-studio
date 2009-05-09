@@ -20,22 +20,23 @@
 
 #define IINPUT_URI		"http://invadarecords.com/plugins/lv2/input";
 #define IINPUT_GUI_URI		"http://invadarecords.com/plugins/lv2/input/gui";
-#define IINPUT_PHASEL		0
-#define IINPUT_PHASER		1
-#define IINPUT_GAIN		2
-#define IINPUT_PAN		3
-#define IINPUT_WIDTH		4
-#define IINPUT_NOCLIP		5
-#define IINPUT_AUDIO_INL	6
-#define IINPUT_AUDIO_INR	7
-#define IINPUT_AUDIO_OUTL	8
-#define IINPUT_AUDIO_OUTR	9
-#define IINPUT_METER_INL  	10
-#define IINPUT_METER_INR  	11  
-#define IINPUT_METER_OUTL 	12
-#define IINPUT_METER_OUTR 	13 
-#define IINPUT_METER_PHASE 	14 
-#define IINPUT_METER_DRIVE 	15 
+#define IINPUT_BYPASS		0
+#define IINPUT_PHASEL		1
+#define IINPUT_PHASER		2
+#define IINPUT_GAIN		3
+#define IINPUT_PAN		4
+#define IINPUT_WIDTH		5
+#define IINPUT_NOCLIP		6
+#define IINPUT_AUDIO_INL	7
+#define IINPUT_AUDIO_INR	8
+#define IINPUT_AUDIO_OUTL	9
+#define IINPUT_AUDIO_OUTR	10
+#define IINPUT_METER_INL  	11
+#define IINPUT_METER_INR  	12  
+#define IINPUT_METER_OUTL 	13
+#define IINPUT_METER_OUTR 	14 
+#define IINPUT_METER_PHASE 	15 
+#define IINPUT_METER_DRIVE 	16 
 
 /* control conversion function */
 float convertParam(unsigned long param, float value, double sr);

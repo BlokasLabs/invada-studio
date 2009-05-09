@@ -13,6 +13,9 @@ G_BEGIN_DECLS
 #define INV_METER_DRAW_MODE_TOZERO 0
 #define INV_METER_DRAW_MODE_FROMZERO 1
 
+#define INV_METER_ACTIVE 0
+#define INV_METER_BYPASS 1
+
 #define INV_METER(obj) GTK_CHECK_CAST(obj, inv_meter_get_type (), InvMeter)
 #define INV_METER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_meter_get_type(), InvMeterClass)
 #define INV_IS_METER(obj) GTK_CHECK_TYPE(obj, inv_meter_get_type())
@@ -25,8 +28,10 @@ typedef struct _InvMeterClass InvMeterClass;
 struct _InvMeter {
 	GtkWidget widget;
 
+	gint  bypass;
 	gint  channels;
 	gint  mode;
+
 	float LdB;
 	float RdB;
 
@@ -57,6 +62,7 @@ struct _InvMeterClass {
 GtkType inv_meter_get_type(void);
 GtkWidget * inv_meter_new();
 
+void inv_meter_set_bypass(InvMeter *meter, gint num);
 void inv_meter_set_mode(InvMeter *meter, gint num);
 void inv_meter_set_channels(InvMeter *meter, gint num);
 void inv_meter_set_LdB(InvMeter *meter, float num);

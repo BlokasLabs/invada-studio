@@ -11,8 +11,8 @@ static void 	inv_meter_realize(GtkWidget *widget);
 static gboolean inv_meter_expose(GtkWidget *widget,GdkEventExpose *event);
 static void 	inv_meter_paint(GtkWidget *widget, gint drawmode);
 static void	inv_meter_destroy(GtkObject *object);
-static void	inv_meter_colour_tozero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B);
-static void	inv_meter_colour_fromzero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B);
+static void	inv_meter_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B);
+static void	inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B);
 
 
 GtkType
@@ -48,6 +48,14 @@ inv_meter_get_type(void)
 		}
 	}
 	return inv_meter_type;
+}
+
+void
+inv_meter_set_bypass(InvMeter *meter, gint num)
+{
+	meter->bypass = num;
+	if(GTK_WIDGET_REALIZED(meter))
+		inv_meter_paint(GTK_WIDGET(meter),INV_METER_DRAW_ALL);
 }
 
 void
@@ -107,6 +115,7 @@ inv_meter_class_init(InvMeterClass *klass)
 static void
 inv_meter_init(InvMeter *meter)
 {
+	meter->bypass = INV_METER_ACTIVE;
 	meter->mode=INV_METER_DRAW_MODE_TOZERO;
 	meter->channels = 1;
 	meter->LdB = -90;
@@ -216,6 +225,7 @@ inv_meter_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 inv_meter_paint(GtkWidget *widget, gint drawmode)
 {
+	gint 		bypass;
 	gint 		mode;
 	gint 		channels;
 	gint 		Lpos=0;
@@ -231,6 +241,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 	cairo_text_extents_t extents;
 
 	style = gtk_widget_get_style(widget);
+	bypass = INV_METER(widget)->bypass;
 	mode = INV_METER(widget)->mode;
 	channels = INV_METER(widget)->channels;
 
@@ -254,6 +265,9 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 	switch(drawmode) {
 		case INV_METER_DRAW_ALL:
 
+			gdk_cairo_set_source_color(cr,&style->bg[GTK_STATE_NORMAL]);
+			cairo_paint(cr);
+	
 			cairo_set_source_rgb(cr, 0, 0, 0);
 			cairo_rectangle(cr, 0, 0, 149, 24);
 			cairo_fill(cr);
@@ -314,7 +328,11 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					break;
 			}
 
-			cairo_set_source_rgb(cr, 1, 1, 1);
+			if(bypass==INV_METER_BYPASS) {
+				cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+			} else {
+				cairo_set_source_rgb(cr, 1, 1, 1);
+			}
 			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_set_font_size(cr,8);
 
@@ -341,7 +359,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 							case 1:
 								Lon = i <= Lpos ? 1 : 0;
 
-								inv_meter_colour_tozero(widget, i, Lon, &R, &G,&B);
+								inv_meter_colour_tozero(widget, bypass, i, Lon, &R, &G,&B);
 								cairo_set_source_rgb(cr, R, G, B);
 								cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
 								cairo_fill(cr);
@@ -350,12 +368,12 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 								Lon = i <= Lpos ? 1 : 0;
 								Ron = i <= Rpos ? 1 : 0;
 
-								inv_meter_colour_tozero(widget, i, Lon, &R, &G,&B);
+								inv_meter_colour_tozero(widget, bypass, i, Lon, &R, &G,&B);
 								cairo_set_source_rgb(cr, R, G, B);
 								cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
 								cairo_fill(cr);
 
-								inv_meter_colour_tozero(widget, i, Ron, &R, &G,&B);
+								inv_meter_colour_tozero(widget, bypass, i, Ron, &R, &G,&B);
 								cairo_set_source_rgb(cr, R, G, B);
 								cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
 								cairo_fill(cr);
@@ -372,7 +390,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 							case 1:
 								Lon = i > Lpos ? 1 : 0;
 
-								inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+								inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
 								cairo_set_source_rgb(cr, R, G, B);
 								cairo_rectangle(cr, 2+(i*2), 3, 1, 18);
 								cairo_fill(cr);
@@ -381,12 +399,12 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 								Lon = i > Lpos ? 1 : 0;
 								Ron = i > Rpos ? 1 : 0;
 
-								inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+								inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
 								cairo_set_source_rgb(cr, R, G, B);
 								cairo_rectangle(cr, 2+(i*2), 3, 1, 8);
 								cairo_fill(cr);
 
-								inv_meter_colour_fromzero(widget, i, Ron, &R, &G,&B);
+								inv_meter_colour_fromzero(widget, bypass, i, Ron, &R, &G,&B);
 								cairo_set_source_rgb(cr, R, G, B);
 								cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
 								cairo_fill(cr);
@@ -412,7 +430,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 						for ( i = min ; i <= max; i++) 
 						{
 							Lon = i <= Lpos ? 1 : 0;
-							inv_meter_colour_tozero(widget, i, Lon, &R, &G,&B);
+							inv_meter_colour_tozero(widget, bypass, i, Lon, &R, &G,&B);
 							cairo_set_source_rgb(cr, R, G, B);
 							switch(channels)
 							{
@@ -431,7 +449,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					for ( i = 1; i <= 71; i++) 
 					{
 						Lon = i > Lpos ? 1 : 0;
-						inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+						inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
 						cairo_set_source_rgb(cr, R, G, B);
 						switch(channels)
 						{
@@ -462,7 +480,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 						for ( i = min ; i <= max; i++) 
 						{
 							Ron = i <= Rpos ? 1 : 0;
-							inv_meter_colour_tozero(widget, i, Ron, &R, &G, &B);
+							inv_meter_colour_tozero(widget, bypass, i, Ron, &R, &G, &B);
 							cairo_set_source_rgb(cr, R, G, B);
 							cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
 							cairo_fill(cr);
@@ -473,7 +491,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					for ( i = 1; i <= 71; i++) 
 					{
 						Lon = i > Lpos ? 1 : 0;
-						inv_meter_colour_fromzero(widget, i, Lon, &R, &G,&B);
+						inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
 						cairo_set_source_rgb(cr, R, G, B);
 						cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
 						cairo_fill(cr);
@@ -507,7 +525,7 @@ inv_meter_destroy(GtkObject *object)
 }
 
 static void	
-inv_meter_colour_tozero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B)
+inv_meter_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B)
 {
 
 
@@ -592,10 +610,16 @@ inv_meter_colour_tozero(GtkWidget *widget, gint pos, gint on, float *R, float *G
 		*G=overOffG + (on * overOnG) ;
 		*B=overOffB + (on * overOnB) ;
 	}	
+
+	if(bypass==INV_METER_BYPASS) {
+		*R=(*R+*G+*B)/3;
+		*G=*R;
+		*B=*R;
+	}
 }
 
 static void	
-inv_meter_colour_fromzero(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B)
+inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B)
 {
 
 
@@ -686,6 +710,12 @@ inv_meter_colour_fromzero(GtkWidget *widget, gint pos, gint on, float *R, float 
 		*R=mOff60R  + (on * mOn60R) ;
 		*G=mOff60G  + (on * mOn60G) ;
 		*B=mOff60B  + (on * mOn60B) ;
+	}
+
+	if(bypass==INV_METER_BYPASS) {
+		*R=(*R+*G+*B)/3;
+		*G=*R;
+		*B=*R;
 	}	
 }
 

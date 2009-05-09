@@ -35,6 +35,7 @@ static LV2_Descriptor *IInputDescriptor = NULL;
 typedef struct {
 
 	/* Ports */
+	float *ControlBypass;
 	float *ControlPhaseL;
 	float *ControlPhaseR;         
 	float *ControlGain;
@@ -56,6 +57,7 @@ typedef struct {
 	double SampleRate; 
 
 	/* stuff we need to remember to reduce cpu */ 
+	float LastBypass;
 	float LastPhaseL;
 	float LastPhaseR;     
 	float LastGain;
@@ -63,6 +65,7 @@ typedef struct {
 	float LastWidth;  
 	float LastNoClip; 
 
+	float ConvertedBypass;
 	float ConvertedPhaseL;
 	float ConvertedPhaseR; 
 	float ConvertedGain;
@@ -98,6 +101,9 @@ static void connectPortIInput(LV2_Handle instance, uint32_t port, void *data)
 	IInput *plugin = (IInput *)instance;
 
 	switch (port) {
+		case IINPUT_BYPASS:
+			plugin->ControlBypass = data;
+			break;
 		case IINPUT_PHASEL:
 			plugin->ControlPhaseL = data;
 			break;
@@ -157,6 +163,7 @@ static void activateIInput(LV2_Handle instance)
 
 	// these values force the conversion to take place      
 
+	plugin->LastBypass = 0;
 	plugin->LastPhaseL = 0;
 	plugin->LastPhaseR = 0;     
 	plugin->LastGain   = 0;
@@ -170,6 +177,7 @@ static void activateIInput(LV2_Handle instance)
 	plugin->EnvPhaseLast = 0; 
 	plugin->EnvDriveLast = 0; 
 
+	plugin->ConvertedBypass = convertParam(IINPUT_BYPASS, plugin->LastBypass,  plugin->SampleRate);
 	plugin->ConvertedPhaseL = convertParam(IINPUT_PHASEL, plugin->LastPhaseL,  plugin->SampleRate);
 	plugin->ConvertedPhaseR = convertParam(IINPUT_PHASER, plugin->LastPhaseR,  plugin->SampleRate);
 	plugin->ConvertedGain   = convertParam(IINPUT_GAIN,   plugin->LastGain,    plugin->SampleRate);
@@ -186,7 +194,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioInputR;
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;
-	float fPhaseL,fPhaseR,fGain,fPan,fLPan,fRPan,fWidth,fMono,fStereoL,fStereoR,fNoClip;
+	float fBypass,fPhaseL,fPhaseR,fGain,fPan,fLPan,fRPan,fWidth,fMono,fStereoL,fStereoR,fNoClip;
 	float fAudioL,fAudioR;
 	float drive;
 	float driveL=0;
@@ -200,6 +208,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 
 	pParamFunc = &convertParam;
 
+	checkParamChange(IINPUT_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
 	checkParamChange(IINPUT_PHASEL, plugin->ControlPhaseL, &(plugin->LastPhaseL), &(plugin->ConvertedPhaseL), plugin->SampleRate, pParamFunc);
 	checkParamChange(IINPUT_PHASER, plugin->ControlPhaseR, &(plugin->LastPhaseR), &(plugin->ConvertedPhaseR), plugin->SampleRate, pParamFunc);
 	checkParamChange(IINPUT_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
@@ -207,6 +216,7 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	checkParamChange(IINPUT_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
 	checkParamChange(IINPUT_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
+	fBypass    = plugin->ConvertedBypass;
 	fPhaseL    = plugin->ConvertedPhaseL;
 	fPhaseR    = plugin->ConvertedPhaseR;
 	fGain      = plugin->ConvertedGain;
@@ -228,50 +238,65 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 	EnvOutR    = plugin->EnvOutRLast;
 	EnvPhase   = plugin->EnvPhaseLast;
 	EnvDrive   = plugin->EnvDriveLast;
-  
-	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+ 
+	if(fBypass==0) { 
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
-		InL=*(pfAudioInputL++);
-		InR=*(pfAudioInputR++);
-  
-		fAudioL =  fPhaseL > 0 ? -InL : InL ;
-		fAudioR =  fPhaseR > 0 ? -InR : InR ;
-		fAudioL *= fGain;
-		fAudioR *= fGain;
-		fAudioL *= fLPan;
-		fAudioR *= fRPan;
+			InL=*(pfAudioInputL++);
+			InR=*(pfAudioInputR++);
 	  
-		if(fWidth<=0) {
-			fMono = (fAudioL + fAudioR) / 2;
-			fAudioL = (1+fWidth)*fAudioL - fWidth*fMono;
-			fAudioR = (1+fWidth)*fAudioR - fWidth*fMono;
-		} else {
-			fStereoL = (fAudioL - fAudioR) / 2;
-			fStereoR = (fAudioR - fAudioL) / 2;
-			fAudioL = (1-fWidth)*fAudioL + fWidth*fStereoL;
-			fAudioR = (1-fWidth)*fAudioR + fWidth*fStereoR;
+			fAudioL =  fPhaseL > 0 ? -InL : InL ;
+			fAudioR =  fPhaseR > 0 ? -InR : InR ;
+			fAudioL *= fGain;
+			fAudioR *= fGain;
+			fAudioL *= fLPan;
+			fAudioR *= fRPan;
+		  
+			if(fWidth<=0) {
+				fMono = (fAudioL + fAudioR) / 2;
+				fAudioL = (1+fWidth)*fAudioL - fWidth*fMono;
+				fAudioR = (1+fWidth)*fAudioR - fWidth*fMono;
+			} else {
+				fStereoL = (fAudioL - fAudioR) / 2;
+				fStereoR = (fAudioR - fAudioL) / 2;
+				fAudioL = (1-fWidth)*fAudioL + fWidth*fStereoL;
+				fAudioR = (1-fWidth)*fAudioR + fWidth*fStereoR;
+			}
+
+			fAudioL = fNoClip > 0 ? InoClip(fAudioL,&driveL) : fAudioL;
+			fAudioR = fNoClip > 0 ? InoClip(fAudioR,&driveR) : fAudioR;
+			*(pfAudioOutputL++) = fAudioL;
+			*(pfAudioOutputR++) = fAudioR;
+
+			//evelope on in and out for meters
+			EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+			EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutL += IEnvelope(fAudioL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutR += IEnvelope(fAudioR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+
+			if(fabs(fAudioL) > 0.001 || fabs(fAudioR) > 0.001) {  // -60 db
+				CurrentPhase = fabs(fAudioL+fAudioR) > 0.000001 ? atan(fabs((fAudioL-fAudioR)/(fAudioL+fAudioR))) : PI_ON_2;
+			} else {
+				CurrentPhase =0;
+			}
+			EnvPhase += IEnvelope(CurrentPhase,EnvPhase,INVADA_METER_PHASE,plugin->SampleRate);
+
+			drive = driveL > driveR ? driveL : driveR;
+			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 		}
+	} else {
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
-		fAudioL = fNoClip > 0 ? InoClip(fAudioL,&driveL) : fAudioL;
-		fAudioR = fNoClip > 0 ? InoClip(fAudioR,&driveR) : fAudioR;
-		*(pfAudioOutputL++) = fAudioL;
-		*(pfAudioOutputR++) = fAudioR;
-
+			*(pfAudioOutputL++) = *(pfAudioInputL++);
+			*(pfAudioOutputR++) = *(pfAudioInputR++);
+		}
 		//evelope on in and out for meters
-		EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-		EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutL += IEnvelope(fAudioL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutR += IEnvelope(fAudioR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
-
-		if(fabs(fAudioL) > 0.001 || fabs(fAudioR) > 0.001) {  // -60 db
-			CurrentPhase = fabs(fAudioL+fAudioR) > 0.000001 ? atan(fabs((fAudioL-fAudioR)/(fAudioL+fAudioR))) : PI_ON_2;
-		} else {
-			CurrentPhase =0;
-		}
-		EnvPhase += IEnvelope(CurrentPhase,EnvPhase,INVADA_METER_PHASE,plugin->SampleRate);
-
-		drive = driveL > driveR ? driveL : driveR;
-		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+		EnvInL  =0;
+		EnvInR  =0;
+		EnvOutL =0;
+		EnvOutR =0;
+		EnvPhase =0;
+		EnvDrive =0;
 	}
 
 	// store values for next loop
@@ -334,6 +359,7 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
 float convertParam(unsigned long param, float value, double sr) {
 	float result;
 	switch(param)  {
+		case IINPUT_BYPASS:
 		case IINPUT_PHASEL:
 		case IINPUT_PHASER:
 			if(value<=0.0)

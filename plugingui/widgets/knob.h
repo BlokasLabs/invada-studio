@@ -8,6 +8,9 @@ G_BEGIN_DECLS
 
 #define INV_PI 3.1415926535
 
+#define INV_KNOB_ACTIVE 0
+#define INV_KNOB_BYPASS 1
+
 #define INV_KNOB_DRAW_ALL     0
 #define INV_KNOB_DRAW_DATA    1
 
@@ -43,6 +46,8 @@ typedef struct _InvKnobClass InvKnobClass;
 struct _InvKnob {
 	GtkWidget widget;
 
+	gint  bypass;
+
 	gint  size;
 	gint  curve;
 	gint  markings;
@@ -74,6 +79,7 @@ struct _InvKnobClass {
 GtkType inv_knob_get_type(void);
 GtkWidget * inv_knob_new();
 
+void inv_knob_set_bypass(InvKnob *knob, gint num);
 void inv_knob_set_size(InvKnob *knob, gint num);
 void inv_knob_set_curve(InvKnob *knob, gint num);
 void inv_knob_set_markings(InvKnob *knob, gint num);

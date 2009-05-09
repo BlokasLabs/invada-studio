@@ -65,6 +65,14 @@ inv_knob_get_type(void)
 }
 
 void
+inv_knob_set_bypass(InvKnob *knob, gint num)
+{
+	knob->bypass = num;
+	if(GTK_WIDGET_REALIZED(knob))
+		inv_knob_paint(GTK_WIDGET(knob),INV_KNOB_DRAW_ALL);
+}
+
+void
 inv_knob_set_size(InvKnob *knob, gint num)
 {
 	knob->size = num;
@@ -181,6 +189,7 @@ inv_knob_class_init(InvKnobClass *klass)
 static void
 inv_knob_init(InvKnob *knob)
 {
+	knob->bypass    = INV_KNOB_ACTIVE;
 	knob->size      = INV_KNOB_SIZE_MEDIUM;
 	knob->curve     = INV_KNOB_CURVE_LINEAR;
 	knob->markings  = INV_KNOB_MARKINGS_5;
@@ -316,6 +325,7 @@ static void
 inv_knob_paint(GtkWidget *widget, gint mode)
 {
 	cairo_t		*cr;
+	gint  		bypass;
 	gint  		size;
 	gint  		curve;
 	gint  		markings;
@@ -344,6 +354,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 	state = GTK_WIDGET_STATE(widget);
 	style = gtk_widget_get_style(widget);
 
+	bypass = INV_KNOB(widget)->bypass;
 	size = INV_KNOB(widget)->size;
 	curve = INV_KNOB(widget)->curve;
 	markings = INV_KNOB(widget)->markings;
@@ -634,12 +645,21 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 
 	if(value!=lastvalue || mode==INV_KNOB_DRAW_ALL)
 	{
-		gdk_cairo_set_source_color(cr,&style->base[state]);
+		if(bypass==INV_KNOB_BYPASS) {
+			gdk_cairo_set_source_color(cr,&style->base[GTK_STATE_INSENSITIVE]);
+		} else {
+			gdk_cairo_set_source_color(cr,&style->base[state]);
+		}
 		cairo_rectangle(cr, 4, yc+r+ll+9, 2*r-4, tb);
 		cairo_fill(cr);
 
 		cairo_set_font_size(cr,fontsize);
-		gdk_cairo_set_source_color(cr,&style->text[state]);
+		if(bypass==INV_KNOB_BYPASS) {
+			gdk_cairo_set_source_color(cr,&style->text[GTK_STATE_INSENSITIVE]);
+		} else {
+			gdk_cairo_set_source_color(cr,&style->text[state]);
+		}
+
 		switch(markings) {
 			case INV_KNOB_MARKINGS_3:
 			case INV_KNOB_MARKINGS_4:	

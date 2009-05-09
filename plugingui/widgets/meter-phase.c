@@ -11,7 +11,7 @@ static void 	inv_phase_meter_realize(GtkWidget *widget);
 static gboolean inv_phase_meter_expose(GtkWidget *widget,GdkEventExpose *event);
 static void 	inv_phase_meter_paint(GtkWidget *widget, gint mode);
 static void	inv_phase_meter_destroy(GtkObject *object);
-static void	inv_phase_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B);
+static void	inv_phase_meter_colour(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B);
 
 
 GtkType
@@ -50,6 +50,14 @@ inv_phase_meter_get_type(void)
 }
 
 void
+inv_phase_meter_set_bypass(InvPhaseMeter *meter, gint num)
+{
+	meter->bypass = num;
+	if(GTK_WIDGET_REALIZED(meter))
+		inv_phase_meter_paint(GTK_WIDGET(meter),INV_PHASE_METER_DRAW_ALL);
+}
+
+void
 inv_phase_meter_set_phase(InvPhaseMeter *meter, float num)
 {
 	meter->phase = num;
@@ -85,6 +93,7 @@ inv_phase_meter_class_init(InvPhaseMeterClass *klass)
 static void
 inv_phase_meter_init(InvPhaseMeter *meter)
 {
+	meter->bypass = INV_PHASE_METER_ACTIVE;
 	meter->phase = 0;
 
 	meter->mOff0[0] =0.1;	meter->mOff0[1] =0.1;	meter->mOff0[2] =0.4;
@@ -188,6 +197,8 @@ inv_phase_meter_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 inv_phase_meter_paint(GtkWidget *widget, gint mode)
 {
+	gint 		phase;
+	gint 		bypass;
 	cairo_t 	*cr;
 	float 		Pon;
 	float 		R,G,B;
@@ -197,7 +208,8 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 	cairo_text_extents_t extents;
 
 	style = gtk_widget_get_style(widget);
-	gint phase = (gint)((INV_PHASE_METER(widget)->phase*57.295779506)+0.2);
+	bypass = INV_PHASE_METER(widget)->bypass;
+	phase = (gint)((INV_PHASE_METER(widget)->phase*57.295779506)+0.2);
 
 	cr = gdk_cairo_create(widget->window);
 
@@ -226,8 +238,12 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 		cairo_new_path(cr);
 
-		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-
+		if(bypass==INV_PHASE_METER_BYPASS) {
+			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+		} else {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		}
+		
 		cairo_rectangle(cr, 14, 21, 1, 2);
 		cairo_fill(cr);
 
@@ -244,7 +260,12 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 
-		cairo_set_source_rgb(cr, 1, 1, 1);
+		if(bypass==INV_PHASE_METER_BYPASS) {
+			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+		} else {
+			cairo_set_source_rgb(cr, 1, 1, 1);
+		}
+
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 
@@ -278,7 +299,7 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 
 	gint i;
 
-	inv_phase_meter_colour(widget, 0, 1, &R, &G,&B);
+	inv_phase_meter_colour(widget, bypass, 0, 1, &R, &G, &B);
 	cairo_set_source_rgb(cr, R, G, B);
 	cairo_rectangle(cr, 194, 5, 1, 14);
 
@@ -286,7 +307,7 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 	{
 		Pon = i <= phase ? 1 : 0;
 
-		inv_phase_meter_colour(widget, i, Pon, &R, &G,&B);
+		inv_phase_meter_colour(widget, bypass, i, Pon, &R, &G, &B);
 		cairo_set_source_rgb(cr, R, G, B);
 		cairo_rectangle(cr, 194+(i*2), 5, 1, 14);
 		cairo_fill(cr);
@@ -316,7 +337,7 @@ inv_phase_meter_destroy(GtkObject *object)
 }
 
 static void	
-inv_phase_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G, float *B)
+inv_phase_meter_colour(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B)
 {
 
 	float r1,r2;
@@ -396,5 +417,11 @@ inv_phase_meter_colour(GtkWidget *widget, gint pos, gint on, float *R, float *G,
 		*B=(r1 * mOff60B + (r2 * mOff90B))  + (on * ((r1 * mOn60B) + (r2 * mOn90B))) ;
 
 	}	
+
+	if(bypass==INV_PHASE_METER_BYPASS) {
+		*R=(*R+*G+*B)/3;
+		*G=*R;
+		*B=*R;
+	}
 }
 

@@ -14,6 +14,9 @@ G_BEGIN_DECLS
 #define INV_SWITCH_TOGGLE_OFF 0
 #define INV_SWITCH_TOGGLE_ON  1
 
+#define INV_SWITCH_TOGGLE_ACTIVE 0
+#define INV_SWITCH_TOGGLE_BYPASS 1
+
 #define INV_SWITCH_TOGGLE(obj) GTK_CHECK_CAST(obj, inv_switch_toggle_get_type (), InvSwitchToggle)
 #define INV_SWITCH_TOGGLE_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_switch_toggle_get_type(), InvSwitchToggleClass)
 #define INV_IS_SWITCH_TOGGLE(obj) GTK_CHECK_TYPE(obj, inv_switch_toggle_get_type())
@@ -26,6 +29,7 @@ typedef struct _InvSwitchToggleClass InvSwitchToggleClass;
 struct _InvSwitchToggle {
 	GtkWidget widget;
 
+	gint bypass;
 	gint state;
 	gint laststate;
 	float value;
@@ -54,6 +58,7 @@ struct _InvSwitchToggleClass {
 GtkType inv_switch_toggle_get_type(void);
 GtkWidget * inv_switch_toggle_new();
 
+void inv_switch_toggle_set_bypass(InvSwitchToggle *switch_toggle, gint num);
 void inv_switch_toggle_toggle(InvSwitchToggle *switch_toggle);
 void inv_switch_toggle_set_state(InvSwitchToggle *switch_toggle, gint state);
 void inv_switch_toggle_set_value(InvSwitchToggle *switch_toggle, gint state, float value);

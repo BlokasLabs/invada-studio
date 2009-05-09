@@ -55,6 +55,14 @@ inv_switch_toggle_get_type(void)
 }
 
 void
+inv_switch_toggle_set_bypass(InvSwitchToggle *switch_toggle, gint num)
+{
+	switch_toggle->bypass = num;
+	if(GTK_WIDGET_REALIZED(switch_toggle))
+		inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_ALL);
+}
+
+void
 inv_switch_toggle_toggle(InvSwitchToggle *switch_toggle)
 {
 	if(switch_toggle->state == INV_SWITCH_TOGGLE_ON) {
@@ -167,7 +175,8 @@ static void
 inv_switch_toggle_init(InvSwitchToggle *switch_toggle)
 {
 
-	switch_toggle->state = INV_SWITCH_TOGGLE_OFF;
+	switch_toggle->bypass    = INV_SWITCH_TOGGLE_ACTIVE;
+	switch_toggle->state     = INV_SWITCH_TOGGLE_OFF;
 	switch_toggle->laststate = INV_SWITCH_TOGGLE_OFF;
 	switch_toggle->value=0;
 
@@ -283,6 +292,7 @@ inv_switch_toggle_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 {
+	gint 		bypass;
 	gint 		state;
 	gint 		laststate;
 	float		onR,onG,onB,offR,offG,offB;
@@ -302,14 +312,25 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 	style = gtk_widget_get_style(widget);
 
+	bypass = INV_SWITCH_TOGGLE(widget)->bypass;
 	state = INV_SWITCH_TOGGLE(widget)->state;
 	laststate = INV_SWITCH_TOGGLE(widget)->laststate;
-	onR = INV_SWITCH_TOGGLE(widget)->on_colour[0];
-	onG = INV_SWITCH_TOGGLE(widget)->on_colour[1];
-	onB = INV_SWITCH_TOGGLE(widget)->on_colour[2];
-	offR = INV_SWITCH_TOGGLE(widget)->off_colour[0];
-	offG = INV_SWITCH_TOGGLE(widget)->off_colour[1];
-	offB = INV_SWITCH_TOGGLE(widget)->off_colour[2];
+
+	if(bypass==INV_SWITCH_TOGGLE_BYPASS) {
+		onR = (INV_SWITCH_TOGGLE(widget)->on_colour[0] + INV_SWITCH_TOGGLE(widget)->on_colour[1] + INV_SWITCH_TOGGLE(widget)->on_colour[2])/3;
+		onG = onR;
+		onB = onR;
+		offR = (INV_SWITCH_TOGGLE(widget)->off_colour[0] + INV_SWITCH_TOGGLE(widget)->off_colour[1] + INV_SWITCH_TOGGLE(widget)->off_colour[2])/3;
+		offG = offR;
+		offB = offR;
+	} else {
+		onR = INV_SWITCH_TOGGLE(widget)->on_colour[0];
+		onG = INV_SWITCH_TOGGLE(widget)->on_colour[1];
+		onB = INV_SWITCH_TOGGLE(widget)->on_colour[2];
+		offR = INV_SWITCH_TOGGLE(widget)->off_colour[0];
+		offG = INV_SWITCH_TOGGLE(widget)->off_colour[1];
+		offB = INV_SWITCH_TOGGLE(widget)->off_colour[2];
+	}
 	on_text = INV_SWITCH_TOGGLE(widget)->on_text;
 	off_text = INV_SWITCH_TOGGLE(widget)->off_text;
 	label = INV_SWITCH_TOGGLE(widget)->label;
@@ -322,6 +343,8 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 	if(mode==INV_SWITCH_TOGGLE_DRAW_ALL) {
 
+		gdk_cairo_set_source_color(cr,&style->bg[GTK_STATE_NORMAL]);
+		cairo_paint(cr);
 
 		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
