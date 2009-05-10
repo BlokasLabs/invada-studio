@@ -23,18 +23,19 @@
 #define IFILTER_MONO_HPF_URI	"http://invadarecords.com/plugins/lv2/filter/hpf/mono"
 #define IFILTER_STEREO_LPF_URI	"http://invadarecords.com/plugins/lv2/filter/lpf/stereo"
 #define IFILTER_STEREO_HPF_URI	"http://invadarecords.com/plugins/lv2/filter/hpf/stereo"
-#define IFILTER_FREQ 		0
-#define IFILTER_GAIN 		1
-#define IFILTER_NOCLIP 		2
-#define IFILTER_METER_INL  	3
-#define IFILTER_METER_OUTL 	4
-#define IFILTER_AUDIO_INL  	5
-#define IFILTER_AUDIO_OUTL 	6
-#define IFILTER_METER_DRIVE 	7
-#define IFILTER_METER_INR  	8   /* not used in mono mode */
-#define IFILTER_METER_OUTR 	9   /* not used in mono mode */
-#define IFILTER_AUDIO_INR  	10  /* not used in mono mode */
-#define IFILTER_AUDIO_OUTR 	11  /* not used in mono mode */
+#define IFILTER_BYPASS 		0
+#define IFILTER_FREQ 		1
+#define IFILTER_GAIN 		2
+#define IFILTER_NOCLIP 		3
+#define IFILTER_METER_INL  	4
+#define IFILTER_METER_OUTL 	5
+#define IFILTER_AUDIO_INL  	6
+#define IFILTER_AUDIO_OUTL 	7
+#define IFILTER_METER_DRIVE 	8
+#define IFILTER_METER_INR  	9   /* not used in mono mode */
+#define IFILTER_METER_OUTR 	10  /* not used in mono mode */
+#define IFILTER_AUDIO_INR  	11  /* not used in mono mode */
+#define IFILTER_AUDIO_OUTR 	12  /* not used in mono mode */
 
 
 

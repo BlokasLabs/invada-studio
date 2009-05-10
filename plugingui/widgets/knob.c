@@ -485,7 +485,11 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,fontsize);
-		gdk_cairo_set_source_color(cr,&style->fg[state]);
+		if(bypass==INV_KNOB_BYPASS) {
+			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);
+		} else {
+			gdk_cairo_set_source_color(cr,&style->fg[state]);
+		}
 
 		/* bottom left */
 		switch(markings)

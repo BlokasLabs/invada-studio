@@ -12,6 +12,9 @@ G_BEGIN_DECLS
 #define INV_DISPLAYFG_DRAW_ALL 0
 #define INV_DISPLAYFG_DRAW_DATA 1
 
+#define INV_DISPLAYFG_ACTIVE 0
+#define INV_DISPLAYFG_BYPASS 1
+
 #define INV_DISPLAY_FG(obj) GTK_CHECK_CAST(obj, inv_display_fg_get_type (), InvDisplayFG)
 #define INV_DISPLAY_FG_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_display_fg_get_type(), InvDisplayFGClass)
 #define INV_IS_DISPLAY_FG(obj) GTK_CHECK_TYPE(obj, inv_display_fg_get_type())
@@ -24,6 +27,7 @@ typedef struct _InvDisplayFGClass InvDisplayFGClass;
 struct _InvDisplayFG {
 	GtkWidget widget;
 
+	gint bypass;
 	gint mode;
 	float freq;
 	float gain;
@@ -37,6 +41,8 @@ struct _InvDisplayFGClass {
 GtkType inv_display_fg_get_type(void);
 GtkWidget * inv_display_fg_new();
 
+
+void inv_display_fg_set_bypass(InvDisplayFG *displayFG, gint num);
 void inv_display_fg_set_mode(InvDisplayFG *displayFG, gint num);
 void inv_display_fg_set_freq(InvDisplayFG *displayFG, float num);
 void inv_display_fg_set_gain(InvDisplayFG *displayFG, float num);

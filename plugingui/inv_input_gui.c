@@ -1,6 +1,6 @@
 /* 
 
-    This LV2 extension provides lpf and hpf gui's
+    This LV2 extension provides input module gui's
 
     (c) Fraser Stuart 2009
 
@@ -69,7 +69,8 @@ typedef struct {
 
 
 
-static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
+static LV2UI_Handle 
+instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
 
 	IInputGui *pluginGui = (IInputGui *)malloc(sizeof(IInputGui));
@@ -236,6 +237,7 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_input_width_knob_motion),pluginGui);
 
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, "Off");
@@ -243,7 +245,6 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ACTIVE);
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_input_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
@@ -262,13 +263,15 @@ static LV2UI_Handle instantiateIInputGui(const struct _LV2UI_Descriptor* descrip
 }
 
 
-static void cleanupIInputGui(LV2UI_Handle ui)
+static void 
+cleanupIInputGui(LV2UI_Handle ui)
 {
 	return;
 }
 
 
-static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
+static void 
+port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
 {
 	IInputGui *pluginGui = (IInputGui *)ui;
 
@@ -364,7 +367,8 @@ static void port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_
 }
 
 
-static void init()
+static void 
+init()
 {
 	IInputGuiDescriptor =
 	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
@@ -393,7 +397,8 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 
 /*****************************************************************************/
 
-static void on_inv_input_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_input_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	IInputGui *pluginGui = (IInputGui *) data;
@@ -403,7 +408,8 @@ static void on_inv_input_bypass_toggle_button_release(GtkWidget *widget, GdkEven
 	return;
 }
 
-static void on_inv_input_phaseL_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_input_phaseL_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	IInputGui *pluginGui = (IInputGui *) data;
@@ -413,7 +419,8 @@ static void on_inv_input_phaseL_toggle_button_release(GtkWidget *widget, GdkEven
 	return;
 }
 
-static void on_inv_input_phaseR_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_input_phaseR_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	IInputGui *pluginGui = (IInputGui *) data;
@@ -423,7 +430,8 @@ static void on_inv_input_phaseR_toggle_button_release(GtkWidget *widget, GdkEven
 	return;
 }
 
-static void on_inv_input_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_input_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	IInputGui *pluginGui = (IInputGui *) data;
@@ -433,7 +441,8 @@ static void on_inv_input_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gp
 	return;
 }
 
-static void on_inv_input_pan_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_input_pan_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IInputGui *pluginGui = (IInputGui *) data;
 
@@ -442,7 +451,8 @@ static void on_inv_input_pan_knob_motion(GtkWidget *widget, GdkEvent *event, gpo
 	return;
 }
 
-static void on_inv_input_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_input_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IInputGui *pluginGui = (IInputGui *) data;
 
@@ -451,7 +461,8 @@ static void on_inv_input_width_knob_motion(GtkWidget *widget, GdkEvent *event, g
 	return;
 }
 
-static void on_inv_input_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_input_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	IInputGui *pluginGui = (IInputGui *) data;

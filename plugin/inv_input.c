@@ -82,7 +82,8 @@ typedef struct {
 
 } IInput;
 
-static LV2_Handle instantiateIInput(const LV2_Descriptor *descriptor, double s_rate, const char *path, const LV2_Feature * const* features)
+static LV2_Handle 
+instantiateIInput(const LV2_Descriptor *descriptor, double s_rate, const char *path, const LV2_Feature * const* features)
 {
 	IInput *plugin = (IInput *)malloc(sizeof(IInput));
 	if(plugin==NULL)
@@ -96,7 +97,8 @@ static LV2_Handle instantiateIInput(const LV2_Descriptor *descriptor, double s_r
 
 
 
-static void connectPortIInput(LV2_Handle instance, uint32_t port, void *data)
+static void 
+connectPortIInput(LV2_Handle instance, uint32_t port, void *data)
 {
 	IInput *plugin = (IInput *)instance;
 
@@ -156,7 +158,8 @@ static void connectPortIInput(LV2_Handle instance, uint32_t port, void *data)
 }
 
 
-static void activateIInput(LV2_Handle instance) 
+static void 
+activateIInput(LV2_Handle instance) 
 {
 
 	IInput *plugin = (IInput *)instance;
@@ -187,7 +190,8 @@ static void activateIInput(LV2_Handle instance)
 }
 
 
-static void runIInput(LV2_Handle instance, uint32_t SampleCount) 
+static void 
+runIInput(LV2_Handle instance, uint32_t SampleCount) 
 {
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
@@ -317,13 +321,15 @@ static void runIInput(LV2_Handle instance, uint32_t SampleCount)
 }
 
 
-static void cleanupIInput(LV2_Handle instance)
+static void 
+cleanupIInput(LV2_Handle instance)
 {
 	free(instance);
 }
 
 
-static void init()
+static void 
+init()
 {
 	IInputDescriptor =
 	 (LV2_Descriptor *)malloc(sizeof(LV2_Descriptor));
@@ -356,7 +362,8 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-float convertParam(unsigned long param, float value, double sr) {
+float 
+convertParam(unsigned long param, float value, double sr) {
 	float result;
 	switch(param)  {
 		case IINPUT_BYPASS:

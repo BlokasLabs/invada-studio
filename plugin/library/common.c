@@ -27,7 +27,8 @@
 
 
 /* a function that checks to see if a control has been changed and calls the provided conversion fuction */
-void checkParamChange(
+void 
+checkParamChange(
 	unsigned long param, 
 	float * control, 
 	float * last, 
@@ -44,7 +45,8 @@ void checkParamChange(
 
 
 /* a function which maps an envelope to a sound */
-float IEnvelope(float value, float envelope, int mode, double sr)
+float 
+IEnvelope(float value, float envelope, int mode, double sr)
 {
 	float valueA;
 	float EnvelopeDelta;
@@ -78,7 +80,8 @@ float IEnvelope(float value, float envelope, int mode, double sr)
 
 
 /* this function is linear between -0.7 & 0.7 (approx -3db) and returns a value bewteen 0.7 and 1 for an input from 0.7 to infinity */
-float InoClip(float in, float * drive)
+float 
+InoClip(float in, float * drive)
 {
 	float out; 
 	if ( fabs(in) < 0.7 ) {
@@ -94,7 +97,8 @@ float InoClip(float in, float * drive)
 }
 
 /* distortion function based on sin() */
-float ITube_do(float in, float Drive)
+float 
+ITube_do(float in, float Drive)
 {
 	float out;
 	out = (in>0) ? 
@@ -104,28 +108,30 @@ float ITube_do(float in, float Drive)
 }
 
 
-void calculateSingleIReverbER(struct ERunit * er, float Width, float Length, float Height, int Phase, unsigned int Reflections, float DDist, double sr) {
+void 
+calculateSingleIReverbER(struct ERunit * er, float Width, float Length, float Height, int Phase, unsigned int Reflections, float DDist, double sr) {
 
-	float ERAngle,ERDistanceSQRD,ERDistance,ERRelGain,ERRelGainL,ERRelGainR;
-	unsigned long ERRelDelay;
+	float ERAngle,ERDistanceSQRD,ERDistance,ERRelDelayActual,ERRelGain,ERRelGainL,ERRelGainR;
 
-	ERAngle        = atan(Width/Length);
-	ERDistanceSQRD = pow(Length,2) + pow(Width,2)+ pow(Height,2);
-	ERDistance     = sqrt(ERDistanceSQRD);
-	ERRelDelay     = (unsigned long)((ERDistance-DDist) * (float)sr /SPEED_OF_SOUND);
-	ERRelGain      = Phase / ERDistanceSQRD;
-	ERRelGainL     = (ERRelGain * (1 - (ERAngle/PI_ON_2)))/2;
-	ERRelGainR     = (ERRelGain * (1 + (ERAngle/PI_ON_2)))/2;
+	ERAngle           = atan(Width/Length);
+	ERDistanceSQRD    = pow(Length,2) + pow(Width,2)+ pow(Height,2);
+	ERDistance        = sqrt(ERDistanceSQRD);
+	ERRelDelayActual  = ((ERDistance-DDist) * (float)sr /SPEED_OF_SOUND);
+	ERRelGain         = Phase / ERDistanceSQRD;
+	ERRelGainL        = (ERRelGain * (1 - (ERAngle/PI_ON_2)))/2;
+	ERRelGainR        = (ERRelGain * (1 + (ERAngle/PI_ON_2)))/2;
 
 	er->Active=1;
-	er->Delay=ERRelDelay;
+	er->rand=drand48();
+	er->DelayActual=ERRelDelayActual;
 	er->Reflections=Reflections;
 	er->AbsGain=fabs(ERRelGain);
 	er->GainL=ERRelGainL;
 	er->GainR=ERRelGainR;
 }
 
-int calculateIReverbER(struct ERunit *erarray, int erMax, 
+int 
+calculateIReverbER(struct ERunit *erarray, int erMax, 
 			float width, float length, float height, 
 			float sourceLR, float sourceFB, 
 			float destLR, float destFB, float objectHeight, 
@@ -442,7 +448,10 @@ int calculateIReverbER(struct ERunit *erarray, int erMax,
 		//create a new reflection based on the diffusion
 		if(diffusion > 0 && 4*er->AbsGain/MaxGain > 1-diffusion) {
 			er2->Active=1;
-			er2->Delay=er->Delay*(1.085+(drand48()*diffusion/7));
+			er2->rand=er->rand;
+			er2->DelayActual=er->DelayActual*(1.085+(er->rand*diffusion/7));
+			er2->Delay = (unsigned long)er2->DelayActual;
+			er2->DelayOffset = er2->DelayActual - (float)er2->Delay;
 			er2->Reflections=er->Reflections;
 			er2->AbsGain=er->AbsGain*diffusion*0.6/MaxGain;
 			er2->GainL=er->GainL*diffusion*0.6/MaxGain;
@@ -451,8 +460,10 @@ int calculateIReverbER(struct ERunit *erarray, int erMax,
 			er2++;
 		}
 
-		//scale up reflection
-		er->Delay=er->Delay*(1.01+(drand48()*diffusion/14));
+		//scale up reflection and calculate sample delay
+		er->DelayActual=er->DelayActual*(1.01+(er->rand*diffusion/14));
+		er->Delay = (unsigned long)er->DelayActual;
+		er->DelayOffset = er->DelayActual - (float)er->Delay;
 		er->AbsGain=er->AbsGain/MaxGain;
 		er->GainL=er->GainL/MaxGain;
 		er->GainR=er->GainR/MaxGain;

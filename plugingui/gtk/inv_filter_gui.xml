@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Thu Apr 23 17:32:16 2009 -->
+<!--Generated with glade3 3.4.5 on Sat May  9 21:03:49 2009 -->
 <interface>
   <object class="GtkWindow" id="filter_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -11,23 +11,46 @@
           <object class="GtkHBox" id="hbox6">
             <property name="visible">True</property>
             <child>
-              <object class="GtkLabel" id="label_heading">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">&lt;b&gt;Invada Filter&lt;/b&gt;</property>
-                <property name="use_markup">True</property>
-                <property name="justify">GTK_JUSTIFY_CENTER</property>
-              </object>
-            </child>
-            <child>
               <object class="GtkImage" id="image_logo">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
+                <property name="xpad">1</property>
+                <property name="ypad">1</property>
                 <property name="pixbuf">invada_logo.png</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label_heading">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">&lt;b&gt;Filter&lt;/b&gt;</property>
+                <property name="use_markup">True</property>
+                <property name="justify">GTK_JUSTIFY_CENTER</property>
+              </object>
+              <packing>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAlignment" id="alignment_bypass_toggle">
+                <property name="visible">True</property>
+                <property name="xscale">0</property>
+                <property name="yscale">0</property>
+                <property name="top_padding">1</property>
+                <property name="bottom_padding">1</property>
+                <property name="left_padding">1</property>
+                <property name="right_padding">1</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>

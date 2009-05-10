@@ -36,7 +36,7 @@
     doap:name "Invada Input Module" ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     doap:maintainer [
-	foaf:name ":: Invada ::";
+	foaf:name "Invada";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
@@ -120,7 +120,7 @@
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 11 ;
 	lv2:symbol "meterInL" ;
-	lv2:name "L In" ;
+	lv2:name "L In Meter" ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit :db ;
@@ -128,7 +128,7 @@
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 12 ;
 	lv2:symbol "meterInR" ;
-	lv2:name "R In" ;
+	lv2:name "R In Meter" ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit :db ;
@@ -136,7 +136,7 @@
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 13 ;
 	lv2:symbol "meterOutL" ;
-	lv2:name "L Out" ;
+	lv2:name "L Out Meter" ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit :db ;
@@ -144,7 +144,7 @@
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 14 ;
 	lv2:symbol "meterOutR" ;
-	lv2:name "R Out" ;
+	lv2:name "R Out Meter" ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit :db ;
@@ -152,14 +152,14 @@
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 15 ;
 	lv2:symbol "meterPhase" ;
-	lv2:name "Phase" ;
+	lv2:name "Phase Meter" ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 16 ;
 	lv2:symbol "lampDrive" ;
-	lv2:name "Drive" ;
+	lv2:name "Drive Lamp" ;
    ] .
 
 	

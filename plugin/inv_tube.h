@@ -21,19 +21,20 @@
 #define ITUBE_GUI_URI		"http://invadarecords.com/plugins/lv2/tube/gui"
 #define ITUBE_MONO_URI		"http://invadarecords.com/plugins/lv2/tube/mono"
 #define ITUBE_STEREO_URI	"http://invadarecords.com/plugins/lv2/tube/stereo"
-#define ITUBE_DRIVE 		0
-#define ITUBE_DCOFFSET		1
-#define ITUBE_PHASE		2
-#define ITUBE_MIX		3
-#define ITUBE_METER_DRIVE 	4
-#define ITUBE_METER_INL  	5
-#define ITUBE_METER_OUTL 	6
-#define ITUBE_AUDIO_INL  	7
-#define ITUBE_AUDIO_OUTL 	8
-#define ITUBE_METER_INR  	9  /* not used in mono mode */
-#define ITUBE_METER_OUTR 	10 /* not used in mono mode */
-#define ITUBE_AUDIO_INR  	11 /* not used in mono mode */
-#define ITUBE_AUDIO_OUTR 	12 /* not used in mono mode */
+#define ITUBE_BYPASS 		0
+#define ITUBE_DRIVE 		1
+#define ITUBE_DCOFFSET		2
+#define ITUBE_PHASE		3
+#define ITUBE_MIX		4
+#define ITUBE_METER_DRIVE 	5
+#define ITUBE_METER_INL  	6
+#define ITUBE_METER_OUTL 	7
+#define ITUBE_AUDIO_INL  	8
+#define ITUBE_AUDIO_OUTL 	9
+#define ITUBE_METER_INR  	10 /* not used in mono mode */
+#define ITUBE_METER_OUTR 	11 /* not used in mono mode */
+#define ITUBE_AUDIO_INR  	12 /* not used in mono mode */
+#define ITUBE_AUDIO_OUTR 	13 /* not used in mono mode */
 
 
 

@@ -1,6 +1,6 @@
 /* 
 
-    This LV2 extension provides lpf and hpf gui's
+    This LV2 extension provides tube gui's
 
     (c) Fraser Stuart 2009
 
@@ -39,6 +39,7 @@ static LV2UI_Descriptor *ITubeGuiDescriptor = NULL;
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
+	GtkWidget	*toggleBypass;
 	GtkWidget	*meterIn;
 	GtkWidget	*meterOut;
 	GtkWidget	*knobDrive;
@@ -49,6 +50,7 @@ typedef struct {
 
 	gint		InChannels;
 	gint		OutChannels;
+	float		bypass;
 	float		drive;
 	float		dc;
 	float		phase;
@@ -61,7 +63,8 @@ typedef struct {
 
 
 
-static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
+static LV2UI_Handle 
+instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
 
 	ITubeGui *pluginGui = (ITubeGui *)malloc(sizeof(ITubeGui));
@@ -93,6 +96,10 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	pluginGui->heading = GTK_WIDGET (gtk_builder_get_object (builder, "label_heading"));
 
 	/* add custom widgets */
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_bypass_toggle"));
+	pluginGui->toggleBypass = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->toggleBypass);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_in"));
 	pluginGui->meterIn = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterIn);
@@ -127,30 +134,42 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	{
 		pluginGui->InChannels=1;
 		pluginGui->OutChannels=1;
-		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Invada Tube (mono)</b>");
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Tube Distortion (mono)</b>");
 	}
 	if(!strcmp(plugin_uri,ITUBE_STEREO_URI)) 
 	{
 		pluginGui->InChannels=2;
 		pluginGui->OutChannels=2;
-		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Invada Tube (stereo)</b>");
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Tube Distortion (stereo)</b>");
 	}
 
+	pluginGui->bypass=0.0;
 	pluginGui->drive=0.0;
 	pluginGui->dc=0.0;
 	pluginGui->phase=0;
 	pluginGui->blend=75;
 
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ACTIVE);
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, "Active");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_tube_bypass_toggle_button_release),pluginGui);
 
-
+	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterIn),-90);
 
+	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobDrive), INV_KNOB_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobDrive), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobDrive), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobDrive), INV_KNOB_MARKINGS_4);
@@ -164,6 +183,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampDrive),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampDrive),1.0);
 
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobDC), INV_KNOB_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobDC), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobDC), INV_KNOB_CURVE_QUAD);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobDC), INV_KNOB_MARKINGS_3); 
@@ -174,6 +194,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDC), pluginGui->dc);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDC),"motion-notify-event",G_CALLBACK(on_inv_tube_dc_knob_motion),pluginGui);
 
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF, "Normal");
@@ -183,6 +204,7 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF);
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhase),"button-release-event",G_CALLBACK(on_inv_tube_phase_toggle_button_release),pluginGui);
 
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobBlend), INV_KNOB_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobBlend), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobBlend), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobBlend), INV_KNOB_MARKINGS_5); 
@@ -206,13 +228,15 @@ static LV2UI_Handle instantiateITubeGui(const struct _LV2UI_Descriptor* descript
 }
 
 
-static void cleanupITubeGui(LV2UI_Handle ui)
+static void 
+cleanupITubeGui(LV2UI_Handle ui)
 {
 	return;
 }
 
 
-static void port_eventITubeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
+static void 
+port_eventITubeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
 {
 	ITubeGui *pluginGui = (ITubeGui *)ui;
 
@@ -223,6 +247,26 @@ static void port_eventITubeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_s
 		value=* (float *) buffer;
 		switch(port)
 		{
+			case ITUBE_BYPASS:
+				pluginGui->bypass=value;
+				if(value <= 0.0) {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobDrive), INV_KNOB_ACTIVE);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobDC), INV_KNOB_ACTIVE);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ACTIVE);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobBlend), INV_KNOB_ACTIVE);
+				} else {
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_BYPASS);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_BYPASS);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobDrive), INV_KNOB_BYPASS);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobDC), INV_KNOB_BYPASS);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_BYPASS);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobBlend), INV_KNOB_BYPASS);
+				}
+				break;
 			case ITUBE_DRIVE:
 				pluginGui->drive=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobDrive), pluginGui->drive);
@@ -263,7 +307,8 @@ static void port_eventITubeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_s
 }
 
 
-static void init()
+static void 
+init()
 {
 	ITubeGuiDescriptor =
 	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
@@ -293,7 +338,19 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-static void on_inv_tube_drive_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_tube_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+
+	ITubeGui *pluginGui = (ITubeGui *) data;
+
+	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, ITUBE_BYPASS, 4, 0, &pluginGui->bypass);
+	return;
+}
+
+static void 
+on_inv_tube_drive_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	ITubeGui *pluginGui = (ITubeGui *) data;
@@ -303,7 +360,8 @@ static void on_inv_tube_drive_knob_motion(GtkWidget *widget, GdkEvent *event, gp
 	return;
 }
 
-static void on_inv_tube_dc_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_tube_dc_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	ITubeGui *pluginGui = (ITubeGui *) data;
 
@@ -312,7 +370,8 @@ static void on_inv_tube_dc_knob_motion(GtkWidget *widget, GdkEvent *event, gpoin
 	return;
 }
 
-static void on_inv_tube_phase_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_tube_phase_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
 	ITubeGui *pluginGui = (ITubeGui *) data;
@@ -322,7 +381,8 @@ static void on_inv_tube_phase_toggle_button_release(GtkWidget *widget, GdkEvent 
 	return;
 }
 
-static void on_inv_tube_blend_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_tube_blend_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	ITubeGui *pluginGui = (ITubeGui *) data;
 

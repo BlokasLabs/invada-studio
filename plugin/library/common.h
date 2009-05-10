@@ -43,6 +43,9 @@
 
 struct ERunit {
 	int Active;
+	float rand;
+	float DelayActual;
+	float DelayOffset;
 	unsigned long Delay;
 	unsigned int Reflections;
 	float AbsGain;

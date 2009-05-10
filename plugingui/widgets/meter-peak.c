@@ -293,7 +293,12 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 			cairo_new_path(cr);
 
-			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
+			if(bypass==INV_METER_BYPASS) {
+				gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);
+			} else {
+				gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
+			}
+
 			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_set_font_size(cr,8);
 
