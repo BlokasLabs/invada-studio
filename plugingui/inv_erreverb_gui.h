@@ -24,4 +24,5 @@ static void on_inv_erreverb_height_knob_motion(GtkWidget *widget, GdkEvent *even
 static void on_inv_erreverb_hpf_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_erreverb_warmth_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_erreverb_diffusion_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_erreverb_display_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 

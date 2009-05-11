@@ -58,6 +58,23 @@ inv_display_err_get_type(void)
 	return inv_display_err_type;
 }
 
+gint 
+inv_display_err_get_active_dot(InvDisplayErr *displayErr) {
+	return displayErr->active_dot;
+}
+
+float 
+inv_display_err_get_source(InvDisplayErr *displayErr, gint axis) {
+	return displayErr->source[axis];
+}
+
+float 
+inv_display_err_get_dest(InvDisplayErr *displayErr, gint axis){
+	return displayErr->dest[axis];
+}
+
+
+
 void
 inv_display_err_set_room(InvDisplayErr *displayErr, gint axis, float num)
 {

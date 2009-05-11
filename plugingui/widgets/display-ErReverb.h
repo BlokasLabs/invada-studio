@@ -69,6 +69,9 @@ struct point3D {
 GtkType inv_display_err_get_type(void);
 GtkWidget * inv_display_err_new();
 
+gint inv_display_err_get_active_dot(InvDisplayErr *displayErr);
+float inv_display_err_get_source(InvDisplayErr *displayErr, gint axis);
+float inv_display_err_get_dest(InvDisplayErr *displayErr, gint axis);
 void inv_display_err_set_room(InvDisplayErr *displayErr, gint axis, float num);
 void inv_display_err_set_source(InvDisplayErr *displayErr, gint axis, float num);
 void inv_display_err_set_dest(InvDisplayErr *displayErr, gint axis, float num);

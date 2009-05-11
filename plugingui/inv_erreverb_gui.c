@@ -69,7 +69,8 @@ typedef struct {
 
 
 
-static LV2UI_Handle instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
+static LV2UI_Handle 
+instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
 	IErReverbGui *pluginGui = (IErReverbGui *)malloc(sizeof(IErReverbGui));
 	if(pluginGui==NULL)
@@ -178,6 +179,7 @@ static LV2UI_Handle instantiateIErReverbGui(const struct _LV2UI_Descriptor* desc
 	inv_display_err_set_dest(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_LR, pluginGui->destLR);
 	inv_display_err_set_dest(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_FB, pluginGui->destFB);
 	inv_display_err_set_diffusion(INV_DISPLAY_ERR (pluginGui->display), pluginGui->diffusion);
+	g_signal_connect_after(G_OBJECT(pluginGui->display),"motion-notify-event",G_CALLBACK(on_inv_erreverb_display_motion),pluginGui);
 
 	inv_knob_set_size(INV_KNOB (pluginGui->knobLength), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobLength), INV_KNOB_CURVE_LINEAR);
@@ -248,13 +250,15 @@ static LV2UI_Handle instantiateIErReverbGui(const struct _LV2UI_Descriptor* desc
 }
 
 
-static void cleanupIErReverbGui(LV2UI_Handle ui)
+static void 
+cleanupIErReverbGui(LV2UI_Handle ui)
 {
 	return;
 }
 
 
-static void port_eventIErReverbGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
+static void 
+port_eventIErReverbGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
 {
 	IErReverbGui *pluginGui = (IErReverbGui *)ui;
 
@@ -323,7 +327,8 @@ static void port_eventIErReverbGui(LV2UI_Handle ui, uint32_t port, uint32_t buff
 }
 
 
-static void init()
+static void 
+init()
 {
 	IErReverbGuiDescriptor =
 	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
@@ -353,7 +358,8 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-static void on_inv_erreverb_length_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_erreverb_length_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
@@ -362,7 +368,8 @@ static void on_inv_erreverb_length_knob_motion(GtkWidget *widget, GdkEvent *even
 	return;
 }
 
-static void on_inv_erreverb_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_erreverb_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
@@ -371,7 +378,8 @@ static void on_inv_erreverb_width_knob_motion(GtkWidget *widget, GdkEvent *event
 	return;
 }
 
-static void on_inv_erreverb_height_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_erreverb_height_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
@@ -380,7 +388,8 @@ static void on_inv_erreverb_height_knob_motion(GtkWidget *widget, GdkEvent *even
 	return;
 }
 
-static void on_inv_erreverb_hpf_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_erreverb_hpf_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
@@ -389,7 +398,8 @@ static void on_inv_erreverb_hpf_knob_motion(GtkWidget *widget, GdkEvent *event, 
 	return;
 }
 
-static void on_inv_erreverb_warmth_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void
+on_inv_erreverb_warmth_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
@@ -398,9 +408,9 @@ static void on_inv_erreverb_warmth_knob_motion(GtkWidget *widget, GdkEvent *even
 	return;
 }
 
-static void on_inv_erreverb_diffusion_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void 
+on_inv_erreverb_diffusion_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
 	pluginGui->diffusion=inv_knob_get_value(INV_KNOB (widget));
@@ -408,4 +418,27 @@ static void on_inv_erreverb_diffusion_knob_motion(GtkWidget *widget, GdkEvent *e
 	return;
 }
 
+static void 
+on_inv_erreverb_display_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	gint active_dot;
+	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
+	active_dot=inv_display_err_get_active_dot(INV_DISPLAY_ERR (widget));
+
+	switch(active_dot) {
+		case INV_DISPLAY_ERR_ACTIVE_SOURCE:
+			pluginGui->sourceLR=inv_display_err_get_source(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_LR);
+			pluginGui->sourceFB=inv_display_err_get_source(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_FB);
+			(*pluginGui->write_function)(pluginGui->controller, IERR_SOURCELR, 4, 0, &pluginGui->sourceLR);
+			(*pluginGui->write_function)(pluginGui->controller, IERR_SOURCEFB, 4, 0, &pluginGui->sourceFB);
+			break;
+		case INV_DISPLAY_ERR_ACTIVE_DEST:
+			pluginGui->destLR=inv_display_err_get_dest(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_LR);
+			pluginGui->destFB=inv_display_err_get_dest(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_FB);
+			(*pluginGui->write_function)(pluginGui->controller, IERR_DESTLR, 4, 0, &pluginGui->destLR);
+			(*pluginGui->write_function)(pluginGui->controller, IERR_DESTFB, 4, 0, &pluginGui->destFB);
+			break;
+	}
+	return;
+}
