@@ -146,22 +146,24 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->lampNoClip = inv_lamp_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->lampNoClip);
 
-	pluginGui->InChannels=2;
-	pluginGui->OutChannels=2;
-	pluginGui->bypass=0.0;
-	pluginGui->phaseL=0.0;
-	pluginGui->phaseR=0.0;
-	pluginGui->gain=0.0;
-	pluginGui->pan=0.0;
-	pluginGui->width=0.0;
-	pluginGui->noClip=0.0;
+	pluginGui->InChannels	= 2;
+	pluginGui->OutChannels	= 2;
+	pluginGui->bypass	= 0.0;
+	pluginGui->phaseL	= 0.0;
+	pluginGui->phaseR	= 0.0;
+	pluginGui->gain		= 0.0;
+	pluginGui->pan		= 0.0;
+	pluginGui->width	= 0.0;
+	pluginGui->noClip	= 0.0;
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
+	inv_meter_set_mode(INV_METER (pluginGui->meterIn), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterIn),-90);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
+	inv_meter_set_mode(INV_METER (pluginGui->meterOut), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);

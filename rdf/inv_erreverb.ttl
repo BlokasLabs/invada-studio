@@ -12,24 +12,24 @@
 
     uiext:portNotification [ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/mono> ;
-        uiext:portIndex 13 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/mono> ;
         uiext:portIndex 14 ;
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/mono> ;
         uiext:portIndex 15 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/mono> ;
+        uiext:portIndex 16 ;
     ] ;
 
     uiext:portNotification [ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/sum> ;
-        uiext:portIndex 13 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/sum> ;
         uiext:portIndex 14 ;
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/sum> ;
         uiext:portIndex 15 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/sum> ;
+        uiext:portIndex 16 ;
     ] .
 
 
@@ -48,6 +48,13 @@
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 0 ;
+	lv2:symbol "bypass" ;
+	lv2:name "Bypass" ;
+	lv2:portProperty :toggled ;
+	lv2:default 0.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 1 ;
 	lv2:symbol "roomLength" ;
 	lv2:name "Room Length" ;
 	lv2:default 25 ;
@@ -56,7 +63,7 @@
 	units:unit :m ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 1 ;
+	lv2:index 2 ;
 	lv2:symbol "roomWidth" ;
 	lv2:name "Room Width" ;
 	lv2:default 30 ;
@@ -65,7 +72,7 @@
 	units:unit :m ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 2 ;
+	lv2:index 3 ;
 	lv2:symbol "roomHeight" ;
 	lv2:name "Room Height" ;
 	lv2:default 10 ;
@@ -74,7 +81,7 @@
 	units:unit :m ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 3 ;
+	lv2:index 4 ;
 	lv2:symbol "sourceLR" ;
 	lv2:name "Source Pan" ;
 	lv2:default -0.01 ;
@@ -82,7 +89,7 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 4 ;
+	lv2:index 5 ;
 	lv2:symbol "sourceFB" ;
 	lv2:name "Source (F/B)" ;
 	lv2:default 0.8 ;
@@ -90,7 +97,7 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 5 ;
+	lv2:index 6 ;
 	lv2:symbol "listLR" ;
 	lv2:name "Listener Pan" ;
 	lv2:default 0.01 ;
@@ -98,7 +105,7 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 6 ;
+	lv2:index 7 ;
 	lv2:symbol "listFB" ;
 	lv2:name "Listener (F/B)" ;
 	lv2:default 0.2 ;
@@ -106,7 +113,7 @@
 	lv2:maximum 0.5 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 7 ;
+	lv2:index 8 ;
 	lv2:symbol "hpf" ;
 	lv2:name "HPF" ;
 	lv2:default 1000.0 ;
@@ -115,7 +122,7 @@
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 8 ;
+	lv2:index 9 ;
 	lv2:symbol "warmth" ;
 	lv2:name "Warmth" ;
 	lv2:default 50.0 ;
@@ -124,7 +131,7 @@
 	units:unit :pc ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 9 ;
+	lv2:index 10 ;
 	lv2:symbol "diffusion" ;
 	lv2:name "Diffusion" ;
 	lv2:default 50.0 ;
@@ -133,22 +140,22 @@
 	units:unit :pc ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 10 ;
+	lv2:index 11 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 11 ;
+	lv2:index 12 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 12 ;
+	lv2:index 13 ;
 	lv2:symbol "in" ;
 	lv2:name "In" ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 13 ;
+	lv2:index 14 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
 	lv2:minimum -60.0 ;
@@ -156,7 +163,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 14 ;
+	lv2:index 15 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
 	lv2:minimum -60.0 ;
@@ -164,7 +171,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 15 ;
+	lv2:index 16 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
 	lv2:minimum -60.0 ;
@@ -188,6 +195,13 @@
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 0 ;
+	lv2:symbol "bypass" ;
+	lv2:name "Bypass" ;
+	lv2:portProperty :toggled ;
+	lv2:default 0.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 1 ;
 	lv2:symbol "roomLength" ;
 	lv2:name "Room Length" ;
 	lv2:default 25 ;
@@ -196,7 +210,7 @@
 	units:unit :m ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 1 ;
+	lv2:index 2 ;
 	lv2:symbol "roomWidth" ;
 	lv2:name "Room Width" ;
 	lv2:default 30 ;
@@ -205,7 +219,7 @@
 	units:unit :m ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 2 ;
+	lv2:index 3 ;
 	lv2:symbol "roomHeight" ;
 	lv2:name "Room Height" ;
 	lv2:default 10 ;
@@ -214,7 +228,7 @@
 	units:unit :m ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 3 ;
+	lv2:index 4 ;
 	lv2:symbol "sourceLR" ;
 	lv2:name "Source Pan" ;
 	lv2:default -0.01 ;
@@ -222,7 +236,7 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 4 ;
+	lv2:index 5 ;
 	lv2:symbol "sourceFB" ;
 	lv2:name "Source (F/B)" ;
 	lv2:default 0.8 ;
@@ -230,7 +244,7 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 5 ;
+	lv2:index 6 ;
 	lv2:symbol "listLR" ;
 	lv2:name "Listener Pan" ;
 	lv2:default 0.01 ;
@@ -238,7 +252,7 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 6 ;
+	lv2:index 7 ;
 	lv2:symbol "listFB" ;
 	lv2:name "Listener (F/B)" ;
 	lv2:default 0.2 ;
@@ -246,7 +260,7 @@
 	lv2:maximum 0.5 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 7 ;
+	lv2:index 8 ;
 	lv2:symbol "hpf" ;
 	lv2:name "HPF" ;
 	lv2:default 1000.0 ;
@@ -255,7 +269,7 @@
 	units:unit :hz ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 8 ;
+	lv2:index 9 ;
 	lv2:symbol "warmth" ;
 	lv2:name "Warmth" ;
 	lv2:default 50.0 ;
@@ -264,7 +278,7 @@
 	units:unit :pc ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 9 ;
+	lv2:index 10 ;
 	lv2:symbol "diffusion" ;
 	lv2:name "Diffusion" ;
 	lv2:default 50.0 ;
@@ -273,22 +287,22 @@
 	units:unit :pc ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 10 ;
+	lv2:index 11 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 11 ;
+	lv2:index 12 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 12 ;
+	lv2:index 13 ;
 	lv2:symbol "inL" ;
 	lv2:name "L In" ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 13 ;
+	lv2:index 14 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
 	lv2:minimum -60.0 ;
@@ -296,7 +310,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 14 ;
+	lv2:index 15 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
 	lv2:minimum -60.0 ;
@@ -304,7 +318,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 15 ;
+	lv2:index 16 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
 	lv2:minimum -60.0 ;
@@ -312,7 +326,7 @@
 	units:unit :db ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 16 ;
+	lv2:index 17 ;
 	lv2:symbol "inR" ;
 	lv2:name "R In" ;
     ] .

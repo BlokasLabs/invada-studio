@@ -56,6 +56,7 @@ static LV2_Descriptor *IReverbERSumDescriptor = NULL;
 typedef struct {
 
 	/* Ports */
+	float * ControlBypass;
 	float * ControlRoomLength;
 	float * ControlRoomWidth; 
 	float * ControlRoomHeight;
@@ -79,6 +80,7 @@ typedef struct {
 	double SampleRate;
 
 	/* Stuff to remember to avoid recalculating the delays every run */
+	float LastBypass;
 	float LastRoomLength;
 	float LastRoomWidth; 
 	float LastRoomHeight;
@@ -94,6 +96,7 @@ typedef struct {
 	float EnvOutLLast; 
 	float EnvOutRLast;
 
+	float ConvertedBypass; 
 	float ConvertedHPF; 
 	float ConvertedWarmth; 
 
@@ -117,7 +120,8 @@ typedef struct {
 } IReverbER;
 
 
-static LV2_Handle instantiateIReverbER(const LV2_Descriptor *descriptor, double s_rate, const char *path, const LV2_Feature * const* features)
+static LV2_Handle 
+instantiateIReverbER(const LV2_Descriptor *descriptor, double s_rate, const char *path, const LV2_Feature * const* features)
 {
 	IReverbER *plugin = (IReverbER *)malloc(sizeof(IReverbER));
 	if(plugin==NULL)
@@ -143,10 +147,14 @@ static LV2_Handle instantiateIReverbER(const LV2_Descriptor *descriptor, double 
 
 
 
-static void connectPortIReverbER(LV2_Handle instance, uint32_t port, void *data)
+static void 
+connectPortIReverbER(LV2_Handle instance, uint32_t port, void *data)
 {
 	IReverbER *plugin = (IReverbER *)instance;
 	switch (port) {
+		case IERR_BYPASS:
+			plugin->ControlBypass = data;
+			break;
 		case IERR_ROOMLENGTH:
 			plugin->ControlRoomLength = data;
 			break;
@@ -202,7 +210,8 @@ static void connectPortIReverbER(LV2_Handle instance, uint32_t port, void *data)
 }
 
 
-static void activateIReverbER(LV2_Handle instance) 
+static void 
+activateIReverbER(LV2_Handle instance) 
 {
 	IReverbER *plugin = (IReverbER *)instance;
 
@@ -225,6 +234,7 @@ static void activateIReverbER(LV2_Handle instance)
 	plugin->SpaceREnd=--q;
   
 	//set defaults
+	plugin->LastBypass     = 0.0;
 	plugin->LastRoomLength = 25.0;
 	plugin->LastRoomWidth  = 30.0; 
 	plugin->LastRoomHeight = 10;
@@ -246,13 +256,15 @@ static void activateIReverbER(LV2_Handle instance)
 	plugin->EnvOutLLast = 0; 
 	plugin->EnvOutRLast = 0; 
 
+	plugin->ConvertedBypass = convertParam(IERR_BYPASS, plugin->LastBypass, plugin->SampleRate);  
 	plugin->ConvertedHPF    = convertParam(IERR_HPF,    plugin->LastHPF,    plugin->SampleRate);  
 	plugin->ConvertedWarmth = convertParam(IERR_WARMTH, plugin->LastWarmth, plugin->SampleRate);  
 	calculateIReverbERWrapper(instance);
 }
 
 
-static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount) 
+static void 
+runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount) 
 {
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
@@ -262,7 +274,7 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	float OutL,EnvOutL;
 	float OutR,EnvOutR;
 	float AudioIn,AudioHPF,AudioIn1,AudioIn2,AudioIn3,AudioIn4,AudioProc;
-	float HPFsamples,WarmthSamples;
+	float fBypass,HPFsamples,WarmthSamples;
 	struct ERunit * er;
 	unsigned long lSampleIndex;
 	unsigned int i;
@@ -300,9 +312,11 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	}
 
 	/* check if any other params have changed */
+	checkParamChange(IERR_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
 	checkParamChange(IERR_WARMTH, plugin->ControlWarmth, &(plugin->LastWarmth), &(plugin->ConvertedWarmth), plugin->SampleRate, pParamFunc);
 	checkParamChange(IERR_HPF,    plugin->ControlHPF,    &(plugin->LastHPF),    &(plugin->ConvertedHPF),    plugin->SampleRate, pParamFunc);
 
+	fBypass         = plugin->ConvertedBypass;
 	WarmthSamples   = plugin->ConvertedWarmth;
 	HPFsamples   	= plugin->ConvertedHPF;
 	
@@ -330,82 +344,107 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	EnvOutL    	= plugin->EnvOutLLast;
 	EnvOutR   	= plugin->EnvOutRLast;
 
-	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+	if(fBypass==0) { 
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
-		In=*(pfAudioInputL++);
-		// apply HPF as bottom end in reverbs sounds crap
-		AudioHPF = ((HPFsamples-1) * AudioHPF + In) / HPFsamples;  
-		AudioIn = In - AudioHPF;
+			In=*(pfAudioInputL++);
+			// apply HPF as bottom end in reverbs sounds crap
+			AudioHPF = ((HPFsamples-1) * AudioHPF + In) / HPFsamples;  
+			AudioIn = In - AudioHPF;
 
-		// apply simple LPF filter repeatedly to audio to simluate frequency loss with each reflection
-		AudioIn1=((WarmthSamples-1) * AudioIn1 + AudioIn) / WarmthSamples; 
-		AudioIn2=((WarmthSamples-1) * AudioIn2 + AudioIn1) / WarmthSamples; 
-		AudioIn3=((WarmthSamples-1) * AudioIn3 + AudioIn2) / WarmthSamples; 
-		AudioIn4=((WarmthSamples-1) * AudioIn4 + AudioIn3) / WarmthSamples; 
-		  
-		er = plugin->er;
-		  
-		// now calculate the reflections
-		for(i=0;i<er_size;i++) {
-			// pick the right version of the audio as per reflection count
-			switch(er->Reflections) {
-				case 0:
-					AudioProc=AudioIn;
-					break;
-				case 1:
-					AudioProc=AudioIn1;
-					break;
-				case 2:
-					AudioProc=AudioIn2;
-					break;
-				case 3:
-					AudioProc=AudioIn3;
-					break;
-				case 4:
-				default:
-					AudioProc=AudioIn4;
-					break;
+			// apply simple LPF filter repeatedly to audio to simluate frequency loss with each reflection
+			AudioIn1=((WarmthSamples-1) * AudioIn1 + AudioIn) / WarmthSamples; 
+			AudioIn2=((WarmthSamples-1) * AudioIn2 + AudioIn1) / WarmthSamples; 
+			AudioIn3=((WarmthSamples-1) * AudioIn3 + AudioIn2) / WarmthSamples; 
+			AudioIn4=((WarmthSamples-1) * AudioIn4 + AudioIn3) / WarmthSamples; 
+			  
+			er = plugin->er;
+			  
+			// now calculate the reflections
+			for(i=0;i<er_size;i++) {
+				// pick the right version of the audio as per reflection count
+				switch(er->Reflections) {
+					case 0:
+						AudioProc=AudioIn;
+						break;
+					case 1:
+						AudioProc=AudioIn1;
+						break;
+					case 2:
+						AudioProc=AudioIn2;
+						break;
+					case 3:
+						AudioProc=AudioIn3;
+						break;
+					case 4:
+					default:
+						AudioProc=AudioIn4;
+						break;
+				}
+				// add the reflection into the delay space
+				if(SpaceLCur+er->Delay > SpaceLEnd)
+					*(SpaceLCur+er->Delay-SpaceSize)+=AudioProc*er->GainL*(1-er->DelayOffset);
+				else
+					*(SpaceLCur+er->Delay)+=AudioProc*er->GainL*(1-er->DelayOffset);
+
+				if(SpaceLCur+er->Delay+1 > SpaceLEnd)
+					*(SpaceLCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainL*er->DelayOffset;
+				else
+					*(SpaceLCur+er->Delay+1)+=AudioProc*er->GainL*er->DelayOffset;
+
+				if(SpaceRCur+er->Delay > SpaceREnd)
+					*(SpaceRCur+er->Delay-SpaceSize)+=AudioProc*er->GainR*(1-er->DelayOffset);
+				else
+					*(SpaceRCur+er->Delay)+=AudioProc*er->GainR*(1-er->DelayOffset);
+
+				if(SpaceRCur+er->Delay+1 > SpaceREnd)
+					*(SpaceRCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainR*er->DelayOffset;
+				else
+					*(SpaceRCur+er->Delay+1)+=AudioProc*er->GainR*er->DelayOffset;
+	 
+				er++;
 			}
-			// add the reflection into the delay space
-			if(SpaceLCur+er->Delay > SpaceLEnd)
-				*(SpaceLCur+er->Delay-SpaceSize)+=AudioProc*er->GainL*(1-er->DelayOffset);
-			else
-				*(SpaceLCur+er->Delay)+=AudioProc*er->GainL*(1-er->DelayOffset);
+			// read the audio out of the delay space
+			OutL = *(SpaceLCur);
+			OutR = *(SpaceRCur);
+			*(pfAudioOutputL++) = OutL;
+			*(pfAudioOutputR++) = OutR;
+			// zero the spot we just read
+			*(SpaceLCur)=0;
+			*(SpaceRCur)=0;
+			// advance the pointer to the next spot
+			SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
+			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
 
-			if(SpaceLCur+er->Delay+1 > SpaceLEnd)
-				*(SpaceLCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainL*er->DelayOffset;
-			else
-				*(SpaceLCur+er->Delay+1)+=AudioProc*er->GainL*er->DelayOffset;
-
-			if(SpaceRCur+er->Delay > SpaceREnd)
-				*(SpaceRCur+er->Delay-SpaceSize)+=AudioProc*er->GainR*(1-er->DelayOffset);
-			else
-				*(SpaceRCur+er->Delay)+=AudioProc*er->GainR*(1-er->DelayOffset);
-
-			if(SpaceRCur+er->Delay+1 > SpaceREnd)
-				*(SpaceRCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainR*er->DelayOffset;
-			else
-				*(SpaceRCur+er->Delay+1)+=AudioProc*er->GainR*er->DelayOffset;
- 
-			er++;
-		}
-		// read the audio out of the delay space
-		OutL = *(SpaceLCur);
-		OutR = *(SpaceRCur);
-		*(pfAudioOutputL++) = OutL;
-		*(pfAudioOutputR++) = OutR;
-		// zero the spot we just read
-		*(SpaceLCur)=0;
-		*(SpaceRCur)=0;
-		// advance the pointer to the next spot
-		SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
-		SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
-
-		//evelope on in and out for meters
-		EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			//evelope on in and out for meters
+			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 	
+		}
+	} else {
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+
+			*(pfAudioOutputL++) = 0;
+			*(pfAudioOutputR++) = 0;
+
+			// zero the spot we just read
+			*(SpaceLCur)=0;
+			*(SpaceRCur)=0;
+			// advance the pointer to the next spot
+			SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
+			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
+		}
+		//zero filters
+		AudioHPF=0; 
+		AudioIn1=0; 
+		AudioIn2=0; 
+		AudioIn3=0; 
+		AudioIn4=0; 
+		//zero evelope on in and out for meters
+		EnvIn   =0;
+		EnvOutL =0;
+		EnvOutR =0;
 	}
 	// remember for next run
 	plugin->SpaceLCur=SpaceLCur;
@@ -427,7 +466,8 @@ static void runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 }
 
 
-static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount) 
+static void 
+runSumIReverbER(LV2_Handle instance, uint32_t SampleCount) 
 {
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
@@ -438,7 +478,7 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	float OutL,EnvOutL;
 	float OutR,EnvOutR;
 	float AudioIn,AudioHPF,AudioIn1,AudioIn2,AudioIn3,AudioIn4,AudioProc;
-	float HPFsamples,WarmthSamples;
+	float fBypass,HPFsamples,WarmthSamples;
 	struct ERunit * er;
 	unsigned long lSampleIndex;
 	unsigned int i;
@@ -476,9 +516,11 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	}
 
 	/* check if any other params have changed */
+	checkParamChange(IERR_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
 	checkParamChange(IERR_WARMTH, plugin->ControlWarmth, &(plugin->LastWarmth), &(plugin->ConvertedWarmth), plugin->SampleRate, pParamFunc);
 	checkParamChange(IERR_HPF,    plugin->ControlHPF,    &(plugin->LastHPF),    &(plugin->ConvertedHPF),    plugin->SampleRate, pParamFunc);
 
+	fBypass         = plugin->ConvertedBypass;
 	WarmthSamples   = plugin->ConvertedWarmth;
 	HPFsamples   	= plugin->ConvertedHPF;
 	
@@ -507,83 +549,108 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	EnvOutL    	= plugin->EnvOutLLast;
 	EnvOutR   	= plugin->EnvOutRLast;
 
-	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+	if(fBypass==0) { 
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
-		In=( *(pfAudioInputL++) + *(pfAudioInputR++) )/2;
+			In=( *(pfAudioInputL++) + *(pfAudioInputR++) )/2;
 
-		// apply HPF as bottom end in reverbs sounds crap
-		AudioHPF = ((HPFsamples-1) * AudioHPF + In) / HPFsamples;  
-		AudioIn = In - AudioHPF;
+			// apply HPF as bottom end in reverbs sounds crap
+			AudioHPF = ((HPFsamples-1) * AudioHPF + In) / HPFsamples;  
+			AudioIn = In - AudioHPF;
 
-		// apply simple filter repeatedly to audio to simluate frequency loss with each reflection
-		AudioIn1=((WarmthSamples-1) * AudioIn1 + AudioIn) / WarmthSamples; 
-		AudioIn2=((WarmthSamples-1) * AudioIn2 + AudioIn1) / WarmthSamples; 
-		AudioIn3=((WarmthSamples-1) * AudioIn3 + AudioIn2) / WarmthSamples; 
-		AudioIn4=((WarmthSamples-1) * AudioIn4 + AudioIn3) / WarmthSamples; 
-		  
-		er = plugin->er;
-		  
-		// now calculate the reflections
-		for(i=0;i<er_size;i++) {
-			// pick the right version of the audio as per reflection count
-			switch(er->Reflections) {
-				case 0:
-					AudioProc=AudioIn;
-					break;
-				case 1:
-					AudioProc=AudioIn1;
-					break;
-				case 2:
-					AudioProc=AudioIn2;
-					break;
-				case 3:
-					AudioProc=AudioIn3;
-					break;
-				case 4:
-				default:
-					AudioProc=AudioIn4;
-					break;
+			// apply simple filter repeatedly to audio to simluate frequency loss with each reflection
+			AudioIn1=((WarmthSamples-1) * AudioIn1 + AudioIn) / WarmthSamples; 
+			AudioIn2=((WarmthSamples-1) * AudioIn2 + AudioIn1) / WarmthSamples; 
+			AudioIn3=((WarmthSamples-1) * AudioIn3 + AudioIn2) / WarmthSamples; 
+			AudioIn4=((WarmthSamples-1) * AudioIn4 + AudioIn3) / WarmthSamples; 
+			  
+			er = plugin->er;
+			  
+			// now calculate the reflections
+			for(i=0;i<er_size;i++) {
+				// pick the right version of the audio as per reflection count
+				switch(er->Reflections) {
+					case 0:
+						AudioProc=AudioIn;
+						break;
+					case 1:
+						AudioProc=AudioIn1;
+						break;
+					case 2:
+						AudioProc=AudioIn2;
+						break;
+					case 3:
+						AudioProc=AudioIn3;
+						break;
+					case 4:
+					default:
+						AudioProc=AudioIn4;
+						break;
+				}
+				// add the reflection into the delay space
+				if(SpaceLCur+er->Delay > SpaceLEnd)
+					*(SpaceLCur+er->Delay-SpaceSize)+=AudioProc*er->GainL*(1-er->DelayOffset);
+				else
+					*(SpaceLCur+er->Delay)+=AudioProc*er->GainL*(1-er->DelayOffset);
+
+				if(SpaceLCur+er->Delay+1 > SpaceLEnd)
+					*(SpaceLCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainL*er->DelayOffset;
+				else
+					*(SpaceLCur+er->Delay+1)+=AudioProc*er->GainL*er->DelayOffset;
+
+				if(SpaceRCur+er->Delay > SpaceREnd)
+					*(SpaceRCur+er->Delay-SpaceSize)+=AudioProc*er->GainR*(1-er->DelayOffset);
+				else
+					*(SpaceRCur+er->Delay)+=AudioProc*er->GainR*(1-er->DelayOffset);
+
+				if(SpaceRCur+er->Delay+1 > SpaceREnd)
+					*(SpaceRCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainR*er->DelayOffset;
+				else
+					*(SpaceRCur+er->Delay+1)+=AudioProc*er->GainR*er->DelayOffset;
+			  
+				er++;
 			}
-			// add the reflection into the delay space
-			if(SpaceLCur+er->Delay > SpaceLEnd)
-				*(SpaceLCur+er->Delay-SpaceSize)+=AudioProc*er->GainL*(1-er->DelayOffset);
-			else
-				*(SpaceLCur+er->Delay)+=AudioProc*er->GainL*(1-er->DelayOffset);
+			// read the audio out of the delay space
+			OutL = *(SpaceLCur);
+			OutR = *(SpaceRCur);
+			*(pfAudioOutputL++) = OutL;
+			*(pfAudioOutputR++) = OutR;
+			// zero the spot we just read
+			*(SpaceLCur)=0;
+			*(SpaceRCur)=0;
+			// advance the pointer to the next spot
+			SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
+			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
 
-			if(SpaceLCur+er->Delay+1 > SpaceLEnd)
-				*(SpaceLCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainL*er->DelayOffset;
-			else
-				*(SpaceLCur+er->Delay+1)+=AudioProc*er->GainL*er->DelayOffset;
-
-			if(SpaceRCur+er->Delay > SpaceREnd)
-				*(SpaceRCur+er->Delay-SpaceSize)+=AudioProc*er->GainR*(1-er->DelayOffset);
-			else
-				*(SpaceRCur+er->Delay)+=AudioProc*er->GainR*(1-er->DelayOffset);
-
-			if(SpaceRCur+er->Delay+1 > SpaceREnd)
-				*(SpaceRCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainR*er->DelayOffset;
-			else
-				*(SpaceRCur+er->Delay+1)+=AudioProc*er->GainR*er->DelayOffset;
-		  
-			er++;
-		}
-		// read the audio out of the delay space
-		OutL = *(SpaceLCur);
-		OutR = *(SpaceRCur);
-		*(pfAudioOutputL++) = OutL;
-		*(pfAudioOutputR++) = OutR;
-		// zero the spot we just read
-		*(SpaceLCur)=0;
-		*(SpaceRCur)=0;
-		// advance the pointer to the next spot
-		SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
-		SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
-
-		//evelope on in and out for meters
-		EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			//evelope on in and out for meters
+			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 	
+		}
+	} else {
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+
+			*(pfAudioOutputL++) = 0;
+			*(pfAudioOutputR++) = 0;
+
+			// zero the spot we just read
+			*(SpaceLCur)=0;
+			*(SpaceRCur)=0;
+			// advance the pointer to the next spot
+			SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
+			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
+		}
+		//zero filters
+		AudioHPF=0; 
+		AudioIn1=0; 
+		AudioIn2=0; 
+		AudioIn3=0; 
+		AudioIn4=0; 
+		//zero evelope on in and out for meters
+		EnvIn   =0;
+		EnvOutL =0;
+		EnvOutR =0;
 	}
 	// remember for next run
 	plugin->SpaceLCur=SpaceLCur;
@@ -605,7 +672,8 @@ static void runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 }
 
 
-static void cleanupIReverbER(LV2_Handle instance)
+static void 
+cleanupIReverbER(LV2_Handle instance)
 {
 	IReverbER *plugin = (IReverbER *)instance;
 
@@ -616,7 +684,8 @@ static void cleanupIReverbER(LV2_Handle instance)
 }
 
 
-static void init()
+static void 
+init()
 {
 	IReverbERMonoDescriptor =
 	 (LV2_Descriptor *)malloc(sizeof(LV2_Descriptor));
@@ -663,7 +732,8 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
 /*****************************************************************************/
 
 
-void calculateIReverbERWrapper(LV2_Handle instance)
+void 
+calculateIReverbERWrapper(LV2_Handle instance)
 {
 	IReverbER *plugin = (IReverbER *)instance;
 
@@ -735,12 +805,19 @@ void calculateIReverbERWrapper(LV2_Handle instance)
 
 
 
-float convertParam(unsigned long param, float value, double sr) {
+float 
+convertParam(unsigned long param, float value, double sr) {
 
 	float result;
 
 	switch(param)
 	{
+		case IERR_BYPASS:
+			if(value<=0.0)
+				result= 0; 
+			else
+				result= 1;
+			break;
 		case IERR_HPF:
 
 			if (value < 20)

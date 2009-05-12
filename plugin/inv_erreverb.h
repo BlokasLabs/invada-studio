@@ -22,23 +22,24 @@
 #define IERR_GUI_URI	"http://invadarecords.com/plugins/lv2/erreverb/gui"
 #define IERR_MONO_URI	"http://invadarecords.com/plugins/lv2/erreverb/mono"
 #define IERR_SUM_URI	"http://invadarecords.com/plugins/lv2/erreverb/sum"
-#define IERR_ROOMLENGTH	0
-#define IERR_ROOMWIDTH 	1
-#define IERR_ROOMHEIGHT	2
-#define IERR_SOURCELR 	3
-#define IERR_SOURCEFB 	4
-#define IERR_DESTLR 	5
-#define IERR_DESTFB 	6
-#define IERR_HPF 	7
-#define IERR_WARMTH 	8
-#define IERR_DIFFUSION 	9
-#define IERR_AUDIO_OUTL 10
-#define IERR_AUDIO_OUTR 11 
-#define IERR_AUDIO_INL  12
-#define IERR_METER_IN   13
-#define IERR_METER_OUTL 14
-#define IERR_METER_OUTR 15
-#define IERR_AUDIO_INR  16   /* not used in mono in mode */ 
+#define IERR_BYPASS	0
+#define IERR_ROOMLENGTH	1
+#define IERR_ROOMWIDTH 	2
+#define IERR_ROOMHEIGHT	3
+#define IERR_SOURCELR 	4
+#define IERR_SOURCEFB 	5
+#define IERR_DESTLR 	6
+#define IERR_DESTFB 	7
+#define IERR_HPF 	8
+#define IERR_WARMTH 	9
+#define IERR_DIFFUSION 	10
+#define IERR_AUDIO_OUTL 11
+#define IERR_AUDIO_OUTR 12 
+#define IERR_AUDIO_INL  13
+#define IERR_METER_IN   14
+#define IERR_METER_OUTL 15
+#define IERR_METER_OUTR 16
+#define IERR_AUDIO_INR  17   /* not used in mono in mode */ 
 
 #define REVERB_SPACE_SIZE 2   /* size in seconds */
 #define OBJECT_HEIGHT     1.5 /* the height of the sound source and the listener */

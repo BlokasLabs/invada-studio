@@ -160,11 +160,13 @@ instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_tube_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
+	inv_meter_set_mode(INV_METER (pluginGui->meterIn), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterIn),-90);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
+	inv_meter_set_mode(INV_METER (pluginGui->meterOut), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);

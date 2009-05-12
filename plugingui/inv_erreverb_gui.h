@@ -18,6 +18,7 @@
 
 */
 
+static void on_inv_erreverb_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_erreverb_length_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_erreverb_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_erreverb_height_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
