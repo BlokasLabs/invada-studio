@@ -3,6 +3,7 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widgets.h"
 
 G_BEGIN_DECLS
 
@@ -12,9 +13,6 @@ G_BEGIN_DECLS
 
 #define INV_METER_DRAW_MODE_TOZERO 0
 #define INV_METER_DRAW_MODE_FROMZERO 1
-
-#define INV_METER_ACTIVE 0
-#define INV_METER_BYPASS 1
 
 #define INV_METER(obj) GTK_CHECK_CAST(obj, inv_meter_get_type (), InvMeter)
 #define INV_METER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_meter_get_type(), InvMeterClass)
@@ -38,20 +36,8 @@ struct _InvMeter {
 	gint lastLpos;
 	gint lastRpos;
 
-	float mOff60[3];
-	float mOn60[3];  /* delta */
-
-	float mOff12[3];
-	float mOn12[3];  /* delta */
-
-	float mOff6[3];
-	float mOn6[3];  /* delta */
-
-	float mOff0[3];
-	float mOn0[3];   /* delta */
-
-	float overOff[3];
-	float overOn[3]; /* delta */
+	struct colour mOff60,mOff12,mOff6,mOff0,overOff;
+	struct colour mOn60, mOn12, mOn6, mOn0, overOn;  /* delta */
 };
 
 struct _InvMeterClass {

@@ -3,10 +3,9 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widgets.h"
 
 G_BEGIN_DECLS
-
-#define INV_PI 3.1415926535
 
 #define INV_DISPLAYCOMP_DRAW_ALL 0
 #define INV_DISPLAYCOMP_DRAW_DATA 1

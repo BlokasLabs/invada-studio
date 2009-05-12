@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <lv2.h>
 #include "lv2_ui.h"
+#include "widgets/widgets.h"
 #include "widgets/knob.h"
 #include "widgets/lamp.h"
 #include "widgets/meter-peak.h"
@@ -166,7 +167,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	pluginGui->gain=0.0;
 	pluginGui->noClip=0.0;
 
-	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ACTIVE);
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, "Active");
@@ -176,23 +177,23 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_filter_bypass_toggle_button_release),pluginGui);
 
-	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
+	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
 	inv_meter_set_mode(INV_METER (pluginGui->meterIn), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterIn),-90);
 
-	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
+	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_PLUGIN_ACTIVE);
 	inv_meter_set_mode(INV_METER (pluginGui->meterOut), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
-	inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_ACTIVE);
+	inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_PLUGIN_ACTIVE);
 	inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), pluginGui->freq);
 	inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), pluginGui->gain);
 
-	inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_KNOB_ACTIVE);
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobFreq), INV_KNOB_SIZE_LARGE);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobFreq), INV_KNOB_CURVE_LOG);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobFreq), INV_KNOB_MARKINGS_4); 
@@ -203,7 +204,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_value(INV_KNOB (pluginGui->knobFreq), pluginGui->freq);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobFreq),"motion-notify-event",G_CALLBACK(on_inv_filter_freq_knob_motion),pluginGui);
 
-	inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_KNOB_ACTIVE);
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_LARGE);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobGain), INV_KNOB_MARKINGS_5);
@@ -214,7 +215,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_filter_gain_knob_motion),pluginGui);
 
-	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ACTIVE);
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, "Off");
@@ -263,20 +264,20 @@ port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint3
 				pluginGui->bypass=value;
 				if(value <= 0.0) {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
-					inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_ACTIVE);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_KNOB_ACTIVE);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_KNOB_ACTIVE);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ACTIVE);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_PLUGIN_ACTIVE);
+					inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_ACTIVE);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
 				} else {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_BYPASS);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_BYPASS);
-					inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_DISPLAYFG_BYPASS);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_KNOB_BYPASS);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_KNOB_BYPASS);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_BYPASS);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_BYPASS);
+					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_PLUGIN_BYPASS);
+					inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_BYPASS);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
 				}
 				break;
 			case IFILTER_FREQ:

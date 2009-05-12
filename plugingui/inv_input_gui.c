@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <lv2.h>
 #include "lv2_ui.h"
+#include "widgets/widgets.h"
 #include "widgets/knob.h"
 #include "widgets/lamp.h"
 #include "widgets/meter-peak.h"
@@ -156,22 +157,22 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->width	= 0.0;
 	pluginGui->noClip	= 0.0;
 
-	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
+	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
 	inv_meter_set_mode(INV_METER (pluginGui->meterIn), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterIn), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterIn),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterIn),-90);
 
-	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
+	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_PLUGIN_ACTIVE);
 	inv_meter_set_mode(INV_METER (pluginGui->meterOut), INV_METER_DRAW_MODE_TOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
-	inv_phase_meter_set_bypass(INV_PHASE_METER (pluginGui->meterPhase),INV_PHASE_METER_ACTIVE);
+	inv_phase_meter_set_bypass(INV_PHASE_METER (pluginGui->meterPhase),INV_PLUGIN_ACTIVE);
 	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
 
-	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ACTIVE);
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, "Active");
@@ -181,7 +182,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_input_bypass_toggle_button_release),pluginGui);
 
-	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ACTIVE);
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL),"LEFT");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
@@ -192,7 +193,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseL),"button-release-event",G_CALLBACK(on_inv_input_phaseL_toggle_button_release),pluginGui);
 
-	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ACTIVE);
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_label(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR),"RIGHT");
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
@@ -203,7 +204,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseR),"button-release-event",G_CALLBACK(on_inv_input_phaseR_toggle_button_release),pluginGui);
 
-	inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_KNOB_ACTIVE);
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobGain), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobGain), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobGain), INV_KNOB_MARKINGS_5);
@@ -214,7 +215,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_input_gain_knob_motion),pluginGui);
 
-	inv_knob_set_bypass(INV_KNOB (pluginGui->knobPan), INV_KNOB_ACTIVE);
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobPan), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobPan), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobPan), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobPan), INV_KNOB_MARKINGS_PAN); 
@@ -225,7 +226,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_value(INV_KNOB (pluginGui->knobPan), pluginGui->pan);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobPan),"motion-notify-event",G_CALLBACK(on_inv_input_pan_knob_motion),pluginGui);
 
-	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_KNOB_ACTIVE);
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobWidth), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobWidth), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobWidth), INV_KNOB_MARKINGS_CUST10); 
@@ -239,7 +240,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_input_width_knob_motion),pluginGui);
 
-	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ACTIVE);
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, "Off");
@@ -288,26 +289,26 @@ port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 				pluginGui->bypass=value;
 				if(value <= 0.0) {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_ACTIVE);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_ACTIVE);
-					inv_phase_meter_set_bypass(INV_PHASE_METER (pluginGui->meterPhase),INV_PHASE_METER_ACTIVE);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ACTIVE);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ACTIVE);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_KNOB_ACTIVE);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobPan), INV_KNOB_ACTIVE);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_KNOB_ACTIVE);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ACTIVE);
+					inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_ACTIVE);
+					inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_ACTIVE);
+					inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_ACTIVE);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_PLUGIN_ACTIVE);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobGain),     INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan),      INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),    INV_PLUGIN_ACTIVE);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
 				} else {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_METER_BYPASS);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_METER_BYPASS);
-					inv_phase_meter_set_bypass(INV_PHASE_METER (pluginGui->meterPhase),INV_PHASE_METER_BYPASS);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_BYPASS);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_BYPASS);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_KNOB_BYPASS);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobPan), INV_KNOB_BYPASS);
-					inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_KNOB_BYPASS);
-					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_BYPASS);
+					inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_BYPASS);
+					inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_BYPASS);
+					inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_BYPASS);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_PLUGIN_BYPASS);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobGain),     INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan),      INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),    INV_PLUGIN_BYPASS);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
 				}
 				break;
 			case IINPUT_PHASEL:

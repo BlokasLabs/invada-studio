@@ -3,10 +3,9 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widgets.h"
 
 G_BEGIN_DECLS
-
-#define INV_PI 3.1415926535
 
 #define INV_LAMP_DRAW_ALL 0
 #define INV_LAMP_DRAW_DATA 1
@@ -28,16 +27,8 @@ struct _InvLamp {
 
 	float lastValue;
 
-	float l0_r[3];
-	float l0_c[3];
-	float l1_r[3];
-	float l1_c[3];
-	float l2_r[3];
-	float l2_c[3];
-	float l3_r[3];
-	float l3_c[3];
-	float l4_r[3];
-	float l4_c[3];
+	struct colour l0_r, l1_r, l2_r, l3_r, l4_r;
+	struct colour l0_c, l1_c, l2_c, l3_c, l4_c;
 };
 
 struct _InvLampClass {

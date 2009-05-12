@@ -3,13 +3,9 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widgets.h"
 
 G_BEGIN_DECLS
-
-#define INV_PI 3.1415926535
-
-#define INV_KNOB_ACTIVE 0
-#define INV_KNOB_BYPASS 1
 
 #define INV_KNOB_DRAW_ALL     0
 #define INV_KNOB_DRAW_DATA    1

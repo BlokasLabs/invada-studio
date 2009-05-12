@@ -3,11 +3,10 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widgets.h"
 #include "../../plugin/library/common.h"
 
 G_BEGIN_DECLS
-
-#define INV_PI 3.1415926535
 
 #define INV_DISPLAY_ERR_DRAW_ALL 0
 #define INV_DISPLAY_ERR_DRAW_DATA 1
@@ -55,20 +54,11 @@ struct _InvDisplayErrClass {
 	GtkWidgetClass parent_class;
 };
 
-struct point2D {
-	float x; 
-	float y;
-};
-
-struct point3D {
-	float x; 
-	float y;
-	float z;
-};
 
 GtkType inv_display_err_get_type(void);
 GtkWidget * inv_display_err_new();
 
+gint inv_display_err_set_bypass(InvDisplayErr *displayErr, gint num);
 gint inv_display_err_get_active_dot(InvDisplayErr *displayErr);
 float inv_display_err_get_source(InvDisplayErr *displayErr, gint axis);
 float inv_display_err_get_dest(InvDisplayErr *displayErr, gint axis);

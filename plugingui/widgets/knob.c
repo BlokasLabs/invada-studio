@@ -1,6 +1,7 @@
 #include "stdlib.h"
 #include "math.h"
 #include "string.h"
+#include "widgets.h"
 #include "knob.h"
 #include "knob-img_small.xpm"
 #include "knob-img_medium.xpm"
@@ -189,7 +190,7 @@ inv_knob_class_init(InvKnobClass *klass)
 static void
 inv_knob_init(InvKnob *knob)
 {
-	knob->bypass    = INV_KNOB_ACTIVE;
+	knob->bypass    = INV_PLUGIN_ACTIVE;
 	knob->size      = INV_KNOB_SIZE_MEDIUM;
 	knob->curve     = INV_KNOB_CURVE_LINEAR;
 	knob->markings  = INV_KNOB_MARKINGS_5;
@@ -485,7 +486,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,fontsize);
-		if(bypass==INV_KNOB_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);
 		} else {
 			gdk_cairo_set_source_color(cr,&style->fg[state]);
@@ -649,7 +650,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 
 	if(value!=lastvalue || mode==INV_KNOB_DRAW_ALL)
 	{
-		if(bypass==INV_KNOB_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			gdk_cairo_set_source_color(cr,&style->base[GTK_STATE_INSENSITIVE]);
 		} else {
 			gdk_cairo_set_source_color(cr,&style->base[state]);
@@ -658,7 +659,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 		cairo_set_font_size(cr,fontsize);
-		if(bypass==INV_KNOB_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			gdk_cairo_set_source_color(cr,&style->text[GTK_STATE_INSENSITIVE]);
 		} else {
 			gdk_cairo_set_source_color(cr,&style->text[state]);

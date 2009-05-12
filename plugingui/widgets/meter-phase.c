@@ -1,5 +1,6 @@
 #include "stdlib.h"
 #include "string.h"
+#include "widgets.h"
 #include "meter-phase.h"
 
 
@@ -11,7 +12,7 @@ static void 	inv_phase_meter_realize(GtkWidget *widget);
 static gboolean inv_phase_meter_expose(GtkWidget *widget,GdkEventExpose *event);
 static void 	inv_phase_meter_paint(GtkWidget *widget, gint mode);
 static void	inv_phase_meter_destroy(GtkObject *object);
-static void	inv_phase_meter_colour(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B);
+static void	inv_phase_meter_colour(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led);
 
 
 GtkType
@@ -93,23 +94,23 @@ inv_phase_meter_class_init(InvPhaseMeterClass *klass)
 static void
 inv_phase_meter_init(InvPhaseMeter *meter)
 {
-	meter->bypass = INV_PHASE_METER_ACTIVE;
+	meter->bypass = INV_PLUGIN_ACTIVE;
 	meter->phase = 0;
 
-	meter->mOff0[0] =0.1;	meter->mOff0[1] =0.1;	meter->mOff0[2] =0.4;
-	meter->mOn0[0]  =-0.1;	meter->mOn0[1]  =-0.1;	meter->mOn0[2]  =0.6;
+	meter->mOff0.R =0.1;	meter->mOff0.G =0.1;	meter->mOff0.B =0.4;
+	meter->mOn0.R  =-0.1;	meter->mOn0.G  =-0.1;	meter->mOn0.B  =0.6;
 
-	meter->mOff30[0] =0.2; 	meter->mOff30[1] =0.3;	meter->mOff30[2] =0.4;
-	meter->mOn30[0]  =-0.1;	meter->mOn30[1]  =0.3;	meter->mOn30[2]  =0.6;
+	meter->mOff30.R =0.2; 	meter->mOff30.G =0.3;	meter->mOff30.B =0.4;
+	meter->mOn30.R  =-0.1;	meter->mOn30.G  =0.3;	meter->mOn30.B  =0.6;
 
-	meter->mOff45[0] =0.2; 	meter->mOff45[1] =0.4;	meter->mOff45[2] =0.2;
-	meter->mOn45[0]  =0.1;	meter->mOn45[1]  =0.6;	meter->mOn45[2]  =-0.1;
+	meter->mOff45.R =0.2; 	meter->mOff45.G =0.4;	meter->mOff45.B =0.2;
+	meter->mOn45.R  =0.1;	meter->mOn45.G  =0.6;	meter->mOn45.B  =-0.1;
 
-	meter->mOff60[0]  =0.5;	meter->mOff60[1]  =0.5;	meter->mOff60[2]  =0.0;
-	meter->mOn60[0]   =0.5;	meter->mOn60[1]   =0.5;	meter->mOn60[2]   =0.0;
+	meter->mOff60.R  =0.5;	meter->mOff60.G  =0.5;	meter->mOff60.B  =0.0;
+	meter->mOn60.R   =0.5;	meter->mOn60.G   =0.5;	meter->mOn60.B   =0.0;
 
-	meter->mOff90[0]=0.4;	meter->mOff90[1]=0.2;	meter->mOff90[2]=0.0;
-	meter->mOn90[0] =0.6;	meter->mOn90[1] =0.0;	meter->mOn90[2] =0.0;
+	meter->mOff90.R=0.4;	meter->mOff90.G=0.2;	meter->mOff90.B=0.0;
+	meter->mOn90.R =0.6;	meter->mOn90.G =0.0;	meter->mOn90.B =0.0;
 
 }
 
@@ -197,15 +198,15 @@ inv_phase_meter_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 inv_phase_meter_paint(GtkWidget *widget, gint mode)
 {
-	gint 		phase;
-	gint 		bypass;
-	cairo_t 	*cr;
-	float 		Pon;
-	float 		R,G,B;
-	GtkStyle	*style;
+	gint 			phase;
+	gint 			bypass;
+	cairo_t 		*cr;
+	float 			Pon;
+	GtkStyle		*style;
 
-	char label[10];
-	cairo_text_extents_t extents;
+	char 			label[10];
+	struct colour		led;
+	cairo_text_extents_t 	extents;
 
 	style = gtk_widget_get_style(widget);
 	bypass = INV_PHASE_METER(widget)->bypass;
@@ -238,7 +239,7 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 		cairo_new_path(cr);
 
-		if(bypass==INV_PHASE_METER_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 		} else {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
@@ -260,7 +261,7 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 
-		if(bypass==INV_PHASE_METER_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 		} else {
 			cairo_set_source_rgb(cr, 1, 1, 1);
@@ -299,16 +300,16 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 
 	gint i;
 
-	inv_phase_meter_colour(widget, bypass, 0, 1, &R, &G, &B);
-	cairo_set_source_rgb(cr, R, G, B);
+	inv_phase_meter_colour(widget, bypass, 0, 1, &led);
+	cairo_set_source_rgb(cr, led.R, led.G, led.B);
 	cairo_rectangle(cr, 194, 5, 1, 14);
 
 	for ( i = 1; i <= 90; i++) 
 	{
 		Pon = i <= phase ? 1 : 0;
 
-		inv_phase_meter_colour(widget, bypass, i, Pon, &R, &G, &B);
-		cairo_set_source_rgb(cr, R, G, B);
+		inv_phase_meter_colour(widget, bypass, i, Pon, &led);
+		cairo_set_source_rgb(cr, led.R, led.G, led.B);
 		cairo_rectangle(cr, 194+(i*2), 5, 1, 14);
 		cairo_fill(cr);
 		cairo_rectangle(cr, 194-(i*2), 5, 1, 14);
@@ -337,91 +338,61 @@ inv_phase_meter_destroy(GtkObject *object)
 }
 
 static void	
-inv_phase_meter_colour(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B)
+inv_phase_meter_colour(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led)
 {
-
 	float r1,r2;
 
-	float mOff0R = INV_PHASE_METER(widget)->mOff0[0];
-	float mOff0G = INV_PHASE_METER(widget)->mOff0[1];
-	float mOff0B = INV_PHASE_METER(widget)->mOff0[2];
+	struct colour  mOff0  = INV_PHASE_METER(widget)->mOff0;
+	struct colour  mOn0   = INV_PHASE_METER(widget)->mOn0;
+	struct colour  mOff30 = INV_PHASE_METER(widget)->mOff30;
+	struct colour  mOn30  = INV_PHASE_METER(widget)->mOn30;
+	struct colour  mOff45 = INV_PHASE_METER(widget)->mOff45;
+	struct colour  mOn45  = INV_PHASE_METER(widget)->mOn45;
+	struct colour  mOff60 = INV_PHASE_METER(widget)->mOff60;
+	struct colour  mOn60  = INV_PHASE_METER(widget)->mOn60;
+	struct colour  mOff90 = INV_PHASE_METER(widget)->mOff90;
+	struct colour  mOn90  = INV_PHASE_METER(widget)->mOn90;
 
-	float mOn0R = INV_PHASE_METER(widget)->mOn0[0];
-	float mOn0G = INV_PHASE_METER(widget)->mOn0[1];
-	float mOn0B = INV_PHASE_METER(widget)->mOn0[2];
-
-	float mOff30R = INV_PHASE_METER(widget)->mOff30[0];
-	float mOff30G = INV_PHASE_METER(widget)->mOff30[1];
-	float mOff30B = INV_PHASE_METER(widget)->mOff30[2];
-
-	float mOn30R = INV_PHASE_METER(widget)->mOn30[0];
-	float mOn30G = INV_PHASE_METER(widget)->mOn30[1];
-	float mOn30B = INV_PHASE_METER(widget)->mOn30[2];
-
-	float mOff45R = INV_PHASE_METER(widget)->mOff45[0];
-	float mOff45G = INV_PHASE_METER(widget)->mOff45[1];
-	float mOff45B = INV_PHASE_METER(widget)->mOff45[2];
-
-	float mOn45R = INV_PHASE_METER(widget)->mOn45[0];
-	float mOn45G = INV_PHASE_METER(widget)->mOn45[1];
-	float mOn45B = INV_PHASE_METER(widget)->mOn45[2];
-
-	float mOff60R = INV_PHASE_METER(widget)->mOff60[0];
-	float mOff60G = INV_PHASE_METER(widget)->mOff60[1];
-	float mOff60B = INV_PHASE_METER(widget)->mOff60[2];
-
-	float mOn60R = INV_PHASE_METER(widget)->mOn60[0];
-	float mOn60G = INV_PHASE_METER(widget)->mOn60[1];
-	float mOn60B = INV_PHASE_METER(widget)->mOn60[2];
-
-	float mOff90R = INV_PHASE_METER(widget)->mOff90[0];
-	float mOff90G = INV_PHASE_METER(widget)->mOff90[1];
-	float mOff90B = INV_PHASE_METER(widget)->mOff90[2];
-
-	float mOn90R = INV_PHASE_METER(widget)->mOn90[0];
-	float mOn90G = INV_PHASE_METER(widget)->mOn90[1];
-	float mOn90B = INV_PHASE_METER(widget)->mOn90[2];
 
 	if(pos < 30) 
 	{
 		r1=(30.0-(float)pos)/30.0;
 		r2=(float)pos/30.0;
-		*R=(r1 * mOff0R + (r2 * mOff30R))  + (on * ((r1 * mOn0R) + (r2 * mOn30R))) ;
-		*G=(r1 * mOff0G + (r2 * mOff30G))  + (on * ((r1 * mOn0G) + (r2 * mOn30G))) ;
-		*B=(r1 * mOff0B + (r2 * mOff30B))  + (on * ((r1 * mOn0B) + (r2 * mOn30B))) ;
+		led->R=(r1 * mOff0.R + (r2 * mOff30.R))  + (on * ((r1 * mOn0.R) + (r2 * mOn30.R))) ;
+		led->G=(r1 * mOff0.G + (r2 * mOff30.G))  + (on * ((r1 * mOn0.G) + (r2 * mOn30.G))) ;
+		led->B=(r1 * mOff0.B + (r2 * mOff30.B))  + (on * ((r1 * mOn0.B) + (r2 * mOn30.B))) ;
 	} 
 
 	else if (pos < 45)
 	{
 		r1=(45.0-(float)pos)/15.0;
 		r2=((float)pos-30.0)/15.0;
-		*R=(r1 * mOff30R + (r2 * mOff45R))  + (on * ((r1 * mOn30R) + (r2 * mOn45R))) ;
-		*G=(r1 * mOff30G + (r2 * mOff45G))  + (on * ((r1 * mOn30G) + (r2 * mOn45G))) ;
-		*B=(r1 * mOff30B + (r2 * mOff45B))  + (on * ((r1 * mOn30B) + (r2 * mOn45B))) ;
+		led->R=(r1 * mOff30.R + (r2 * mOff45.R))  + (on * ((r1 * mOn30.R) + (r2 * mOn45.R))) ;
+		led->G=(r1 * mOff30.G + (r2 * mOff45.G))  + (on * ((r1 * mOn30.G) + (r2 * mOn45.G))) ;
+		led->B=(r1 * mOff30.B + (r2 * mOff45.B))  + (on * ((r1 * mOn30.B) + (r2 * mOn45.B))) ;
 	}
 
 	else if (pos < 60)
 	{
 		r1=(60.0-(float)pos)/15.0;
 		r2=((float)pos-45.0)/15.0;
-		*R=(r1 * mOff45R + (r2 * mOff60R))  + (on * ((r1 * mOn45R) + (r2 * mOn60R))) ;
-		*G=(r1 * mOff45G + (r2 * mOff60G))  + (on * ((r1 * mOn45G) + (r2 * mOn60G))) ;
-		*B=(r1 * mOff45B + (r2 * mOff60B))  + (on * ((r1 * mOn45B) + (r2 * mOn60B))) ;
+		led->R=(r1 * mOff45.R + (r2 * mOff60.R))  + (on * ((r1 * mOn45.R) + (r2 * mOn60.R))) ;
+		led->G=(r1 * mOff45.G + (r2 * mOff60.G))  + (on * ((r1 * mOn45.G) + (r2 * mOn60.G))) ;
+		led->B=(r1 * mOff45.B + (r2 * mOff60.B))  + (on * ((r1 * mOn45.B) + (r2 * mOn60.B))) ;
 	}
 	else
 	{
 		r1=(90.0-(float)pos)/30.0;
 		r2=((float)pos-60.0)/30.0;
-		*R=(r1 * mOff60R + (r2 * mOff90R))  + (on * ((r1 * mOn60R) + (r2 * mOn90R))) ;
-		*G=(r1 * mOff60G + (r2 * mOff90G))  + (on * ((r1 * mOn60G) + (r2 * mOn90G))) ;
-		*B=(r1 * mOff60B + (r2 * mOff90B))  + (on * ((r1 * mOn60B) + (r2 * mOn90B))) ;
-
+		led->R=(r1 * mOff60.R + (r2 * mOff90.R))  + (on * ((r1 * mOn60.R) + (r2 * mOn90.R))) ;
+		led->G=(r1 * mOff60.G + (r2 * mOff90.G))  + (on * ((r1 * mOn60.G) + (r2 * mOn90.G))) ;
+		led->B=(r1 * mOff60.B + (r2 * mOff90.B))  + (on * ((r1 * mOn60.B) + (r2 * mOn90.B))) ;
 	}	
 
-	if(bypass==INV_PHASE_METER_BYPASS) {
-		*R=(*R+*G+*B)/3;
-		*G=*R;
-		*B=*R;
+	if(bypass==INV_PLUGIN_BYPASS) {
+		led->R=(led->R+led->G+led->B)/3;
+		led->G=led->R;
+		led->B=led->R;
 	}
 }
 

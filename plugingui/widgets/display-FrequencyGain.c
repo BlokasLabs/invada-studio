@@ -119,7 +119,7 @@ inv_display_fg_class_init(InvDisplayFGClass *klass)
 static void
 inv_display_fg_init(InvDisplayFG *displayFG)
 {
-	displayFG->mode = INV_DISPLAYFG_ACTIVE;
+	displayFG->bypass = INV_PLUGIN_ACTIVE;
 	displayFG->mode = INV_DISPLAYFG_MODE_LPF;
 	displayFG->freq = 1000.0;
 	displayFG->gain = 0.0;
@@ -249,7 +249,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 		cairo_new_path(cr);
 
-		if(bypass==INV_DISPLAYFG_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
 		} else {
 			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
@@ -259,7 +259,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 		/* horizontal axis */
-		if(bypass==INV_DISPLAYFG_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 		} else {
 			cairo_set_source_rgb(cr, 1, 1, 1);
@@ -270,7 +270,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
-		if(bypass==INV_DISPLAYFG_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 		} else {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
@@ -308,7 +308,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		}
 
 		/* vertical axis */
-		if(bypass==INV_DISPLAYFG_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 		} else {
 			cairo_set_source_rgb(cr, 1, 1, 1);
@@ -318,7 +318,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
-		if(bypass==INV_DISPLAYFG_BYPASS) {
+		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 		} else {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
@@ -334,7 +334,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	}
 
 	/*graph area */
-	if(bypass==INV_DISPLAYFG_BYPASS) {
+	if(bypass==INV_PLUGIN_BYPASS) {
 		cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
 	} else {
 		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
@@ -343,7 +343,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	cairo_fill(cr);
 
 	/* horizontal axis except for labeled lines */
-	if(bypass==INV_DISPLAYFG_BYPASS) {
+	if(bypass==INV_PLUGIN_BYPASS) {
 		cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
 	} else {
 		cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
@@ -377,7 +377,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 			case 6:
 			case 8:
 			case 10:
-				if(bypass==INV_DISPLAYFG_BYPASS) {
+				if(bypass==INV_PLUGIN_BYPASS) {
 					cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
 				} else {
 					cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
@@ -390,7 +390,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 			case 5: 
 			case 7: 
 			case 9: 
-				if(bypass==INV_DISPLAYFG_BYPASS) {
+				if(bypass==INV_PLUGIN_BYPASS) {
 					cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
 				} else {
 					cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
@@ -403,7 +403,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	}
 
 	/* horizontal axis labeled lines */
-	if(bypass==INV_DISPLAYFG_BYPASS) {
+	if(bypass==INV_PLUGIN_BYPASS) {
 		cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
 	} else {
 		cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
@@ -427,7 +427,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	}
 
 	/* 0db line */
-	if(bypass==INV_DISPLAYFG_BYPASS) {
+	if(bypass==INV_PLUGIN_BYPASS) {
 		cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 	} else {
 		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
@@ -440,7 +440,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	cairo_clip(cr);
 
 
-	if(bypass==INV_DISPLAYFG_BYPASS) {
+	if(bypass==INV_PLUGIN_BYPASS) {
 		cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 		cairo_set_line_width(cr,1.5);
 	} else {

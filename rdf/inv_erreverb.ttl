@@ -35,9 +35,9 @@
 
 <http://invadarecords.com/plugins/lv2/erreverb/mono> 
     a lv2:Plugin, lv2:ReverbPlugin ;
-    doap:name "Invada Early Reflection Reverb (Mono in)" ;
+    doap:name "Early Reflection Reverb (Mono in)" ;
     doap:maintainer [
-	foaf:name "Fraser Stuart";
+	foaf:name "Invada";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
@@ -182,9 +182,9 @@
 
 <http://invadarecords.com/plugins/lv2/erreverb/sum> 
     a lv2:Plugin, lv2:ReverbPlugin ;
-    doap:name "Invada Early Reflection Reverb (Sum L+R in)" ;
+    doap:name "Early Reflection Reverb (Sum L+R in)" ;
     doap:maintainer [
-	foaf:name "Fraser Stuart";
+	foaf:name "Invada";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;

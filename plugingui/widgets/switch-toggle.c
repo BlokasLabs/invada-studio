@@ -1,6 +1,7 @@
 #include "stdlib.h"
 #include "math.h"
 #include "string.h"
+#include "widgets.h"
 #include "switch-toggle.h"
 #include "switch-toggle-img_off.xpm"
 #include "switch-toggle-img_on.xpm"
@@ -114,14 +115,14 @@ void inv_switch_toggle_set_colour(InvSwitchToggle *switch_toggle, gint state, fl
 {
 	switch(state) {
 		case INV_SWITCH_TOGGLE_ON:
-			switch_toggle->on_colour[0]=R;
-			switch_toggle->on_colour[1]=G;
-			switch_toggle->on_colour[2]=B;
+			switch_toggle->on.R=R;
+			switch_toggle->on.G=G;
+			switch_toggle->on.B=B;
 			break;
 		case INV_SWITCH_TOGGLE_OFF:
-			switch_toggle->off_colour[0]=R;
-			switch_toggle->off_colour[1]=G;
-			switch_toggle->off_colour[2]=B;
+			switch_toggle->off.R=R;
+			switch_toggle->off.G=G;
+			switch_toggle->off.B=B;
 			break;
 	}
 }
@@ -175,7 +176,7 @@ static void
 inv_switch_toggle_init(InvSwitchToggle *switch_toggle)
 {
 
-	switch_toggle->bypass    = INV_SWITCH_TOGGLE_ACTIVE;
+	switch_toggle->bypass    = INV_PLUGIN_ACTIVE;
 	switch_toggle->state     = INV_SWITCH_TOGGLE_OFF;
 	switch_toggle->laststate = INV_SWITCH_TOGGLE_OFF;
 	switch_toggle->value=0;
@@ -183,8 +184,8 @@ inv_switch_toggle_init(InvSwitchToggle *switch_toggle)
 	switch_toggle->on_value=1;
 	switch_toggle->off_value=0;
 
-	switch_toggle->on_colour[0] =0.0;	switch_toggle->on_colour[1] =1.0;	switch_toggle->on_colour[2] =0.0;
-	switch_toggle->off_colour[0] =1.0;	switch_toggle->off_colour[1] =0.0;	switch_toggle->off_colour[2] =0.0;
+	switch_toggle->on.R =0.0;	switch_toggle->on.G =1.0;	switch_toggle->on.B =0.0;
+	switch_toggle->off.R =1.0;	switch_toggle->off.G =0.0;	switch_toggle->off.B =0.0;
 
 	strcpy(switch_toggle->on_text,"");
 	strcpy(switch_toggle->off_text,"");
@@ -295,7 +296,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 	gint 		bypass;
 	gint 		state;
 	gint 		laststate;
-	float		onR,onG,onB,offR,offG,offB;
+	struct colour	on,off;
 	char		*on_text;
 	char		*off_text;
 	char		*label;
@@ -316,20 +317,20 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 	state = INV_SWITCH_TOGGLE(widget)->state;
 	laststate = INV_SWITCH_TOGGLE(widget)->laststate;
 
-	if(bypass==INV_SWITCH_TOGGLE_BYPASS) {
-		onR = (INV_SWITCH_TOGGLE(widget)->on_colour[0] + INV_SWITCH_TOGGLE(widget)->on_colour[1] + INV_SWITCH_TOGGLE(widget)->on_colour[2])/3;
-		onG = onR;
-		onB = onR;
-		offR = (INV_SWITCH_TOGGLE(widget)->off_colour[0] + INV_SWITCH_TOGGLE(widget)->off_colour[1] + INV_SWITCH_TOGGLE(widget)->off_colour[2])/3;
-		offG = offR;
-		offB = offR;
+	if(bypass==INV_PLUGIN_BYPASS) {
+		on.R = (INV_SWITCH_TOGGLE(widget)->on.R + INV_SWITCH_TOGGLE(widget)->on.G + INV_SWITCH_TOGGLE(widget)->on.B)/3;
+		on.G = on.R;
+		on.B = on.R;
+		off.R = (INV_SWITCH_TOGGLE(widget)->off.R + INV_SWITCH_TOGGLE(widget)->off.G + INV_SWITCH_TOGGLE(widget)->off.B)/3;
+		off.G = off.R;
+		off.B = off.R;
 	} else {
-		onR = INV_SWITCH_TOGGLE(widget)->on_colour[0];
-		onG = INV_SWITCH_TOGGLE(widget)->on_colour[1];
-		onB = INV_SWITCH_TOGGLE(widget)->on_colour[2];
-		offR = INV_SWITCH_TOGGLE(widget)->off_colour[0];
-		offG = INV_SWITCH_TOGGLE(widget)->off_colour[1];
-		offB = INV_SWITCH_TOGGLE(widget)->off_colour[2];
+		on.R = INV_SWITCH_TOGGLE(widget)->on.R;
+		on.G = INV_SWITCH_TOGGLE(widget)->on.G;
+		on.B = INV_SWITCH_TOGGLE(widget)->on.B;
+		off.R = INV_SWITCH_TOGGLE(widget)->off.R;
+		off.G = INV_SWITCH_TOGGLE(widget)->off.G;
+		off.B = INV_SWITCH_TOGGLE(widget)->off.B;
 	}
 	on_text = INV_SWITCH_TOGGLE(widget)->on_text;
 	off_text = INV_SWITCH_TOGGLE(widget)->off_text;
@@ -408,8 +409,8 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 	switch(state) {
 		case INV_SWITCH_TOGGLE_ON:
 
-			max = offR > offG ? offR : offG;
-			max = offB > max ? offB : max;
+			max = off.R > off.G ? off.R : off.G;
+			max = off.B > max ? off.B : max;
 			grey=max/3;
 
 			cairo_set_source_rgb(cr, grey/3, grey/3, grey/3);
@@ -422,16 +423,16 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 			cairo_show_text(cr,off_text);
 
 			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
-			cairo_pattern_add_color_stop_rgba (pat, 0.0, onR/6, onG/6, onB/6, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.3, onR/3, onG/3, onB/3, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.5, onR/2, onG/2, onB/2, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.7, onR/3, onG/3, onB/3, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 1.0, onR/6, onG/6, onB/6, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.0, on.R/6, on.G/6, on.B/6, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.3, on.R/3, on.G/3, on.B/3, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.5, on.R/2, on.G/2, on.B/2, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.7, on.R/3, on.G/3, on.B/3, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 1.0, on.R/6, on.G/6, on.B/6, 1);
 			cairo_set_source (cr, pat);
 			cairo_rectangle(cr, 1+indent, 51, 62, 12);
 			cairo_fill(cr);
 
-			cairo_set_source_rgb(cr, onR, onG, onB);
+			cairo_set_source_rgb(cr, on.R, on.G, on.B);
 			cairo_text_extents (cr,on_text,&extents);
 			cairo_move_to(cr,31+indent-(extents.width/2), 61);
 			cairo_show_text(cr,on_text);
@@ -450,22 +451,22 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 		case INV_SWITCH_TOGGLE_OFF:
 
 			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
-			cairo_pattern_add_color_stop_rgba (pat, 0.0, offR/6, offG/6, offB/6, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.3, offR/3, offG/3, offB/3, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.5, offR/2, offG/2, offB/2, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.7, offR/3, offG/3, offB/3, 1);
-			cairo_pattern_add_color_stop_rgba (pat, 1.0, offR/6, offG/6, offB/6, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.0, off.R/6, off.G/6, off.B/6, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.3, off.R/3, off.G/3, off.B/3, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.5, off.R/2, off.G/2, off.B/2, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.7, off.R/3, off.G/3, off.B/3, 1);
+			cairo_pattern_add_color_stop_rgba (pat, 1.0, off.R/6, off.G/6, off.B/6, 1);
 			cairo_set_source (cr, pat);
 			cairo_rectangle(cr, 1+indent, 1, 62, 12);
 			cairo_fill(cr);
 
-			cairo_set_source_rgb(cr, offR, offG, offB);
+			cairo_set_source_rgb(cr, off.R, off.G, off.B);
 			cairo_text_extents (cr,off_text,&extents);
 			cairo_move_to(cr,31+indent-(extents.width/2), extents.height + 3);
 			cairo_show_text(cr,off_text);
 
-			max = onR > onG ? onR : onG;
-			max = onB > max ? onB : max;
+			max = on.R > on.G ? on.R : on.G;
+			max = on.B > max ? on.B : max;
 			grey=max/3;
 
 			cairo_set_source_rgb(cr, grey/3, grey/3, grey/3);

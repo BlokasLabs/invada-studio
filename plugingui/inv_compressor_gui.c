@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <lv2.h>
 #include "lv2_ui.h"
+#include "widgets/widgets.h"
 #include "widgets/display-Compressor.h"
 #include "widgets/knob.h"
 #include "widgets/lamp.h"

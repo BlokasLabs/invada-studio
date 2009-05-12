@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "widgets.h"
 #include "../../plugin/library/common.h"
 #include "display-ErReverb.h"
 

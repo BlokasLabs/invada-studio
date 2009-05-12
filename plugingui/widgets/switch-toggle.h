@@ -3,19 +3,15 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widgets.h"
 
 G_BEGIN_DECLS
-
-#define INV_PI 3.1415926535
 
 #define INV_SWITCH_TOGGLE_DRAW_ALL 0
 #define INV_SWITCH_TOGGLE_DRAW_DATA  1
 
 #define INV_SWITCH_TOGGLE_OFF 0
 #define INV_SWITCH_TOGGLE_ON  1
-
-#define INV_SWITCH_TOGGLE_ACTIVE 0
-#define INV_SWITCH_TOGGLE_BYPASS 1
 
 #define INV_SWITCH_TOGGLE(obj) GTK_CHECK_CAST(obj, inv_switch_toggle_get_type (), InvSwitchToggle)
 #define INV_SWITCH_TOGGLE_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_switch_toggle_get_type(), InvSwitchToggleClass)
@@ -37,8 +33,8 @@ struct _InvSwitchToggle {
 	float on_value;
 	float off_value;
 
-	float on_colour[3];
-	float off_colour[3];
+	struct colour on;
+	struct colour off;
 
 	char on_text[15];
 	char off_text[15];

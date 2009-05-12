@@ -1,5 +1,6 @@
 #include "stdlib.h"
 #include "string.h"
+#include "widgets.h"
 #include "meter-peak.h"
 
 
@@ -11,8 +12,8 @@ static void 	inv_meter_realize(GtkWidget *widget);
 static gboolean inv_meter_expose(GtkWidget *widget,GdkEventExpose *event);
 static void 	inv_meter_paint(GtkWidget *widget, gint drawmode);
 static void	inv_meter_destroy(GtkObject *object);
-static void	inv_meter_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B);
-static void	inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B);
+static void	inv_meter_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led);
+static void	inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led);
 
 
 GtkType
@@ -115,7 +116,7 @@ inv_meter_class_init(InvMeterClass *klass)
 static void
 inv_meter_init(InvMeter *meter)
 {
-	meter->bypass = INV_METER_ACTIVE;
+	meter->bypass = INV_PLUGIN_ACTIVE;
 	meter->mode=INV_METER_DRAW_MODE_TOZERO;
 	meter->channels = 1;
 	meter->LdB = -90;
@@ -124,20 +125,20 @@ inv_meter_init(InvMeter *meter)
 	meter->lastRpos = 1;
 
 
-	meter->mOff60[0] =0.1;	meter->mOff60[1] =0.1;	meter->mOff60[2] =0.4;
-	meter->mOn60[0]  =-0.1;	meter->mOn60[1]  =-0.1;	meter->mOn60[2]  =0.6;
+	meter->mOff60.R =0.1;	meter->mOff60.G =0.1;	meter->mOff60.B =0.4;
+	meter->mOn60.R  =-0.1;	meter->mOn60.G  =-0.1;	meter->mOn60.B  =0.6;
 
-	meter->mOff12[0] =0.2; 	meter->mOff12[1] =0.3;	meter->mOff12[2] =0.4;
-	meter->mOn12[0]  =-0.1;	meter->mOn12[1]  =0.3;	meter->mOn12[2]  =0.6;
+	meter->mOff12.R =0.2; 	meter->mOff12.G =0.3;	meter->mOff12.B =0.4;
+	meter->mOn12.R  =-0.1;	meter->mOn12.G  =0.3;	meter->mOn12.B  =0.6;
 
-	meter->mOff6[0] =0.2; 	meter->mOff6[1] =0.4;	meter->mOff6[2] =0.2;
-	meter->mOn6[0]  =0.1;	meter->mOn6[1]  =0.6;	meter->mOn6[2]  =-0.1;
+	meter->mOff6.R =0.2; 	meter->mOff6.G =0.4;	meter->mOff6.B =0.2;
+	meter->mOn6.R  =0.1;	meter->mOn6.G  =0.6;	meter->mOn6.B  =-0.1;
 
-	meter->mOff0[0]  =0.5;	meter->mOff0[1]  =0.5;	meter->mOff0[2]  =0.0;
-	meter->mOn0[0]   =0.5;	meter->mOn0[1]   =0.5;	meter->mOn0[2]   =0.0;
+	meter->mOff0.R  =0.5;	meter->mOff0.G  =0.5;	meter->mOff0.B  =0.0;
+	meter->mOn0.R   =0.5;	meter->mOn0.G   =0.5;	meter->mOn0.B   =0.0;
 
-	meter->overOff[0]=0.4;	meter->overOff[1]=0.2;	meter->overOff[2]=0.0;
-	meter->overOn[0] =0.6;	meter->overOn[1] =0.0;	meter->overOn[2] =0.0;
+	meter->overOff.R=0.4;	meter->overOff.G=0.2;	meter->overOff.B=0.0;
+	meter->overOn.R =0.6;	meter->overOn.G =0.0;	meter->overOn.B =0.0;
 
 }
 
@@ -235,7 +236,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 
 	cairo_t 	*cr;
 	gint 		Lon,Ron,min,max,i;
-	float 		R,G,B;
+	struct colour	led;
 	GtkStyle	*style;
 	char 		label[10];
 	cairo_text_extents_t extents;
@@ -293,7 +294,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 			cairo_new_path(cr);
 
-			if(bypass==INV_METER_BYPASS) {
+			if(bypass==INV_PLUGIN_BYPASS) {
 				gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);
 			} else {
 				gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
@@ -333,7 +334,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					break;
 			}
 
-			if(bypass==INV_METER_BYPASS) {
+			if(bypass==INV_PLUGIN_BYPASS) {
 				cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
 			} else {
 				cairo_set_source_rgb(cr, 1, 1, 1);
@@ -364,8 +365,8 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 							case 1:
 								Lon = i <= Lpos ? 1 : 0;
 
-								inv_meter_colour_tozero(widget, bypass, i, Lon, &R, &G,&B);
-								cairo_set_source_rgb(cr, R, G, B);
+								inv_meter_colour_tozero(widget, bypass, i, Lon, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
 								cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
 								cairo_fill(cr);
 								break;
@@ -373,13 +374,13 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 								Lon = i <= Lpos ? 1 : 0;
 								Ron = i <= Rpos ? 1 : 0;
 
-								inv_meter_colour_tozero(widget, bypass, i, Lon, &R, &G,&B);
-								cairo_set_source_rgb(cr, R, G, B);
+								inv_meter_colour_tozero(widget, bypass, i, Lon, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
 								cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
 								cairo_fill(cr);
 
-								inv_meter_colour_tozero(widget, bypass, i, Ron, &R, &G,&B);
-								cairo_set_source_rgb(cr, R, G, B);
+								inv_meter_colour_tozero(widget, bypass, i, Ron, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
 								cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
 								cairo_fill(cr);
 								break; 
@@ -395,8 +396,8 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 							case 1:
 								Lon = i > Lpos ? 1 : 0;
 
-								inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
-								cairo_set_source_rgb(cr, R, G, B);
+								inv_meter_colour_fromzero(widget, bypass, i, Lon, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
 								cairo_rectangle(cr, 2+(i*2), 3, 1, 18);
 								cairo_fill(cr);
 								break;
@@ -404,13 +405,13 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 								Lon = i > Lpos ? 1 : 0;
 								Ron = i > Rpos ? 1 : 0;
 
-								inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
-								cairo_set_source_rgb(cr, R, G, B);
+								inv_meter_colour_fromzero(widget, bypass, i, Lon, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
 								cairo_rectangle(cr, 2+(i*2), 3, 1, 8);
 								cairo_fill(cr);
 
-								inv_meter_colour_fromzero(widget, bypass, i, Ron, &R, &G,&B);
-								cairo_set_source_rgb(cr, R, G, B);
+								inv_meter_colour_fromzero(widget, bypass, i, Ron, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
 								cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
 								cairo_fill(cr);
 								break; 
@@ -435,8 +436,8 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 						for ( i = min ; i <= max; i++) 
 						{
 							Lon = i <= Lpos ? 1 : 0;
-							inv_meter_colour_tozero(widget, bypass, i, Lon, &R, &G,&B);
-							cairo_set_source_rgb(cr, R, G, B);
+							inv_meter_colour_tozero(widget, bypass, i, Lon, &led);
+							cairo_set_source_rgb(cr, led.R, led.G, led.B);
 							switch(channels)
 							{
 								case 1:
@@ -454,8 +455,8 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					for ( i = 1; i <= 71; i++) 
 					{
 						Lon = i > Lpos ? 1 : 0;
-						inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
-						cairo_set_source_rgb(cr, R, G, B);
+						inv_meter_colour_fromzero(widget, bypass, i, Lon, &led);
+						cairo_set_source_rgb(cr, led.R, led.G, led.B);
 						switch(channels)
 						{
 							case 1:
@@ -485,8 +486,8 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 						for ( i = min ; i <= max; i++) 
 						{
 							Ron = i <= Rpos ? 1 : 0;
-							inv_meter_colour_tozero(widget, bypass, i, Ron, &R, &G, &B);
-							cairo_set_source_rgb(cr, R, G, B);
+							inv_meter_colour_tozero(widget, bypass, i, Ron, &led);
+							cairo_set_source_rgb(cr, led.R, led.G, led.B);
 							cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
 							cairo_fill(cr);
 						}
@@ -496,8 +497,8 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					for ( i = 1; i <= 71; i++) 
 					{
 						Lon = i > Lpos ? 1 : 0;
-						inv_meter_colour_fromzero(widget, bypass, i, Lon, &R, &G,&B);
-						cairo_set_source_rgb(cr, R, G, B);
+						inv_meter_colour_fromzero(widget, bypass, i, Lon, &led);
+						cairo_set_source_rgb(cr, led.R, led.G, led.B);
 						cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
 						cairo_fill(cr);
 					}
@@ -530,197 +531,130 @@ inv_meter_destroy(GtkObject *object)
 }
 
 static void	
-inv_meter_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B)
+inv_meter_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led)
 {
-
-
 	float r1,r2;
-
-	float mOff60R = INV_METER(widget)->mOff60[0];
-	float mOff60G = INV_METER(widget)->mOff60[1];
-	float mOff60B = INV_METER(widget)->mOff60[2];
-
-	float mOn60R = INV_METER(widget)->mOn60[0];
-	float mOn60G = INV_METER(widget)->mOn60[1];
-	float mOn60B = INV_METER(widget)->mOn60[2];
-
-	float mOff12R = INV_METER(widget)->mOff12[0];
-	float mOff12G = INV_METER(widget)->mOff12[1];
-	float mOff12B = INV_METER(widget)->mOff12[2];
-
-	float mOn12R = INV_METER(widget)->mOn12[0];
-	float mOn12G = INV_METER(widget)->mOn12[1];
-	float mOn12B = INV_METER(widget)->mOn12[2];
-
-	float mOff6R = INV_METER(widget)->mOff6[0];
-	float mOff6G = INV_METER(widget)->mOff6[1];
-	float mOff6B = INV_METER(widget)->mOff6[2];
-
-	float mOn6R = INV_METER(widget)->mOn6[0];
-	float mOn6G = INV_METER(widget)->mOn6[1];
-	float mOn6B = INV_METER(widget)->mOn6[2];
-
-	float mOff0R = INV_METER(widget)->mOff0[0];
-	float mOff0G = INV_METER(widget)->mOff0[1];
-	float mOff0B = INV_METER(widget)->mOff0[2];
-
-	float mOn0R = INV_METER(widget)->mOn0[0];
-	float mOn0G = INV_METER(widget)->mOn0[1];
-	float mOn0B = INV_METER(widget)->mOn0[2];
-
-	float overOffR = INV_METER(widget)->overOff[0];
-	float overOffG = INV_METER(widget)->overOff[1];
-	float overOffB = INV_METER(widget)->overOff[2];
-
-	float overOnR = INV_METER(widget)->overOn[0];
-	float overOnG = INV_METER(widget)->overOn[1];
-	float overOnB = INV_METER(widget)->overOn[2];
-
+	struct colour mOff60  = INV_METER(widget)->mOff60;
+	struct colour mOn60   = INV_METER(widget)->mOn60;
+	struct colour mOff12  = INV_METER(widget)->mOff12;
+	struct colour mOn12   = INV_METER(widget)->mOn12;
+	struct colour mOff6   = INV_METER(widget)->mOff6;
+	struct colour mOn6    = INV_METER(widget)->mOn6;
+	struct colour mOff0   = INV_METER(widget)->mOff0;
+	struct colour mOn0    = INV_METER(widget)->mOn0;
+	struct colour overOff = INV_METER(widget)->overOff;
+	struct colour overOn  = INV_METER(widget)->overOn;
 /* 
-66 =  +6dB
-60 =   0dB
-51 =  -9dB
-42 = -18dB
+	66 =  +6dB
+	60 =   0dB
+	51 =  -9dB
+	42 = -18dB
 */
-
 	if(pos < 42) 
 	{
 		r1=(42.0-(float)pos)/42.0;
 		r2=(float)pos/42.0;
-		*R=(r1 * mOff60R + (r2 * mOff12R))  + (on * ((r1 * mOn60R) + (r2 * mOn12R))) ;
-		*G=(r1 * mOff60G + (r2 * mOff12G))  + (on * ((r1 * mOn60G) + (r2 * mOn12G))) ;
-		*B=(r1 * mOff60B + (r2 * mOff12B))  + (on * ((r1 * mOn60B) + (r2 * mOn12B))) ;
+		led->R=(r1 * mOff60.R + (r2 * mOff12.R))  + (on * ((r1 * mOn60.R) + (r2 * mOn12.R))) ;
+		led->G=(r1 * mOff60.G + (r2 * mOff12.G))  + (on * ((r1 * mOn60.G) + (r2 * mOn12.G))) ;
+		led->B=(r1 * mOff60.B + (r2 * mOff12.B))  + (on * ((r1 * mOn60.B) + (r2 * mOn12.B))) ;
 	} 
 
 	else if (pos < 51)
 	{
 		r1=(51.0-(float)pos)/9.0;
 		r2=((float)pos-42.0)/9.0;
-		*R=(r1 * mOff12R + (r2 * mOff6R))  + (on * ((r1 * mOn12R) + (r2 * mOn6R))) ;
-		*G=(r1 * mOff12G + (r2 * mOff6G))  + (on * ((r1 * mOn12G) + (r2 * mOn6G))) ;
-		*B=(r1 * mOff12B + (r2 * mOff6B))  + (on * ((r1 * mOn12B) + (r2 * mOn6B))) ;
+		led->R=(r1 * mOff12.R + (r2 * mOff6.R))  + (on * ((r1 * mOn12.R) + (r2 * mOn6.R))) ;
+		led->G=(r1 * mOff12.G + (r2 * mOff6.G))  + (on * ((r1 * mOn12.G) + (r2 * mOn6.G))) ;
+		led->B=(r1 * mOff12.B + (r2 * mOff6.B))  + (on * ((r1 * mOn12.B) + (r2 * mOn6.B))) ;
 	}
 
 	else if (pos < 60)
 	{
 		r1=(60.0-(float)pos)/9.0;
 		r2=((float)pos-51.0)/9.0;
-		*R=(r1 * mOff6R + (r2 * mOff0R))  + (on * ((r1 * mOn6R) + (r2 * mOn0R))) ;
-		*G=(r1 * mOff6G + (r2 * mOff0G))  + (on * ((r1 * mOn6G) + (r2 * mOn0G))) ;
-		*B=(r1 * mOff6B + (r2 * mOff0B))  + (on * ((r1 * mOn6B) + (r2 * mOn0B))) ;
+		led->R=(r1 * mOff6.R + (r2 * mOff0.R))  + (on * ((r1 * mOn6.R) + (r2 * mOn0.R))) ;
+		led->G=(r1 * mOff6.G + (r2 * mOff0.G))  + (on * ((r1 * mOn6.G) + (r2 * mOn0.G))) ;
+		led->B=(r1 * mOff6.B + (r2 * mOff0.B))  + (on * ((r1 * mOn6.B) + (r2 * mOn0.B))) ;
 	}
 	else
 	{
-		*R=overOffR + (on * overOnR) ;
-		*G=overOffG + (on * overOnG) ;
-		*B=overOffB + (on * overOnB) ;
+		led->R=overOff.R + (on * overOn.R) ;
+		led->G=overOff.G + (on * overOn.G) ;
+		led->B=overOff.B + (on * overOn.B) ;
 	}	
 
-	if(bypass==INV_METER_BYPASS) {
-		*R=(*R+*G+*B)/3;
-		*G=*R;
-		*B=*R;
+	if(bypass==INV_PLUGIN_BYPASS) {
+		led->R=(led->R+led->G+led->B)/3;
+		led->G=led->R;
+		led->B=led->R;
 	}
 }
 
 static void	
-inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on, float *R, float *G, float *B)
+inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on,  struct colour *led)
 {
-
-
-
 	float r1,r2;
-
-	float mOff60R = INV_METER(widget)->mOff60[0];
-	float mOff60G = INV_METER(widget)->mOff60[1];
-	float mOff60B = INV_METER(widget)->mOff60[2];
-
-	float mOn60R = INV_METER(widget)->mOn60[0];
-	float mOn60G = INV_METER(widget)->mOn60[1];
-	float mOn60B = INV_METER(widget)->mOn60[2];
-
-	float mOff12R = INV_METER(widget)->mOff12[0];
-	float mOff12G = INV_METER(widget)->mOff12[1];
-	float mOff12B = INV_METER(widget)->mOff12[2];
-
-	float mOn12R = INV_METER(widget)->mOn12[0];
-	float mOn12G = INV_METER(widget)->mOn12[1];
-	float mOn12B = INV_METER(widget)->mOn12[2];
-
-	float mOff6R = INV_METER(widget)->mOff6[0];
-	float mOff6G = INV_METER(widget)->mOff6[1];
-	float mOff6B = INV_METER(widget)->mOff6[2];
-
-	float mOn6R = INV_METER(widget)->mOn6[0];
-	float mOn6G = INV_METER(widget)->mOn6[1];
-	float mOn6B = INV_METER(widget)->mOn6[2];
-
-	float mOff0R = INV_METER(widget)->mOff0[0];
-	float mOff0G = INV_METER(widget)->mOff0[1];
-	float mOff0B = INV_METER(widget)->mOff0[2];
-
-	float mOn0R = INV_METER(widget)->mOn0[0];
-	float mOn0G = INV_METER(widget)->mOn0[1];
-	float mOn0B = INV_METER(widget)->mOn0[2];
-
-	float overOffR = INV_METER(widget)->overOff[0];
-	float overOffG = INV_METER(widget)->overOff[1];
-	float overOffB = INV_METER(widget)->overOff[2];
-
-	float overOnR = INV_METER(widget)->overOn[0];
-	float overOnG = INV_METER(widget)->overOn[1];
-	float overOnB = INV_METER(widget)->overOn[2];
+	struct colour mOff60  = INV_METER(widget)->mOff60;
+	struct colour mOn60   = INV_METER(widget)->mOn60;
+	struct colour mOff12  = INV_METER(widget)->mOff12;
+	struct colour mOn12   = INV_METER(widget)->mOn12;
+	struct colour mOff6   = INV_METER(widget)->mOff6;
+	struct colour mOn6    = INV_METER(widget)->mOn6;
+	struct colour mOff0   = INV_METER(widget)->mOff0;
+	struct colour mOn0    = INV_METER(widget)->mOn0;
+	struct colour overOff = INV_METER(widget)->overOff;
+	struct colour overOn  = INV_METER(widget)->overOn;
 /* 
-72 =   0dB
-60 =  -6dB
-48 = -12dB
-24 = -18dB
+	72 =   0dB
+	60 =  -6dB
+	48 = -12dB
+	24 = -18dB
 */
 	if(pos < 24) 
 	{
 		r1=(24.0-(float)pos)/24.0;
 		r2=(float)pos/24.0;
-		*R=(r1 * overOffR + (r2 * mOff0R))  + (on * ((r1 * overOnR) + (r2 * mOn0R))) ;
-		*G=(r1 * overOffG + (r2 * mOff0G))  + (on * ((r1 * overOnG) + (r2 * mOn0G))) ;
-		*B=(r1 * overOffB + (r2 * mOff0B))  + (on * ((r1 * overOnB) + (r2 * mOn0B))) ;
+		led->R=(r1 * overOff.R + (r2 * mOff0.R))  + (on * ((r1 * overOn.R) + (r2 * mOn0.R))) ;
+		led->G=(r1 * overOff.G + (r2 * mOff0.G))  + (on * ((r1 * overOn.G) + (r2 * mOn0.G))) ;
+		led->B=(r1 * overOff.B + (r2 * mOff0.B))  + (on * ((r1 * overOn.B) + (r2 * mOn0.B))) ;
 	} 
 
 	else if (pos < 48)
 	{
 		r1=(48.0-(float)pos)/24.0;
 		r2=((float)pos-24.0)/24.0;
-		*R=(r1 * mOff0R + (r2 * mOff6R))  + (on * ((r1 * mOn0R) + (r2 * mOn6R))) ;
-		*G=(r1 * mOff0G + (r2 * mOff6G))  + (on * ((r1 * mOn0G) + (r2 * mOn6G))) ;
-		*B=(r1 * mOff0B + (r2 * mOff6B))  + (on * ((r1 * mOn0B) + (r2 * mOn6B))) ;
+		led->R=(r1 * mOff0.R + (r2 * mOff6.R))  + (on * ((r1 * mOn0.R) + (r2 * mOn6.R))) ;
+		led->G=(r1 * mOff0.G + (r2 * mOff6.G))  + (on * ((r1 * mOn0.G) + (r2 * mOn6.G))) ;
+		led->B=(r1 * mOff0.B + (r2 * mOff6.B))  + (on * ((r1 * mOn0.B) + (r2 * mOn6.B))) ;
 	}
 
 	else if (pos < 60)
 	{
 		r1=(60.0-(float)pos)/12.0;
 		r2=((float)pos-48.0)/12.0;
-		*R=(r1 * mOff6R + (r2 * mOff12R))  + (on * ((r1 * mOn6R) + (r2 * mOn12R))) ;
-		*G=(r1 * mOff6G + (r2 * mOff12G))  + (on * ((r1 * mOn6G) + (r2 * mOn12G))) ;
-		*B=(r1 * mOff6B + (r2 * mOff12B))  + (on * ((r1 * mOn6B) + (r2 * mOn12B))) ;
+		led->R=(r1 * mOff6.R + (r2 * mOff12.R))  + (on * ((r1 * mOn6.R) + (r2 * mOn12.R))) ;
+		led->G=(r1 * mOff6.G + (r2 * mOff12.G))  + (on * ((r1 * mOn6.G) + (r2 * mOn12.G))) ;
+		led->B=(r1 * mOff6.B + (r2 * mOff12.B))  + (on * ((r1 * mOn6.B) + (r2 * mOn12.B))) ;
 	}
 	else if (pos < 72)
 	{
 		r1=(72.0-(float)pos)/12.0;
 		r2=((float)pos-60.0)/12.0;
-		*R=(r1 * mOff12R + (r2 * mOff60R))  + (on * ((r1 * mOn12R) + (r2 * mOn60R))) ;
-		*G=(r1 * mOff12G + (r2 * mOff60G))  + (on * ((r1 * mOn12G) + (r2 * mOn60G))) ;
-		*B=(r1 * mOff12B + (r2 * mOff60B))  + (on * ((r1 * mOn12B) + (r2 * mOn60B))) ;
+		led->R=(r1 * mOff12.R + (r2 * mOff60.R))  + (on * ((r1 * mOn12.R) + (r2 * mOn60.R))) ;
+		led->G=(r1 * mOff12.G + (r2 * mOff60.G))  + (on * ((r1 * mOn12.G) + (r2 * mOn60.G))) ;
+		led->B=(r1 * mOff12.B + (r2 * mOff60.B))  + (on * ((r1 * mOn12.B) + (r2 * mOn60.B))) ;
 	}
 	else
 	{
-		*R=mOff60R  + (on * mOn60R) ;
-		*G=mOff60G  + (on * mOn60G) ;
-		*B=mOff60B  + (on * mOn60B) ;
+		led->R=mOff60.R  + (on * mOn60.R) ;
+		led->G=mOff60.G  + (on * mOn60.G) ;
+		led->B=mOff60.B  + (on * mOn60.B) ;
 	}
 
-	if(bypass==INV_METER_BYPASS) {
-		*R=(*R+*G+*B)/3;
-		*G=*R;
-		*B=*R;
+	if(bypass==INV_PLUGIN_BYPASS) {
+		led->R=(led->R+led->G+led->B)/3;
+		led->G=led->R;
+		led->B=led->R;
 	}	
 }
 

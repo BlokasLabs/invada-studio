@@ -3,14 +3,12 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widgets.h"
 
 G_BEGIN_DECLS
 
 #define INV_PHASE_METER_DRAW_ALL 0
 #define INV_PHASE_METER_DRAW_DATA 1
-
-#define INV_PHASE_METER_ACTIVE 0
-#define INV_PHASE_METER_BYPASS 1
 
 #define INV_PHASE_METER(obj) GTK_CHECK_CAST(obj, inv_phase_meter_get_type (), InvPhaseMeter)
 #define INV_PHASE_METER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_phase_meter_get_type(), InvPhaseMeterClass)
@@ -27,20 +25,8 @@ struct _InvPhaseMeter {
 	gint  bypass;
 	float phase;
 
-	float mOff0[3];
-	float mOn0[3];  /* delta */
-
-	float mOff30[3];
-	float mOn30[3];  /* delta */
-
-	float mOff45[3];
-	float mOn45[3];  /* delta */
-
-	float mOff60[3];
-	float mOn60[3];  /* delta */
-
-	float mOff90[3];
-	float mOn90[3];   /* delta */
+	struct colour mOff0,mOff30,mOff45,mOff60,mOff90;
+	struct colour mOn0, mOn30, mOn45, mOn60, mOn90;  /* delta */
 };
 
 struct _InvPhaseMeterClass {

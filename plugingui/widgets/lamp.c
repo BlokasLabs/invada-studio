@@ -1,5 +1,6 @@
 #include "stdlib.h"
 #include "string.h"
+#include "widgets.h"
 #include "lamp.h"
 
 static void 	inv_lamp_class_init(InvLampClass *klass);
@@ -10,7 +11,7 @@ static void 	inv_lamp_realize(GtkWidget *widget);
 static gboolean inv_lamp_expose(GtkWidget *widget,GdkEventExpose *event);
 static void 	inv_lamp_paint(GtkWidget *widget, gint mode);
 static void	inv_lamp_destroy(GtkObject *object);
-static void	inv_lamp_colour(GtkWidget *widget, float value, float *Rr, float *Gr, float *Br, float *Rc, float *Gc, float *Bc);
+static void	inv_lamp_colour(GtkWidget *widget, float value, struct colour *rc, struct colour *cc);
 
 
 GtkType
@@ -95,20 +96,20 @@ inv_lamp_init(InvLamp *lamp)
 	lamp->value = 0;
 	lamp->lastValue=0;
 
-	lamp->l0_r[0] =0.1;	lamp->l0_r[1] =0.0;	lamp->l0_r[2] =0.0;
-	lamp->l0_c[0] =0.2;	lamp->l0_c[1] =0.0;	lamp->l0_c[2] =0.0;
+	lamp->l0_r.R =0.1;	lamp->l0_r.G =0.0;	lamp->l0_r.B =0.0;
+	lamp->l0_c.R =0.2;	lamp->l0_c.G =0.0;	lamp->l0_c.B =0.0;
 
-	lamp->l1_r[0] =0.2;	lamp->l1_r[1] =0.0;	lamp->l1_r[2] =0.0;
-	lamp->l1_c[0] =1.0;	lamp->l1_c[1] =0.0;	lamp->l1_c[2] =0.0;
+	lamp->l1_r.R =0.2;	lamp->l1_r.G =0.0;	lamp->l1_r.B =0.0;
+	lamp->l1_c.R =1.0;	lamp->l1_c.G =0.0;	lamp->l1_c.B =0.0;
 
-	lamp->l2_r[0] =0.3;	lamp->l2_r[1] =0.0;	lamp->l2_r[2] =0.0;
-	lamp->l2_c[0] =1.0;	lamp->l2_c[1] =0.5;	lamp->l2_c[2] =0.0;
+	lamp->l2_r.R =0.3;	lamp->l2_r.G =0.0;	lamp->l2_r.B =0.0;
+	lamp->l2_c.R =1.0;	lamp->l2_c.G =0.5;	lamp->l2_c.B =0.0;
 
-	lamp->l3_r[0] =0.4;	lamp->l3_r[1] =0.0;	lamp->l3_r[2] =0.0;
-	lamp->l3_c[0] =1.0;	lamp->l3_c[1] =1.0;	lamp->l3_c[2] =0.0;
+	lamp->l3_r.R =0.4;	lamp->l3_r.G =0.0;	lamp->l3_r.B =0.0;
+	lamp->l3_c.R =1.0;	lamp->l3_c.G =1.0;	lamp->l3_c.B =0.0;
 
-	lamp->l4_r[0] =0.5;	lamp->l4_r[1] =0.0;	lamp->l4_r[2] =0.0;
-	lamp->l4_c[0] =1.0;	lamp->l4_c[1] =1.0;	lamp->l4_c[2] =0.5;   
+	lamp->l4_r.R =0.5;	lamp->l4_r.G =0.0;	lamp->l4_r.B =0.0;
+	lamp->l4_c.R =1.0;	lamp->l4_c.G =1.0;	lamp->l4_c.B =0.5;   
 }
 
 
@@ -196,7 +197,8 @@ static void
 inv_lamp_paint(GtkWidget *widget, gint mode)
 {
 	cairo_t 	*cr;
-	float 		Rr,Gr,Br,Rc,Gc,Bc,xc,yc,r;
+	float 		xc,yc,r;
+	struct colour	rc,cc;
 	GtkStyle	*style;
 	cairo_pattern_t *pat;
 
@@ -234,9 +236,9 @@ inv_lamp_paint(GtkWidget *widget, gint mode)
 
 			pat = cairo_pattern_create_radial (xc-1, yc-1, 1.5,
 						           xc,  yc, r);
-			inv_lamp_colour(widget, value*scale, &Rr, &Gr, &Br, &Rc, &Gc, &Bc);
-			cairo_pattern_add_color_stop_rgba (pat, 0.0, Rc,  Gc,  Bc,  1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.7, Rr,  Gr,  Br,  1);
+			inv_lamp_colour(widget, value*scale, &rc, &cc);
+			cairo_pattern_add_color_stop_rgba (pat, 0.0, cc.R,  cc.R,  cc.B,  1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.7, rc.R,  rc.R,  rc.B,  1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.9, 0.1, 0.0, 0.0, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 1.0, 0.1, 0.0, 0.0, 0);
 			cairo_set_source (cr, pat);
@@ -271,111 +273,111 @@ inv_lamp_destroy(GtkObject *object)
 }
 
 static void	
-inv_lamp_colour(GtkWidget *widget, float value, float *Rr, float *Gr, float *Br, float *Rc, float *Gc, float *Bc)
+inv_lamp_colour(GtkWidget *widget, float value, struct colour *rc, struct colour *cc)
 {
 	float f1,f2;
-	float *r0;
-	float *c0;
-	float *r1;
-	float *c1;
+	struct colour *r0;
+	struct colour *c0;
+	struct colour *r1;
+	struct colour *c1;
 
 	if(value <= 0) 
 	{
-		*Rr=INV_LAMP(widget)->l0_r[0];
-		*Gr=INV_LAMP(widget)->l0_r[1];
-		*Br=INV_LAMP(widget)->l0_r[2];
+		rc->R=INV_LAMP(widget)->l0_r.R;
+		rc->G=INV_LAMP(widget)->l0_r.G;
+		rc->B=INV_LAMP(widget)->l0_r.B;
 
-		*Rc=INV_LAMP(widget)->l0_c[0];
-		*Gc=INV_LAMP(widget)->l0_c[1];
-		*Bc=INV_LAMP(widget)->l0_c[2];	
+		cc->R=INV_LAMP(widget)->l0_c.R;
+		cc->G=INV_LAMP(widget)->l0_c.G;
+		cc->B=INV_LAMP(widget)->l0_c.B;	
 	} 
 
 	else if (value < 1)
 	{
-		r0=INV_LAMP(widget)->l0_r;
-		c0=INV_LAMP(widget)->l0_c;
+		r0=&(INV_LAMP(widget)->l0_r);
+		c0=&(INV_LAMP(widget)->l0_c);
 
-		r1=INV_LAMP(widget)->l1_r;
-		c1=INV_LAMP(widget)->l1_c;
+		r1=&(INV_LAMP(widget)->l1_r);
+		c1=&(INV_LAMP(widget)->l1_c);
 
 		f1=1-value;
 		f2=value;
 
-		*Rr=(f1 * r0[0]) + (f2 * r1[0]);
-		*Gr=(f1 * r0[1]) + (f2 * r1[1]);
-		*Br=(f1 * r0[2]) + (f2 * r1[2]);
+		rc->R=(f1 * r0->R) + (f2 * r1->R);
+		rc->G=(f1 * r0->G) + (f2 * r1->G);
+		rc->B=(f1 * r0->B) + (f2 * r1->B);
 
-		*Rc=(f1 * c0[0]) + (f2 * c1[0]);
-		*Gc=(f1 * c0[1]) + (f2 * c1[1]);
-		*Bc=(f1 * c0[2]) + (f2 * c1[2]);
+		cc->R=(f1 * c0->R) + (f2 * c1->R);
+		cc->G=(f1 * c0->G) + (f2 * c1->G);
+		cc->B=(f1 * c0->B) + (f2 * c1->B);
 	}
 
 	else if (value < 2)
 	{
-		r0=INV_LAMP(widget)->l1_r;
-		c0=INV_LAMP(widget)->l1_c;
+		r0=&(INV_LAMP(widget)->l1_r);
+		c0=&(INV_LAMP(widget)->l1_c);
 
-		r1=INV_LAMP(widget)->l2_r;
-		c1=INV_LAMP(widget)->l2_c;
+		r1=&(INV_LAMP(widget)->l2_r);
+		c1=&(INV_LAMP(widget)->l2_c);
 
 		f1=2-value;
 		f2=value-1;
 
-		*Rr=(f1 * r0[0]) + (f2 * r1[0]);
-		*Gr=(f1 * r0[1]) + (f2 * r1[1]);
-		*Br=(f1 * r0[2]) + (f2 * r1[2]);
+		rc->R=(f1 * r0->R) + (f2 * r1->R);
+		rc->G=(f1 * r0->G) + (f2 * r1->G);
+		rc->B=(f1 * r0->B) + (f2 * r1->B);
 
-		*Rc=(f1 * c0[0]) + (f2 * c1[0]);
-		*Gc=(f1 * c0[1]) + (f2 * c1[1]);
-		*Bc=(f1 * c0[2]) + (f2 * c1[2]);
+		cc->R=(f1 * c0->R) + (f2 * c1->R);
+		cc->G=(f1 * c0->G) + (f2 * c1->G);
+		cc->B=(f1 * c0->B) + (f2 * c1->B);
 	}
 	else if (value < 3)
 	{
-		r0=INV_LAMP(widget)->l2_r;
-		c0=INV_LAMP(widget)->l2_c;
+		r0=&(INV_LAMP(widget)->l2_r);
+		c0=&(INV_LAMP(widget)->l2_c);
 
-		r1=INV_LAMP(widget)->l3_r;
-		c1=INV_LAMP(widget)->l3_c;
+		r1=&(INV_LAMP(widget)->l3_r);
+		c1=&(INV_LAMP(widget)->l3_c);
 
 		f1=3-value;
 		f2=value-2;
 
-		*Rr=(f1 * r0[0]) + (f2 * r1[0]);
-		*Gr=(f1 * r0[1]) + (f2 * r1[1]);
-		*Br=(f1 * r0[2]) + (f2 * r1[2]);
+		rc->R=(f1 * r0->R) + (f2 * r1->R);
+		rc->G=(f1 * r0->G) + (f2 * r1->G);
+		rc->B=(f1 * r0->B) + (f2 * r1->B);
 
-		*Rc=(f1 * c0[0]) + (f2 * c1[0]);
-		*Gc=(f1 * c0[1]) + (f2 * c1[1]);
-		*Bc=(f1 * c0[2]) + (f2 * c1[2]);
+		cc->R=(f1 * c0->R) + (f2 * c1->R);
+		cc->G=(f1 * c0->G) + (f2 * c1->G);
+		cc->B=(f1 * c0->B) + (f2 * c1->B);
 	}
 	else if (value < 4)
 	{
-		r0=INV_LAMP(widget)->l3_r;
-		c0=INV_LAMP(widget)->l3_c;
+		r0=&(INV_LAMP(widget)->l3_r);
+		c0=&(INV_LAMP(widget)->l3_c);
 
-		r1=INV_LAMP(widget)->l4_r;
-		c1=INV_LAMP(widget)->l4_c;
+		r1=&(INV_LAMP(widget)->l4_r);
+		c1=&(INV_LAMP(widget)->l4_c);
 
 		f1=4-value;
 		f2=value-3;
 
-		*Rr=(f1 * r0[0]) + (f2 * r1[0]);
-		*Gr=(f1 * r0[1]) + (f2 * r1[1]);
-		*Br=(f1 * r0[2]) + (f2 * r1[2]);
+		rc->R=(f1 * r0->R) + (f2 * r1->R);
+		rc->G=(f1 * r0->G) + (f2 * r1->G);
+		rc->B=(f1 * r0->B) + (f2 * r1->B);
 
-		*Rc=(f1 * c0[0]) + (f2 * c1[0]);
-		*Gc=(f1 * c0[1]) + (f2 * c1[1]);
-		*Bc=(f1 * c0[2]) + (f2 * c1[2]);
+		cc->R=(f1 * c0->R) + (f2 * c1->R);
+		cc->G=(f1 * c0->G) + (f2 * c1->G);
+		cc->B=(f1 * c0->B) + (f2 * c1->B);
 	}
 	else
 	{
-		*Rr=INV_LAMP(widget)->l4_r[0];
-		*Gr=INV_LAMP(widget)->l4_r[1];
-		*Br=INV_LAMP(widget)->l4_r[2];
+		rc->R=INV_LAMP(widget)->l4_r.R;
+		rc->G=INV_LAMP(widget)->l4_r.G;
+		rc->B=INV_LAMP(widget)->l4_r.B;
 
-		*Rc=INV_LAMP(widget)->l4_c[0];
-		*Gc=INV_LAMP(widget)->l4_c[1];
-		*Bc=INV_LAMP(widget)->l4_c[2];	
+		cc->R=INV_LAMP(widget)->l4_c.R;
+		cc->G=INV_LAMP(widget)->l4_c.G;
+		cc->B=INV_LAMP(widget)->l4_c.B;	
 	}
 
 }
