@@ -237,8 +237,8 @@ inv_lamp_paint(GtkWidget *widget, gint mode)
 			pat = cairo_pattern_create_radial (xc-1, yc-1, 1.5,
 						           xc,  yc, r);
 			inv_lamp_colour(widget, value*scale, &rc, &cc);
-			cairo_pattern_add_color_stop_rgba (pat, 0.0, cc.R,  cc.R,  cc.B,  1);
-			cairo_pattern_add_color_stop_rgba (pat, 0.7, rc.R,  rc.R,  rc.B,  1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.0, cc.R,  cc.G,  cc.B,  1);
+			cairo_pattern_add_color_stop_rgba (pat, 0.7, rc.R,  rc.G,  rc.B,  1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.9, 0.1, 0.0, 0.0, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 1.0, 0.1, 0.0, 0.0, 0);
 			cairo_set_source (cr, pat);
@@ -291,7 +291,6 @@ inv_lamp_colour(GtkWidget *widget, float value, struct colour *rc, struct colour
 		cc->G=INV_LAMP(widget)->l0_c.G;
 		cc->B=INV_LAMP(widget)->l0_c.B;	
 	} 
-
 	else if (value < 1)
 	{
 		r0=&(INV_LAMP(widget)->l0_r);
@@ -311,7 +310,6 @@ inv_lamp_colour(GtkWidget *widget, float value, struct colour *rc, struct colour
 		cc->G=(f1 * c0->G) + (f2 * c1->G);
 		cc->B=(f1 * c0->B) + (f2 * c1->B);
 	}
-
 	else if (value < 2)
 	{
 		r0=&(INV_LAMP(widget)->l1_r);
@@ -379,7 +377,6 @@ inv_lamp_colour(GtkWidget *widget, float value, struct colour *rc, struct colour
 		cc->G=INV_LAMP(widget)->l4_c.G;
 		cc->B=INV_LAMP(widget)->l4_c.B;	
 	}
-
 }
 
 

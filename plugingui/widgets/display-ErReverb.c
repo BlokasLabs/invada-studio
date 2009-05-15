@@ -61,7 +61,16 @@ inv_display_err_get_type(void)
 
 gint 
 inv_display_err_get_active_dot(InvDisplayErr *displayErr) {
+
 	return displayErr->active_dot;
+}
+
+void
+inv_display_err_set_bypass(InvDisplayErr *displayErr, gint num)
+{
+	displayErr->bypass = num;
+	if(GTK_WIDGET_REALIZED(displayErr))
+		inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_ALL);
 }
 
 float 
@@ -177,7 +186,8 @@ inv_display_err_class_init(InvDisplayErrClass *klass)
 static void
 inv_display_err_init(InvDisplayErr *displayErr)
 {
-	displayErr->active_dot=INV_DISPLAY_ERR_ACTIVE_NONE;
+	displayErr->bypass=INV_PLUGIN_ACTIVE;
+	displayErr->active_dot=INV_DISPLAY_ERR_DOT_NONE;
 
 	displayErr->room[INV_DISPLAY_ERR_ROOM_LENGTH]=25.0;
 	displayErr->room[INV_DISPLAY_ERR_ROOM_WIDTH]=30.0;
@@ -292,6 +302,7 @@ static void
 inv_display_err_paint(GtkWidget *widget, gint mode)
 {
 	gint		active_dot;
+	gint 		bypass;
 	float 		w,l,h;
 	float 		sLR,sFB;
 	float 		dLR,dFB;
@@ -314,6 +325,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	GtkStyle	*style;
 	cairo_text_extents_t extents;
 
+	bypass=INV_DISPLAY_ERR(widget)->bypass;
 	active_dot=INV_DISPLAY_ERR(widget)->active_dot;
 	l=INV_DISPLAY_ERR(widget)->room[INV_DISPLAY_ERR_ROOM_LENGTH];
 	w=INV_DISPLAY_ERR(widget)->room[INV_DISPLAY_ERR_ROOM_WIDTH];
@@ -351,7 +363,11 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 
-			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+			} else {
+				cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+			}
 			cairo_rectangle(cr, 1, (i*150)+1, 208, 148 );
 			cairo_fill(cr);
 		}
@@ -371,13 +387,21 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 
-		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
 		cairo_rectangle(cr, 211, 1, 318, 298 );
 		cairo_fill(cr);
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		}
 		cairo_set_font_size(cr,10);
 
 		sprintf(label,"Source And Listener Poistion");
@@ -385,14 +409,22 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		cairo_show_text(cr,label);
 
 		cairo_set_font_size(cr,8);
-		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+		} else {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		}
 
 		sprintf(label,"(Click and drag to move)");
 		cairo_move_to(cr,300,21);
 		cairo_show_text(cr,label);
 
 		cairo_set_font_size(cr,10);
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		}
 
 		sprintf(label,"Room Shape");
 		cairo_move_to(cr,75,11);
@@ -415,7 +447,11 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	   dFB!=INV_DISPLAY_ERR(widget)->Lastdest[INV_DISPLAY_ERR_FB] ||
 	   mode==INV_DISPLAY_ERR_DRAW_ALL) {
 
-		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
 		cairo_rectangle(cr, 3, 12, 204, 135 );
 		cairo_fill(cr);
 
@@ -485,11 +521,16 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 
 		//plot with scale
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
-		cairo_set_line_width(cr,4-dist);
 
 
-		cairo_set_source_rgb(cr, 0.0, 0.05, 0.5);
-
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_line_width(cr,3-dist);
+			cairo_set_source_rgb(cr, 0.18, 0.18, 0.18);
+		} else {
+			cairo_set_line_width(cr,4-dist);
+			cairo_set_source_rgb(cr, 0.0, 0.05, 0.5);
+		}
+		
 		cairo_move_to(cr,105+roomS[4].x*scale,80-roomS[4].y*scale);
 		cairo_line_to(cr,105+roomS[5].x*scale,80-roomS[5].y*scale);
 		cairo_move_to(cr,105+roomS[4].x*scale,80-roomS[4].y*scale);
@@ -499,7 +540,11 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		cairo_stroke(cr);
 
 		r=5-dist;
-		cairo_set_source_rgb(cr, 0.8, 0.8, 0.0);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 0.8, 0.8, 0.0);
+		}
 		cairo_set_line_width(cr,1);
 
 		cairo_move_to(cr,105+sourceSF.x*scale,80-sourceSF.y*scale);
@@ -507,8 +552,12 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		cairo_stroke(cr);
 		cairo_arc(cr,105+sourceS.x*scale,80-sourceS.y*scale,r,0,2*INV_PI);
 		cairo_fill(cr);
-	
-		cairo_set_source_rgb(cr, 1.0, 0.1, 0.0);
+
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 1.0, 0.1, 0.0);
+		}	
 
 		cairo_move_to(cr,105+destSF.x*scale,80-destSF.y*scale);
 		cairo_line_to(cr,105+destS.x*scale,80-destS.y*scale);
@@ -516,8 +565,14 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		cairo_arc(cr,105+destS.x*scale,80-destS.y*scale,r,0,2*INV_PI);
 		cairo_fill(cr);
 
-		cairo_set_line_width(cr,4-dist);
-		cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
+		
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_line_width(cr,3-dist);
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_line_width(cr,4-dist);
+			cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
+		}
 		cairo_move_to(cr,105+roomS[0].x*scale,80-roomS[0].y*scale);
 		cairo_line_to(cr,105+roomS[1].x*scale,80-roomS[1].y*scale);
 		cairo_move_to(cr,105+roomS[1].x*scale,80-roomS[1].y*scale);
@@ -543,65 +598,90 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	/* any change alters this display */
 	/* 200x140 centered at 105,225 */
 
-	cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-	cairo_rectangle(cr, 3, 163, 204, 134 );
-	cairo_fill(cr);
+	if(l!=INV_DISPLAY_ERR(widget)->Lastroom[INV_DISPLAY_ERR_ROOM_LENGTH] || 
+	   w!=INV_DISPLAY_ERR(widget)->Lastroom[INV_DISPLAY_ERR_ROOM_WIDTH] ||
+	   h!=INV_DISPLAY_ERR(widget)->Lastroom[INV_DISPLAY_ERR_ROOM_HEIGHT] ||
+	   sLR!=INV_DISPLAY_ERR(widget)->Lastsource[INV_DISPLAY_ERR_LR] ||
+	   sFB!=INV_DISPLAY_ERR(widget)->Lastsource[INV_DISPLAY_ERR_FB] ||
+	   dLR!=INV_DISPLAY_ERR(widget)->Lastdest[INV_DISPLAY_ERR_LR] ||
+	   dFB!=INV_DISPLAY_ERR(widget)->Lastdest[INV_DISPLAY_ERR_FB] ||
+	   diffusion!=INV_DISPLAY_ERR(widget)->Lastdiffusion ||
+	   mode==INV_DISPLAY_ERR_DRAW_ALL) {
 
-
-	min_delay=999999999999;
-	max_delay=0;
-	max_gain=0;
-	er_size=calculateIReverbER(er, MAX_ER, w, l, h, sLR, sFB, dLR, dFB, 1.5, diffusion, SPEED_OF_SOUND);
-	for(i=0;i<er_size;i++) {
-		min_delay=er->DelayActual < min_delay ? er->DelayActual : min_delay;
-		max_delay=er->DelayActual > max_delay ? er->DelayActual : max_delay;
-		max_gain=fabs(er->GainL) > max_gain ? fabs(er->GainL) : max_gain;
-		max_gain=fabs(er->GainR) > max_gain ? fabs(er->GainR) : max_gain;
-		er++;
-	}
-
-	// show min and max
-	cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-	cairo_set_font_size(cr,8);
-
-	sprintf(label,"Pre-Delay: %.1fms",min_delay);
-	cairo_move_to(cr,115,286);
-	cairo_show_text(cr,label);
-
-	sprintf(label,"   Length: %.1fms",max_delay);
-	cairo_move_to(cr,115,295);
-	cairo_show_text(cr,label);
-
-	//show impulse repsonse
-	max_delay= ((gint)(max_delay/25 )+2) * 25;
-	er=INV_DISPLAY_ERR(widget)->er;
-
-	cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-	cairo_rectangle(cr, 5, 163, 1, 134 );
-	cairo_fill(cr);
-
-	cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-	cairo_rectangle(cr, 5, 230, 200, 1 );
-	cairo_fill(cr);
-
-	cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
-	cairo_set_line_width(cr,1);
-
-	for(i=0;i<er_size;i++) {
-		x=5+200*(er->DelayActual/max_delay);
-		y=2+fabs(er->GainL/max_gain)*65;
-
-		cairo_set_source_rgba(cr, 0.1, 0.0, 1.0, 0.5);
-		cairo_rectangle(cr, x,230, 1, -y );
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
+		cairo_rectangle(cr, 3, 163, 204, 134 );
 		cairo_fill(cr);
 
-		y=2+fabs(er->GainR/max_gain)*65;
 
-		cairo_set_source_rgba(cr, 0.0, 0.1, 1.0, 0.5);
-		cairo_rectangle(cr, x,230, 1, y );
+		min_delay=999999999999;
+		max_delay=0;
+		max_gain=0;
+		er_size=calculateIReverbER(er, MAX_ER, w, l, h, sLR, sFB, dLR, dFB, 1.5, diffusion, SPEED_OF_SOUND);
+		for(i=0;i<er_size;i++) {
+			min_delay=er->DelayActual < min_delay ? er->DelayActual : min_delay;
+			max_delay=er->DelayActual > max_delay ? er->DelayActual : max_delay;
+			max_gain=fabs(er->GainL) > max_gain ? fabs(er->GainL) : max_gain;
+			max_gain=fabs(er->GainR) > max_gain ? fabs(er->GainR) : max_gain;
+			er++;
+		}
+
+		// show min and max
+		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+		} else {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		}
+		cairo_set_font_size(cr,8);
+
+		sprintf(label,"Pre-Delay: %.1fms",min_delay);
+		cairo_move_to(cr,115,286);
+		cairo_show_text(cr,label);
+
+		sprintf(label,"   Length: %.1fms",max_delay);
+		cairo_move_to(cr,115,295);
+		cairo_show_text(cr,label);
+
+		//show impulse repsonse
+		max_delay= ((gint)(max_delay/25 )+2) * 25;
+		er=INV_DISPLAY_ERR(widget)->er;
+
+		//show axis
+		cairo_rectangle(cr, 5, 163, 1, 134 );
 		cairo_fill(cr);
-		er++;
+
+		cairo_rectangle(cr, 5, 230, 200, 1 );
+		cairo_fill(cr);
+
+		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
+		cairo_set_line_width(cr,1);
+
+		for(i=0;i<er_size;i++) {
+			x=5+200*(er->DelayActual/max_delay);
+			y=2+fabs(er->GainL/max_gain)*65;
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.5);
+			} else {
+				cairo_set_source_rgba(cr, 0.2, 0.0, 1.0, 0.5);
+			}
+			cairo_rectangle(cr, x,230, 1, -y );
+			cairo_fill(cr);
+
+			y=2+fabs(er->GainR/max_gain)*65;
+
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.5);
+			} else {
+				cairo_set_source_rgba(cr, 0.0, 0.2, 1.0, 0.5);
+			}
+			cairo_rectangle(cr, x,230, 1, y );
+			cairo_fill(cr);
+			er++;
+		}
 	}
 
 	/* source dest display */
@@ -614,7 +694,11 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	   dFB!=INV_DISPLAY_ERR(widget)->Lastdest[INV_DISPLAY_ERR_FB] ||
 	   mode==INV_DISPLAY_ERR_DRAW_ALL) {
 
-		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
 		cairo_rectangle(cr, 213, 24, 294, 272 );
 		cairo_fill(cr);
 
@@ -628,33 +712,62 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		sl=sl*scale/2;
 	
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
-		if(active_dot==INV_DISPLAY_ERR_ACTIVE_SOURCE) {
-			cairo_set_source_rgba(cr, 1.0, 1.0, 0.5, 0.2);
+		if(active_dot==INV_DISPLAY_ERR_DOT_SOURCE) {
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.2);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 1.0, 0.5, 0.2);
+			}
 			cairo_rectangle(cr, 360-(sw*0.99), 160-(sl*0.99), sw*1.98, sl*0.98 );
 			cairo_fill_preserve(cr);
-			cairo_set_source_rgba(cr, 1.0, 1.0, 0.5, 0.5);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.5);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 1.0, 0.5, 0.5);
+			}
 			cairo_stroke(cr);
 		} else {
-			cairo_set_source_rgba(cr, 1.0, 1.0, 0.5, 0.05);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.05);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 1.0, 0.5, 0.05);
+			}
 			cairo_rectangle(cr, 360-(sw*0.99), 160-(sl*0.99), sw*1.98, sl*0.98 );
 			cairo_fill(cr);
 		}
 	
-		if(active_dot==INV_DISPLAY_ERR_ACTIVE_DEST) {
-			cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.2);
+		if(active_dot==INV_DISPLAY_ERR_DOT_DEST) {
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.2);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.2);
+			}
 			cairo_rectangle(cr, 360-(sw*0.99), 160+(sl*0.01), sw*1.98, sl*0.98 );
 			cairo_fill_preserve(cr);
-			cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.5);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.5);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.5);
+			}
 			cairo_stroke(cr);
 		} else {
-			cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.05);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.05);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 0.5, 0.5, 0.05);
+			}
 			cairo_rectangle(cr, 360-(sw*0.99), 160+(sl*0.01), sw*1.98, sl*0.98 );
 			cairo_fill(cr);
 		}
 
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
 		cairo_set_line_width(cr,1);
-		cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+		} else {
+			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+		}
+
 		cairo_rectangle(cr, 360-sw, 160-sl, sw*2, sl*2 );
 		cairo_stroke(cr);
 	
@@ -664,11 +777,18 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		yc=160+sl - sFB*sl*2;
 		r=3;
 
-		cairo_set_source_rgb(cr, 0.8, 0.8, 0.0);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.8, 0.8, 0.0);
+		}
 		cairo_arc(cr,xc,yc,r,0,2*INV_PI);
 		cairo_fill(cr);
-
-		cairo_set_source_rgb(cr, 0.5, 0.5, 0.3);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.3);
+		}
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		strcpy(label,"Source");
@@ -694,11 +814,19 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		yc=160+sl - dFB*sl*2;
 		r=3;
 
-		cairo_set_source_rgb(cr, 1.0, 0.1, 0.0);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 1.0, 0.1, 0.0);
+		}		
 		cairo_arc(cr,xc,yc,r,0,2*INV_PI);
 		cairo_fill(cr);
 
-		cairo_set_source_rgb(cr, 0.6, 0.35, 0.3);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.6, 0.35, 0.3);
+		}		
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		strcpy(label,"Listener");
@@ -737,14 +865,10 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 static void
 inv_display_err_destroy(GtkObject *object)
 {
-	InvDisplayErr *displayErr;
 	InvDisplayErrClass *klass;
 
 	g_return_if_fail(object != NULL);
 	g_return_if_fail(INV_IS_DISPLAY_ERR(object));
-
-	displayErr = INV_DISPLAY_ERR(object);
-	free(displayErr->er);
 
 	klass = gtk_type_class(gtk_widget_get_type());
 
@@ -767,8 +891,8 @@ inv_display_err_button_press_event (GtkWidget *widget, GdkEventButton *event)
 			INV_DISPLAY_ERR(widget)->dest[INV_DISPLAY_ERR_FB],
 			event->x,
 			event->y);
-	if(INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_ACTIVE_SOURCE
-	|| INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_ACTIVE_DEST) {
+	if(INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_DOT_SOURCE
+	|| INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_DOT_DEST) {
 		gtk_widget_set_state(widget,GTK_STATE_ACTIVE);
 	    	gtk_widget_grab_focus(widget);
 		inv_display_err_paint(widget,INV_DISPLAY_ERR_DRAW_DATA);
@@ -781,8 +905,8 @@ inv_display_err_motion_notify_event(GtkWidget *widget, GdkEventMotion *event)
 {
 	g_assert(INV_IS_DISPLAY_ERR(widget));
 	switch(INV_DISPLAY_ERR(widget)->active_dot) {
-		case INV_DISPLAY_ERR_ACTIVE_SOURCE:
-			inv_display_err_update_active_dot(INV_DISPLAY_ERR_ACTIVE_SOURCE, 
+		case INV_DISPLAY_ERR_DOT_SOURCE:
+			inv_display_err_update_active_dot(INV_DISPLAY_ERR_DOT_SOURCE, 
 							INV_DISPLAY_ERR(widget)->room[INV_DISPLAY_ERR_ROOM_LENGTH],
 							INV_DISPLAY_ERR(widget)->room[INV_DISPLAY_ERR_ROOM_WIDTH],
 							event->x,
@@ -790,10 +914,10 @@ inv_display_err_motion_notify_event(GtkWidget *widget, GdkEventMotion *event)
 							&(INV_DISPLAY_ERR(widget)->source[INV_DISPLAY_ERR_LR]),
 							&(INV_DISPLAY_ERR(widget)->source[INV_DISPLAY_ERR_FB]));
 			inv_display_err_paint(widget,INV_DISPLAY_ERR_DRAW_DATA);
-			return FALSE; //let the after signal run
+			return FALSE; 
 			break;
-		case INV_DISPLAY_ERR_ACTIVE_DEST:
-			inv_display_err_update_active_dot(INV_DISPLAY_ERR_ACTIVE_DEST, 
+		case INV_DISPLAY_ERR_DOT_DEST:
+			inv_display_err_update_active_dot(INV_DISPLAY_ERR_DOT_DEST, 
 							INV_DISPLAY_ERR(widget)->room[INV_DISPLAY_ERR_ROOM_LENGTH],
 							INV_DISPLAY_ERR(widget)->room[INV_DISPLAY_ERR_ROOM_WIDTH],
 							event->x,
@@ -801,10 +925,10 @@ inv_display_err_motion_notify_event(GtkWidget *widget, GdkEventMotion *event)
 							&(INV_DISPLAY_ERR(widget)->dest[INV_DISPLAY_ERR_LR]),
 							&(INV_DISPLAY_ERR(widget)->dest[INV_DISPLAY_ERR_FB]));
 			inv_display_err_paint(widget,INV_DISPLAY_ERR_DRAW_DATA);
-			return FALSE; //let the after signal run
+			return FALSE; 
 			break;
 	}
-	return TRUE; //ignore this event
+	return TRUE; 
 
 }
 
@@ -813,9 +937,9 @@ inv_display_err_button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
 	g_assert(INV_IS_DISPLAY_ERR(widget));
 
-	if(INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_ACTIVE_SOURCE
-	|| INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_ACTIVE_DEST) {
-		INV_DISPLAY_ERR(widget)->active_dot= INV_DISPLAY_ERR_ACTIVE_NONE;
+	if(INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_DOT_SOURCE
+	|| INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_DOT_DEST) {
+		INV_DISPLAY_ERR(widget)->active_dot= INV_DISPLAY_ERR_DOT_NONE;
 		gtk_widget_set_state(widget,GTK_STATE_NORMAL);
 		inv_display_err_paint(widget,INV_DISPLAY_ERR_DRAW_DATA);
 	}
@@ -927,13 +1051,13 @@ inv_display_err_find_active_dot(float l, float w, float sLR, float sFB, float dL
 	sdist=pow(pow(sx-x,2)+pow(sy-y,2),0.5);
 	ddist=pow(pow(dx-x,2)+pow(dy-y,2),0.5);
 
-	if(sdist<5.0 && sdist<=ddist) 
-		return INV_DISPLAY_ERR_ACTIVE_SOURCE;
+	if(sdist<5.0 && sdist<ddist) 
+		return INV_DISPLAY_ERR_DOT_SOURCE;
 
-	if(ddist<5.0 && ddist<=sdist) 
-		return INV_DISPLAY_ERR_ACTIVE_DEST;
+	if(ddist<5.0 && ddist<sdist) 
+		return INV_DISPLAY_ERR_DOT_DEST;
 
-	return INV_DISPLAY_ERR_ACTIVE_NONE;
+	return INV_DISPLAY_ERR_DOT_NONE;
 
 }
 
@@ -957,11 +1081,11 @@ inv_display_err_update_active_dot(gint dot, float l, float w, float x, float y, 
 	if(*LR > 0.99) *LR = 0.99;
 
 	switch(dot) {
-		case INV_DISPLAY_ERR_ACTIVE_SOURCE:
+		case INV_DISPLAY_ERR_DOT_SOURCE:
 			if(*FB < 0.51) *FB = 0.51;
 			if(*FB > 0.99) *FB = 0.99;
 			break;
-		case INV_DISPLAY_ERR_ACTIVE_DEST:
+		case INV_DISPLAY_ERR_DOT_DEST:
 			if(*FB < 0.01) *FB = 0.01;
 			if(*FB > 0.49) *FB = 0.49;
 			break;

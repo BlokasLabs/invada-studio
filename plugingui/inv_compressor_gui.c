@@ -267,7 +267,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_comp_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
-	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),2.0);
+	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),3.0);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);

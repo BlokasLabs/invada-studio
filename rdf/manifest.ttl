@@ -37,6 +37,10 @@
                                         lv2:binary <inv_input.so> ;
                                         rdfs:seeAlso <inv_input.ttl> .
 
+<http://invadarecords.com/plugins/lv2/meter> a lv2:Plugin ;
+                                        lv2:binary <inv_meter.so> ;
+                                        rdfs:seeAlso <inv_meter.ttl> .
+
 <http://invadarecords.com/plugins/lv2/tube/mono> a lv2:Plugin ;
                                         lv2:binary <inv_tube.so> ;
                                         rdfs:seeAlso <inv_tube.ttl> .

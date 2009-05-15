@@ -192,6 +192,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
+	inv_display_err_set_bypass(INV_DISPLAY_ERR (pluginGui->display), INV_PLUGIN_ACTIVE);
 	inv_display_err_set_room(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_ROOM_LENGTH, pluginGui->length);
 	inv_display_err_set_room(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_ROOM_WIDTH,  pluginGui->width);
 	inv_display_err_set_room(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_ROOM_HEIGHT, pluginGui->height);
@@ -202,14 +203,14 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_display_err_set_diffusion(INV_DISPLAY_ERR (pluginGui->display), pluginGui->diffusion);
 	g_signal_connect_after(G_OBJECT(pluginGui->display),"motion-notify-event",G_CALLBACK(on_inv_erreverb_display_motion),pluginGui);
 
-	inv_knob_set_bypass(INV_KNOB (pluginGui->knobLength), INV_PLUGIN_ACTIVE);
-	inv_knob_set_size(INV_KNOB (pluginGui->knobLength), INV_KNOB_SIZE_MEDIUM);
-	inv_knob_set_curve(INV_KNOB (pluginGui->knobLength), INV_KNOB_CURVE_LINEAR);
+	inv_knob_set_bypass(INV_KNOB (pluginGui->knobLength),   INV_PLUGIN_ACTIVE);
+	inv_knob_set_size(INV_KNOB (pluginGui->knobLength),     INV_KNOB_SIZE_MEDIUM);
+	inv_knob_set_curve(INV_KNOB (pluginGui->knobLength),    INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobLength), INV_KNOB_MARKINGS_4); 
-	inv_knob_set_units(INV_KNOB (pluginGui->knobLength), "m");
-	inv_knob_set_min(INV_KNOB (pluginGui->knobLength), 3.0);
-	inv_knob_set_max(INV_KNOB (pluginGui->knobLength), 100.0);
-	inv_knob_set_value(INV_KNOB (pluginGui->knobLength), pluginGui->length);
+	inv_knob_set_units(INV_KNOB (pluginGui->knobLength),    "m");
+	inv_knob_set_min(INV_KNOB (pluginGui->knobLength),      3.0);
+	inv_knob_set_max(INV_KNOB (pluginGui->knobLength),      100.0);
+	inv_knob_set_value(INV_KNOB (pluginGui->knobLength),    pluginGui->length);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobLength),"motion-notify-event",G_CALLBACK(on_inv_erreverb_length_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
@@ -300,24 +301,26 @@ port_eventIErReverbGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uin
 				pluginGui->bypass=value;
 				if(value <= 0.0) {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),       INV_PLUGIN_ACTIVE);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),      INV_PLUGIN_ACTIVE);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobLength),    INV_PLUGIN_ACTIVE);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobWidth),     INV_PLUGIN_ACTIVE);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobHeight),    INV_PLUGIN_ACTIVE);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobHPF),       INV_PLUGIN_ACTIVE);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobWarmth),    INV_PLUGIN_ACTIVE);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobDiffusion), INV_PLUGIN_ACTIVE);
+					inv_meter_set_bypass(       INV_METER       (pluginGui->meterIn),       INV_PLUGIN_ACTIVE);
+					inv_meter_set_bypass(       INV_METER       (pluginGui->meterOut),      INV_PLUGIN_ACTIVE);
+					inv_display_err_set_bypass( INV_DISPLAY_ERR (pluginGui->display),       INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobLength),    INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWidth),     INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHeight),    INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHPF),       INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWarmth),    INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobDiffusion), INV_PLUGIN_ACTIVE);
 				} else {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterIn),       INV_PLUGIN_BYPASS);
-					inv_meter_set_bypass(INV_METER (pluginGui->meterOut),      INV_PLUGIN_BYPASS);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobLength),    INV_PLUGIN_BYPASS);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobWidth),     INV_PLUGIN_BYPASS);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobHeight),    INV_PLUGIN_BYPASS);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobHPF),       INV_PLUGIN_BYPASS);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobWarmth),    INV_PLUGIN_BYPASS);
-					inv_knob_set_bypass( INV_KNOB  (pluginGui->knobDiffusion), INV_PLUGIN_BYPASS);
+					inv_meter_set_bypass(       INV_METER       (pluginGui->meterIn),       INV_PLUGIN_BYPASS);
+					inv_meter_set_bypass(       INV_METER       (pluginGui->meterOut),      INV_PLUGIN_BYPASS);
+					inv_display_err_set_bypass( INV_DISPLAY_ERR (pluginGui->display),       INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobLength),    INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWidth),     INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHeight),    INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHPF),       INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWarmth),    INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobDiffusion), INV_PLUGIN_BYPASS);
 				}
 				break;
 			case IERR_ROOMLENGTH:
@@ -488,13 +491,13 @@ on_inv_erreverb_display_motion(GtkWidget *widget, GdkEvent *event, gpointer data
 	active_dot=inv_display_err_get_active_dot(INV_DISPLAY_ERR (widget));
 
 	switch(active_dot) {
-		case INV_DISPLAY_ERR_ACTIVE_SOURCE:
+		case INV_DISPLAY_ERR_DOT_SOURCE:
 			pluginGui->sourceLR=inv_display_err_get_source(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_LR);
 			pluginGui->sourceFB=inv_display_err_get_source(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_FB);
 			(*pluginGui->write_function)(pluginGui->controller, IERR_SOURCELR, 4, 0, &pluginGui->sourceLR);
 			(*pluginGui->write_function)(pluginGui->controller, IERR_SOURCEFB, 4, 0, &pluginGui->sourceFB);
 			break;
-		case INV_DISPLAY_ERR_ACTIVE_DEST:
+		case INV_DISPLAY_ERR_DOT_DEST:
 			pluginGui->destLR=inv_display_err_get_dest(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_LR);
 			pluginGui->destFB=inv_display_err_get_dest(INV_DISPLAY_ERR (widget), INV_DISPLAY_ERR_FB);
 			(*pluginGui->write_function)(pluginGui->controller, IERR_DESTLR, 4, 0, &pluginGui->destLR);

@@ -18,9 +18,9 @@ G_BEGIN_DECLS
 #define INV_DISPLAY_ERR_LR 0
 #define INV_DISPLAY_ERR_FB 1
 
-#define INV_DISPLAY_ERR_ACTIVE_NONE 0
-#define INV_DISPLAY_ERR_ACTIVE_SOURCE 1
-#define INV_DISPLAY_ERR_ACTIVE_DEST 2
+#define INV_DISPLAY_ERR_DOT_NONE 0
+#define INV_DISPLAY_ERR_DOT_SOURCE 1
+#define INV_DISPLAY_ERR_DOT_DEST 2
 
 #define INV_DISPLAY_ERR(obj) GTK_CHECK_CAST(obj, inv_display_err_get_type (), InvDisplayErr)
 #define INV_DISPLAY_ERR_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_display_err_get_type(), InvDisplayErrClass)
@@ -35,6 +35,7 @@ struct _InvDisplayErr {
 	GtkWidget widget;
 	
 	gint active_dot;
+	gint bypass;
 
 	float room[3];
 	float source[2];
@@ -58,7 +59,7 @@ struct _InvDisplayErrClass {
 GtkType inv_display_err_get_type(void);
 GtkWidget * inv_display_err_new();
 
-gint inv_display_err_set_bypass(InvDisplayErr *displayErr, gint num);
+void inv_display_err_set_bypass(InvDisplayErr *displayErr, gint num);
 gint inv_display_err_get_active_dot(InvDisplayErr *displayErr);
 float inv_display_err_get_source(InvDisplayErr *displayErr, gint axis);
 float inv_display_err_get_dest(InvDisplayErr *displayErr, gint axis);

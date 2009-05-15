@@ -174,8 +174,8 @@ activateIInput(LV2_Handle instance)
 	plugin->LastWidth  = 0;  
 	plugin->LastNoClip = 0; 
 	plugin->EnvInLLast = 0; 
-	plugin->EnvOutLLast = 0; 
 	plugin->EnvInRLast = 0; 
+	plugin->EnvOutLLast = 0; 
 	plugin->EnvOutRLast = 0; 
 	plugin->EnvPhaseLast = 0; 
 	plugin->EnvDriveLast = 0; 
