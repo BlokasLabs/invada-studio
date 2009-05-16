@@ -24,6 +24,12 @@
 /* 2.0 * atan(1.0) */
 #define PI_ON_2 1.570796327
 
+/* PI */
+#define PI 3.1415926535877932
+
+/* 2*PI */
+#define PI_2 6.2831853071795864
+
 /* -1.0 / log10(sin(0.2 * atan(1.0))) */
 #define ITUBE_MAGIC 1.241206735
 

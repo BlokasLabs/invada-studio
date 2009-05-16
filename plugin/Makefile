@@ -27,8 +27,8 @@ LDFLAGS		=	-shared -Llibrary -lc -lm  -linv_common
 PLUGINS		=	inv_compressor.so \
                         inv_erreverb.so \
                         inv_filter.so \
+                        inv_flange.so \
                         inv_input.so \
-                        inv_meter.so \
                         inv_tube.so \
 
 all:	$(PLUGINS)
@@ -38,9 +38,9 @@ all:	$(PLUGINS)
 
 inv_compressor.so:	inv_compressor.o	inv_compressor.h
 inv_erreverb.so:	inv_erreverb.o		inv_erreverb.h    
-inv_filter.so:		inv_filter.o		inv_filter.h         
+inv_filter.so:		inv_filter.o		inv_filter.h    
+inv_flange.so:		inv_flange.o		inv_flange.h       
 inv_input.so:		inv_input.o		inv_input.h   
-inv_meter.so:		inv_meter.o		inv_meter.h   
 inv_tube.so:		inv_tube.o		inv_tube.h     
      
 

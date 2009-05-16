@@ -28,8 +28,8 @@ LDFLAGS		=	-shared -Lwidgets -L../plugin/library -lc -lm -linv_widgets -linv_com
 GUIS		=	inv_compressor_gui.so \
 			inv_erreverb_gui.so \
 			inv_filter_gui.so \
+			inv_flange_gui.so \
 			inv_input_gui.so \
-			inv_meter_gui.so \
 			inv_tube_gui.so \
 
 
@@ -40,8 +40,8 @@ all:	$(GUIS)
 inv_compressor_gui.so: inv_compressor_gui.o	../plugin/inv_compressor.h	inv_compressor_gui.h   
 inv_erreverb_gui.so:   inv_erreverb_gui.o	../plugin/inv_erreverb.h	inv_erreverb_gui.h   
 inv_filter_gui.so:     inv_filter_gui.o		../plugin/inv_filter.h		inv_filter_gui.h   
+inv_flange_gui.so:     inv_flange_gui.o		../plugin/inv_flange.h		inv_flange_gui.h   
 inv_input_gui.so:      inv_input_gui.o		../plugin/inv_input.h		inv_input_gui.h   
-inv_meter_gui.so:      inv_meter_gui.o		../plugin/inv_meter.h		inv_meter_gui.h  
 inv_tube_gui.so:       inv_tube_gui.o		../plugin/inv_tube.h		inv_tube_gui.h 
 
 

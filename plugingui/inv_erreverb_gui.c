@@ -42,7 +42,6 @@ typedef struct {
 	GtkWidget	*heading;
 	GtkWidget	*toggleBypass;
 	GtkWidget	*meterIn;
-	GtkWidget	*meterGR;
 	GtkWidget	*meterOut;
 	GtkWidget	*display;
 	GtkWidget	*knobLength;
