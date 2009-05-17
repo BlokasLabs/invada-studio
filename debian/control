@@ -1,0 +1,39 @@
+Source: invada-studio-plugins-lv2
+Section: sound
+Priority: optional
+Maintainer: Fraser Stuart (Obleak) <fraser@arkhostings.com>
+Build-Depends: debhelper (>= 4.0.0), fakeroot, libgtk2.0-dev, lv2core
+Standards-Version: 3.7.3.0
+
+Package: invada-studio-plugins-lv2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Provides: lv2-plugin
+Suggests: ardour, jack-rack, hydrogen, muse, rosegarden
+Description: Invada Studio Plugins - a set of LV2 audio plugins.
+ Utility Plugins
+ * Input Module (Stereo only)
+ Alter gain, balance, width, phase on a stereo signal
+ .
+ Filter Plugins
+ * Low Pass (Mono and Stereo version)
+ * High Pass (Mono and Stereo version)
+ Gentle high pass and low pass filters
+ .
+ Flange Plugins
+ * Stereo Flange (Mono, Stereo and Sum version)
+ Long slow stereo flanger.
+ .
+ Distortion Plugins
+ * Tube - (Mono and Stereo version)
+ Valve warmth/distortion simulation
+ .
+ Dynamics Plugins
+ * Compressor - (Mono and Stereo version)
+ Peak/RMS soft-clipping compressor
+ .
+ Reverb Plugins
+ * ER Reverb - (Mono and Sum version) 
+ Early reflection based reverb. 
+ .
+ Homepage: https://launchpad.net/invada-studio

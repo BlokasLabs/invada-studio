@@ -53,6 +53,14 @@ inv_display_comp_get_type(void)
 }
 
 void
+inv_display_comp_set_bypass(InvDisplayComp *displayComp, gint num)
+{
+	displayComp->bypass = num;
+	if(GTK_WIDGET_REALIZED(displayComp))
+		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_ALL);
+}
+
+void
 inv_display_comp_set_rms(InvDisplayComp *displayComp, float num)
 {
 	if(num<0)
@@ -153,6 +161,7 @@ inv_display_comp_class_init(InvDisplayCompClass *klass)
 static void
 inv_display_comp_init(InvDisplayComp *displayComp)
 {
+	displayComp->bypass=INV_PLUGIN_ACTIVE;
 	displayComp->rms=0.5;
 	displayComp->attack=0.00001;
 	displayComp->release=0.001;
@@ -252,6 +261,7 @@ inv_display_comp_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 inv_display_comp_paint(GtkWidget *widget, gint mode)
 {
+	gint		bypass;
 	float 		rms,rmsC,rmsV;
 	float 		attack;
 	float 		release;
@@ -266,6 +276,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 	char		label[50];
 
 	style = gtk_widget_get_style(widget);
+	bypass=INV_DISPLAY_COMP(widget)->bypass;
 	rms=INV_DISPLAY_COMP(widget)->rms;
 	attack=INV_DISPLAY_COMP(widget)->attack;
 	release=INV_DISPLAY_COMP(widget)->release;
@@ -297,14 +308,22 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 			cairo_new_path(cr);
 
-			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+			} else {
+				cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+			}
 			cairo_rectangle(cr, (i*200)+1, 1, 198, 154 );
 			cairo_fill(cr);
 		}
 
 		/* detector labels */
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		}
 		
 		cairo_set_font_size(cr,10);
 		sprintf(label,"Detector");
@@ -320,19 +339,33 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_move_to(cr,95,152);
 		cairo_show_text(cr,label);
 
-		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.4);
+		} else {
+			cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
+		}
+
+
 		cairo_set_line_width(cr,1.0);
 		cairo_move_to(cr, 25, 152);
 		cairo_line_to(cr, 31, 146);
 		cairo_stroke(cr);
 
-		cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
+		}
 		cairo_rectangle(cr, 85, 146, 6, 6 );
 		cairo_fill(cr);
 
 		/* envelope labels */
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		}
 		
 		cairo_set_font_size(cr,10);
 		sprintf(label,"Envelope");
@@ -341,15 +374,22 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 
 		/* compressor labels */
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		}
 		
 		cairo_set_font_size(cr,10);
 		sprintf(label,"Compressor");
 		cairo_move_to(cr,470,12);
 		cairo_show_text(cr,label);
 
-
-		cairo_set_source_rgb(cr, 1, 1, 1);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+		} else {
+			cairo_set_source_rgb(cr, 1, 1, 1);
+		}
 		cairo_rectangle(cr, 566, 17, 1, 113);
 		cairo_fill(cr);
 
@@ -358,7 +398,11 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
-		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+		} else {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		}
 		for(i=0;i<8;i+=2)
 		{
 			sprintf(label,"%3idB",-(i*6));
@@ -379,7 +423,11 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_show_text(cr,label);
 		}
 
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		} else {
+			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+		}
 		cairo_set_font_size(cr,9);
 		sprintf(label,"Original");
 		cairo_move_to(cr,435,152);
@@ -389,13 +437,21 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_move_to(cr,515,152);
 		cairo_show_text(cr,label);
 
-		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.4);
+		} else {
+			cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
+		}
 		cairo_set_line_width(cr,1.0);
 		cairo_move_to(cr, 425, 152);
 		cairo_line_to(cr, 431, 146);
 		cairo_stroke(cr);
 
-		cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
+		}
 		cairo_set_line_width(cr,2.0);
 		cairo_move_to(cr, 505, 152);
 		cairo_line_to(cr, 511, 146);
@@ -408,14 +464,23 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 	/* rms display */
 	if(mode == INV_DISPLAYCOMP_DRAW_ALL 
 	|| rms  != INV_DISPLAY_COMP(widget)->Lastrms ) {
-		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
+
 		cairo_rectangle(cr, 3, 13, 194, 129 );
 		cairo_fill(cr);
 
 		rmsC= (pow(rms,3) * 400)+1; 
 		rmsV=0;
 
-		cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
+		}
 		cairo_set_line_width(cr,1.0);
 		cairo_move_to(cr, 4, 77);
 			
@@ -428,11 +493,19 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_line_to(cr, 4, 77);
 		cairo_fill(cr);
 
-		cairo_set_source_rgb(cr, 0.35, 0.35, 35);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+		} else {
+			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+		}
 		cairo_rectangle(cr, 4, 77, 192, 1 );
 		cairo_fill(cr);
 
-		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.25);
+		} else {
+			cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
+		}
 		cairo_set_line_width(cr,1.0);
 		cairo_move_to(cr, 4, 77);
 			
@@ -449,25 +522,41 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 	|| ratio     != INV_DISPLAY_COMP(widget)->Lastratio 
 	|| gain      != INV_DISPLAY_COMP(widget)->Lastgain ) {
 
-		cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
 		cairo_rectangle(cr, 406, 17, 160, 112 );
 		cairo_fill(cr);
 		for(i=1;i<8;i+=2) {
-			cairo_set_source_rgb(cr, 0.20, 0.20, 0.20);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
+			} else {
+				cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+			}
 			cairo_rectangle(cr, 386+(i*20), 17, 1, 112);
 			cairo_fill(cr);
 			cairo_rectangle(cr, 406, 3+(i*14), 160, 1);
 			cairo_fill(cr);
 		}
 		for(i=0;i<7;i+=2) {
-			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+			} else {
+				cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+			}
 			cairo_rectangle(cr, 426+(i*20), 17, 1, 112);
 			cairo_fill(cr);
 			cairo_rectangle(cr, 406, 31+(i*14), 160, 1);
 			cairo_fill(cr);
 		}
 
-		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+		} else {
+			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+		}
 		cairo_rectangle(cr, 546, 17, 1, 112);
 		cairo_fill(cr);
 		cairo_rectangle(cr, 406, 31, 160, 1);
@@ -482,8 +571,13 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		threshsig=pow(10,threshold/20);
 		y = 20*log10(threshsig+((2-threshsig)/ratio));
 
-		cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
+		}
 		cairo_set_line_width(cr,2);
+
 		cairo_move_to(cr, 406                 , 129-(14*gain/6));
 		cairo_line_to(cr, 546+(20*threshold/6), 31-(14*gain/6)-(14*threshold/6));
 		cairo_line_to(cr, 566                 , 31-(14*gain/6)-(14*y/6)); 

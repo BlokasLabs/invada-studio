@@ -176,8 +176,8 @@ static void activateIComp(LV2_Handle instance)
 	/* default values */
 	plugin->LastBypass	= 0.0;   
 	plugin->LastRms    	= 0.5;         
-	plugin->LastAttack 	= 0.00001;
-	plugin->LastRelease	= 0.001;  
+	plugin->LastAttack 	= 0.015;
+	plugin->LastRelease	= 0.050;  
 	plugin->LastThresh 	= 0.0; 
 	plugin->LastRatio  	= 1.0;
 	plugin->LastGain   	= 0.0;

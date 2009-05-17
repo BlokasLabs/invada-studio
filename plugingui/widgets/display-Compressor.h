@@ -22,6 +22,7 @@ typedef struct _InvDisplayCompClass InvDisplayCompClass;
 struct _InvDisplayComp {
 	GtkWidget widget;
 
+	gint bypass;
 	float rms;
 	float attack;
 	float release;
@@ -45,6 +46,7 @@ struct _InvDisplayCompClass {
 GtkType inv_display_comp_get_type(void);
 GtkWidget * inv_display_comp_new();
 
+void inv_display_comp_set_bypass(InvDisplayComp *displayComp, gint num);
 void inv_display_comp_set_rms(InvDisplayComp *displayComp, float num);
 void inv_display_comp_set_attack(InvDisplayComp *displayComp, float num);
 void inv_display_comp_set_release(InvDisplayComp *displayComp, float num);

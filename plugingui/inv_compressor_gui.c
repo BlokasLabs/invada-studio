@@ -174,8 +174,8 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	pluginGui->GRChannels	= 1;
 	pluginGui->bypass	= 0.0;
 	pluginGui->rms		= 0.5;
-	pluginGui->attack	= 0.00001;
-	pluginGui->release	= 0.001;
+	pluginGui->attack	= 0.015;
+	pluginGui->release	= 0.050;
 	pluginGui->threshold	= 0.0;
 	pluginGui->ratio	= 1.0;
 	pluginGui->gain		= 0.0;
@@ -208,6 +208,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);
 
+	inv_display_comp_set_bypass(INV_DISPLAY_COMP (pluginGui->display), INV_PLUGIN_ACTIVE);
 	inv_display_comp_set_rms(INV_DISPLAY_COMP (pluginGui->display), pluginGui->rms);
 	inv_display_comp_set_attack(INV_DISPLAY_COMP (pluginGui->display), pluginGui->attack);
 	inv_display_comp_set_release(INV_DISPLAY_COMP (pluginGui->display), pluginGui->release);
@@ -333,6 +334,7 @@ static void port_eventICompGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_s
 					inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_ACTIVE);
 					inv_meter_set_bypass(         INV_METER         (pluginGui->meterGR),      INV_PLUGIN_ACTIVE);
 					inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_ACTIVE);
+					inv_display_comp_set_bypass(  INV_DISPLAY_COMP  (pluginGui->display),      INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRms),      INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobAttack),   INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRelease),  INV_PLUGIN_ACTIVE);
@@ -345,6 +347,7 @@ static void port_eventICompGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_s
 					inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_BYPASS);
 					inv_meter_set_bypass(         INV_METER         (pluginGui->meterGR),      INV_PLUGIN_BYPASS);
 					inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_BYPASS);
+					inv_display_comp_set_bypass(  INV_DISPLAY_COMP  (pluginGui->display),      INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRms),      INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobAttack),   INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRelease),  INV_PLUGIN_BYPASS);
