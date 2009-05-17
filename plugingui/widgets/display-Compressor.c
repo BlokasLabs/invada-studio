@@ -260,7 +260,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 	float 		gain;	
 
 	gint		i;
-	float		y;
+	float		y,threshsig;
 	cairo_t 	*cr;
 	GtkStyle	*style;
 	char		label[50];
@@ -477,11 +477,16 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_clip(cr);
 
 		/* compressed signal */
+
+		// gain change at +6 db
+		threshsig=pow(10,threshold/20);
+		y = 20*log10(threshsig+((2-threshsig)/ratio));
+
 		cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
 		cairo_set_line_width(cr,2);
 		cairo_move_to(cr, 406                 , 129-(14*gain/6));
 		cairo_line_to(cr, 546+(20*threshold/6), 31-(14*gain/6)-(14*threshold/6));
-		cairo_line_to(cr, 566                 , 31-(14*gain/6)-(14*threshold/6)+(14*(threshold-6)/(ratio*6)));
+		cairo_line_to(cr, 566                 , 31-(14*gain/6)-(14*y/6)); 
 		cairo_stroke(cr);
 
 		/* original signal */

@@ -860,12 +860,12 @@ convertParam(unsigned long param, float value, double sr) {
 				result= 1;
 			break;
 		case IFLANGE_CYCLE:
-			if (value < 1)
-				result = PI_2/sr;
-			else if (value <= 1000.0)
+			if (value < 0.5)
+				result = PI_2/(0.5*sr);
+			else if (value <= 500.0)
 				result = PI_2/(value * sr);
 			else
-				result = PI_2/(1000.0 * sr);
+				result = PI_2/(500.0 * sr);
 			break;
 		case IFLANGE_PHASE:
 			if(value<-180)

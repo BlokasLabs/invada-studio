@@ -197,9 +197,10 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_size(INV_KNOB (pluginGui->knobCycle),     INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobCycle),    INV_KNOB_CURVE_LOG);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobCycle), INV_KNOB_MARKINGS_4); 
+	inv_knob_set_human(INV_KNOB (pluginGui->knobCycle)); 
 	inv_knob_set_units(INV_KNOB (pluginGui->knobCycle),    "s");
-	inv_knob_set_min(INV_KNOB (pluginGui->knobCycle),      1.0);
-	inv_knob_set_max(INV_KNOB (pluginGui->knobCycle),      1000.0);
+	inv_knob_set_min(INV_KNOB (pluginGui->knobCycle),      0.5);
+	inv_knob_set_max(INV_KNOB (pluginGui->knobCycle),      500.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobCycle),    pluginGui->cycle);
 	g_signal_connect_after(G_OBJECT(pluginGui->knobCycle),"motion-notify-event",G_CALLBACK(on_inv_flange_cycle_knob_motion),pluginGui);
 

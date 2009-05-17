@@ -18,6 +18,7 @@
 
 */
 
+static void on_inv_comp_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_comp_rms_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_comp_attack_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_comp_release_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);

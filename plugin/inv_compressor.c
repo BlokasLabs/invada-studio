@@ -37,6 +37,7 @@ typedef struct {
 
 
 	/* Ports */
+	float * ControlBypass;  
 	float * ControlRms;         
 	float * ControlAttack;
 	float * ControlRelease;  
@@ -58,6 +59,7 @@ typedef struct {
 	double SampleRate; 
 
 	/* these params are used to remember the control values and the converted (internal) value to save a bit of cpu converting them every run */
+	float LastBypass;  
 	float LastRms;         
 	float LastAttack;
 	float LastRelease;  
@@ -66,6 +68,7 @@ typedef struct {
 	float LastGain;
 	float LastNoClip;
 
+	float ConvertedBypass;   
 	float ConvertedRms;         
 	float ConvertedAttack;
 	float ConvertedRelease;  
@@ -104,6 +107,9 @@ static void connectPortIComp(LV2_Handle instance, uint32_t port, void *data)
 	IComp *plugin = (IComp *)instance;
 
 	switch (port) {
+		case ICOMP_BYPASS:
+			plugin->ControlBypass = data;
+			break;
 		case ICOMP_RMS:
 			plugin->ControlRms = data;
 			break;
@@ -168,19 +174,21 @@ static void activateIComp(LV2_Handle instance)
 	plugin->Rms=0;
 
 	/* default values */
-	plugin->LastRms    =0.5;         
-	plugin->LastAttack =0.00001;
-	plugin->LastRelease=0.001;  
-	plugin->LastThresh =0; 
-	plugin->LastRatio  =1;
-	plugin->LastGain   =0;
-	plugin->LastNoClip =1;
-	plugin->EnvInLLast = 0; 
-	plugin->EnvOutLLast = 0; 
-	plugin->EnvInRLast = 0; 
-	plugin->EnvOutRLast = 0; 
-	plugin->EnvDriveLast = 0; 
+	plugin->LastBypass	= 0.0;   
+	plugin->LastRms    	= 0.5;         
+	plugin->LastAttack 	= 0.00001;
+	plugin->LastRelease	= 0.001;  
+	plugin->LastThresh 	= 0.0; 
+	plugin->LastRatio  	= 1.0;
+	plugin->LastGain   	= 0.0;
+	plugin->LastNoClip 	= 1.0;
+	plugin->EnvInLLast 	= 0.0; 
+	plugin->EnvOutLLast 	= 0.0; 
+	plugin->EnvInRLast 	= 0.0; 
+	plugin->EnvOutRLast 	= 0.0; 
+	plugin->EnvDriveLast 	= 0.0; 
 
+	plugin->ConvertedBypass =convertParam(ICOMP_BYPASS,  plugin->LastBypass,  plugin->SampleRate);
 	plugin->ConvertedRms    =convertParam(ICOMP_RMS,     plugin->LastRms,     plugin->SampleRate);
 	plugin->ConvertedAttack =convertParam(ICOMP_ATTACK,  plugin->LastAttack,  plugin->SampleRate);
 	plugin->ConvertedRelease=convertParam(ICOMP_RELEASE, plugin->LastRelease, plugin->SampleRate);
@@ -198,7 +206,7 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float OutL,EnvInL,EnvOutL,EnvDrive;
 	float fAudioL,fEnvelope,fRms,fRmsSize;
-	float fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
+	float fBypass,fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
 	float drive=0;
 	unsigned long lSampleIndex;
 			   
@@ -206,6 +214,7 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	pParamFunc = &convertParam;
 
 	/* see if any params have changed */
+	checkParamChange(ICOMP_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_RMS,    plugin->ControlRms,    &(plugin->LastRms),    &(plugin->ConvertedRms),    plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_ATTACK, plugin->ControlAttack, &(plugin->LastAttack), &(plugin->ConvertedAttack), plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_RELEASE,plugin->ControlRelease,&(plugin->LastRelease),&(plugin->ConvertedRelease),plugin->SampleRate, pParamFunc);
@@ -214,6 +223,7 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	checkParamChange(ICOMP_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
+	fBypass   = plugin->ConvertedBypass;
 	fRmsSize  = plugin->ConvertedRms;
 	fAttack   = plugin->ConvertedAttack;
 	fRelease  = plugin->ConvertedRelease;
@@ -232,24 +242,38 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	pfAudioInputL  = plugin->AudioInputBufferL;
 	pfAudioOutputL = plugin->AudioOutputBufferL;
 
-	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
-	{
-		fAudioL=*(pfAudioInputL++);
-		// work out the rms
-		fRms = sqrt(( (fRmsSize-1)*fRms*fRms + fAudioL*fAudioL ) / fRmsSize); 
-		// work out the envelope
-		fEnvelope += (fRms > fEnvelope) ? fAttack * (fRms - fEnvelope) : fRelease * (fRms - fEnvelope);
-		// work out the gain	  
-		fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0) )) : 1;
+	if(fBypass==0) { 
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
+		{
+			fAudioL=*(pfAudioInputL++);
+			// work out the rms
+			fRms = sqrt(( (fRmsSize-1)*fRms*fRms + fAudioL*fAudioL ) / fRmsSize); 
+			// work out the envelope
+			fEnvelope += (fRms > fEnvelope) ? fAttack * (fRms - fEnvelope) : fRelease * (fRms - fEnvelope);
+			// work out the gain	  
+			fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0) )) : 1;
 
-		OutL= fNoClip > 0 ? InoClip(fAudioL*fCompGain * fGain,&drive ) : fAudioL*fCompGain * fGain ;
-		*(pfAudioOutputL++) =OutL;
+			OutL= fNoClip > 0 ? InoClip(fAudioL*fCompGain * fGain,&drive ) : fAudioL*fCompGain * fGain ;
+			*(pfAudioOutputL++) =OutL;
 
-		//evelope on in and out for meters
-		EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			//evelope on in and out for meters
+			EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 
+		}
+	} else {
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+
+			*(pfAudioOutputL++) = *(pfAudioInputL++);
+		}
+		//zero everything
+		fRms 		= 0.0;
+		fEnvelope 	= 0.0;
+		fCompGain	= 1.0;
+		EnvInL  	= 0.0;
+		EnvOutL 	= 0.0;
+		EnvDrive 	= 0.0;
 	}
 	// remember for next time round
 	plugin->Envelope = (fabs(fEnvelope)<1.0e-10)  ? 0.f : fEnvelope; 
@@ -275,7 +299,7 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;
 	float fAudioL,fAudioR,fMaxAudio,fEnvelope,fRms,fRmsSize;
-	float fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
+	float fBypass,fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
 	float OutL,EnvInL,EnvOutL;
 	float OutR,EnvInR,EnvOutR;
 	float drive,EnvDrive;
@@ -287,6 +311,7 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	pParamFunc = &convertParam;
 			   
 	/* see if any params have changed */
+	checkParamChange(ICOMP_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_RMS,    plugin->ControlRms,    &(plugin->LastRms),    &(plugin->ConvertedRms),    plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_ATTACK, plugin->ControlAttack, &(plugin->LastAttack), &(plugin->ConvertedAttack), plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_RELEASE,plugin->ControlRelease,&(plugin->LastRelease),&(plugin->ConvertedRelease),plugin->SampleRate, pParamFunc);
@@ -295,6 +320,7 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	checkParamChange(ICOMP_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
+	fBypass   = plugin->ConvertedBypass;
 	fRmsSize  = plugin->ConvertedRms;
 	fAttack   = plugin->ConvertedAttack;
 	fRelease  = plugin->ConvertedRelease;
@@ -317,33 +343,51 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	pfAudioOutputL = plugin->AudioOutputBufferL;
 	pfAudioOutputR = plugin->AudioOutputBufferR;
 	
-	for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
-	{
-		fAudioL=*(pfAudioInputL++);
-		fAudioR=*(pfAudioInputR++);
+	if(fBypass==0) { 
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) 
+		{
+			fAudioL=*(pfAudioInputL++);
+			fAudioR=*(pfAudioInputR++);
 
-		// work out the rms
-		fMaxAudio = fabs(fAudioL) > fabs(fAudioR) ? fAudioL : fAudioR;
-		fRms = sqrt(( (fRmsSize-1)*fRms*fRms + fMaxAudio*fMaxAudio ) / fRmsSize); 
-		// work out the envelope
-		fEnvelope += (fRms > fEnvelope) ? fAttack * (fRms - fEnvelope) : fRelease * (fRms - fEnvelope);
-		// work out the gain	  
-		fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0))) : 1;
+			// work out the rms
+			fMaxAudio = fabs(fAudioL) > fabs(fAudioR) ? fAudioL : fAudioR;
+			fRms = sqrt(( (fRmsSize-1)*fRms*fRms + fMaxAudio*fMaxAudio ) / fRmsSize); 
+			// work out the envelope
+			fEnvelope += (fRms > fEnvelope) ? fAttack * (fRms - fEnvelope) : fRelease * (fRms - fEnvelope);
+			// work out the gain	  
+			fCompGain = (fEnvelope > fThresh) ? (pow((fEnvelope/fThresh), ((1.0/fRatio)-1.0))) : 1;
 
-		OutL = fNoClip > 0 ? InoClip(fAudioL*fCompGain*fGain,&driveL) : fAudioL*fCompGain*fGain ;
-		OutR = fNoClip > 0 ? InoClip(fAudioR*fCompGain*fGain,&driveR) : fAudioR*fCompGain*fGain ;
-		*(pfAudioOutputL++) = OutL ;
-		*(pfAudioOutputR++) = OutR ;
+			OutL = fNoClip > 0 ? InoClip(fAudioL*fCompGain*fGain,&driveL) : fAudioL*fCompGain*fGain ;
+			OutR = fNoClip > 0 ? InoClip(fAudioR*fCompGain*fGain,&driveR) : fAudioR*fCompGain*fGain ;
+			*(pfAudioOutputL++) = OutL ;
+			*(pfAudioOutputR++) = OutR ;
 
-		//evelope on in and out for meters
-		EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-		EnvInR  += IEnvelope(fAudioR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-		EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			//evelope on in and out for meters
+			EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
+			EnvInR  += IEnvelope(fAudioR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 
-		drive = driveL > driveR ? driveL : driveR;
-		EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			drive = driveL > driveR ? driveL : driveR;
+			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+		}
+	} else {
+		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
+
+			*(pfAudioOutputL++) = *(pfAudioInputL++);
+			*(pfAudioOutputR++) = *(pfAudioInputR++);
+		}
+		//zero everything
+		fRms 		= 0.0;
+		fEnvelope 	= 0.0;
+		fCompGain	= 1.0;
+		EnvInL  	= 0.0;
+		EnvInR  	= 0.0;
+		EnvOutL 	= 0.0;
+		EnvOutR 	= 0.0;
+		EnvDrive 	= 0.0;
 	}
+
 	// remember for next time round
 	plugin->Envelope = (fabs(fEnvelope)<1.0e-10)  ? 0.f : fEnvelope; 
 	plugin->Rms = (fabs(fRms)<1.0e-10)  ? 0.f : fRms; 
@@ -457,6 +501,7 @@ float convertParam(unsigned long param, float value, double sr) {
 				result= pow(10, 1.8);
 			break;
 		case ICOMP_NOCLIP:
+		case ICOMP_BYPASS:
 			if(value<=0.0)
 				result= 0; 
 			else
