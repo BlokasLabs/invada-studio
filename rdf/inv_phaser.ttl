@@ -5,88 +5,88 @@
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
 
-<http://invadarecords.com/plugins/lv2/flange/gui>
+<http://invadarecords.com/plugins/lv2/phaser/gui>
     a uiext:GtkUI;
-    uiext:binary <inv_flange_gui.so>;
+    uiext:binary <inv_phaser_gui.so>;
     uiext:requiredFeature uiext:makeResident ;
 
     uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/mono> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/mono> ;
         uiext:portIndex 6 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/mono> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/mono> ;
         uiext:portIndex 7 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/mono> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/mono> ;
         uiext:portIndex 8 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/mono> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/mono> ;
         uiext:portIndex 11 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/mono> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/mono> ;
         uiext:portIndex 12 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/mono> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/mono> ;
         uiext:portIndex 14 ;
     ] ;
 
 
     uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/stereo> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/stereo> ;
         uiext:portIndex 6 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/stereo> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/stereo> ;
         uiext:portIndex 7 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/stereo> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/stereo> ;
         uiext:portIndex 8 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/stereo> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/stereo> ;
         uiext:portIndex 11 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/stereo> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/stereo> ;
         uiext:portIndex 12 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/stereo> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/stereo> ;
         uiext:portIndex 14 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/stereo> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/stereo> ;
         uiext:portIndex 16 ;
     ] ;
 
 
     uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/sum> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/sum> ;
         uiext:portIndex 6 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/sum> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/sum> ;
         uiext:portIndex 7 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/sum> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/sum> ;
         uiext:portIndex 8 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/sum> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/sum> ;
         uiext:portIndex 11 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/sum> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/sum> ;
         uiext:portIndex 12 ;
     ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/flange/sum> ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/sum> ;
         uiext:portIndex 14 ;
     ] .
 
 
-<http://invadarecords.com/plugins/lv2/flange/mono> 
-    a lv2:Plugin, lv2:FlangerPlugin ;
-    doap:name "Invada Stereo Flange (mono in)" ;
+<http://invadarecords.com/plugins/lv2/phaser/mono> 
+    a lv2:Plugin, lv2:PhaserPlugin ;
+    doap:name "Invada Stereo Phaser (mono in)" ;
     doap:maintainer [
 	foaf:name "Invada";
-	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/flange/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/phaser/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -194,17 +194,17 @@
 	units:unit :db ;
     ] .
 
-<http://invadarecords.com/plugins/lv2/flange/stereo> 
-    a lv2:Plugin, lv2:FlangerPlugin ;
-    doap:name "Invada Stereo Flange (stereo in)" ;
+<http://invadarecords.com/plugins/lv2/phaser/stereo> 
+    a lv2:Plugin, lv2:PhaserPlugin ;
+    doap:name "Invada Stereo Phaser (stereo in)" ;
     doap:maintainer [
 	foaf:name "Invada";
-	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/flange/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/phaser/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -326,17 +326,17 @@
     ] .
 
 
-<http://invadarecords.com/plugins/lv2/flange/sum> 
-    a lv2:Plugin, lv2:FlangerPlugin ;
-    doap:name "Invada Stereo Flange (sum L+R in)" ;
+<http://invadarecords.com/plugins/lv2/phaser/sum> 
+    a lv2:Plugin, lv2:PhaserPlugin ;
+    doap:name "Invada Stereo Phaser (sum L+R in)" ;
     doap:maintainer [
 	foaf:name "Invada";
-	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/flange/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/phaser/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;

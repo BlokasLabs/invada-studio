@@ -248,12 +248,12 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 
 	switch(mode) {
 		case INV_METER_DRAW_MODE_TOZERO:
-			Lpos = (gint)(INV_METER(widget)->LdB+60.01);  /* -60 to +6 db step 1db  = 67 points*/
-			Rpos = (gint)(INV_METER(widget)->RdB+60.01);
+			Lpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(INV_METER(widget)->LdB+60.01) : -90 ;  /* -60 to +6 db step 1db  = 67 points*/
+			Rpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(INV_METER(widget)->RdB+60.01) : -90 ;
 			break;
 		case INV_METER_DRAW_MODE_FROMZERO:
-			Lpos = (gint)(2*(INV_METER(widget)->LdB)+71.01); /* -35.5 to 0 db step 0.5db = 71 points */
-			Rpos = (gint)(2*(INV_METER(widget)->RdB)+71.01);
+			Lpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->LdB)+71.01): 0 ; /* -35.5 to 0 db step 0.5db = 71 points */
+			Rpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->RdB)+71.01): 0 ;
 			break;
 	}
 

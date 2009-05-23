@@ -20,8 +20,8 @@
 GLADES		=	inv_compressor_gui.xml \
 			inv_erreverb_gui.xml \
 			inv_filter_gui.xml \
-			inv_flange_gui.xml \
 			inv_input_gui.xml \
+			inv_phaser_gui.xml \
 			inv_tube_gui.xml \
 
 
@@ -32,8 +32,8 @@ all:	$(GLADES)
 inv_compressor_gui.xml:	inv_compressor_gui.glade
 inv_erreverb_gui.xml:	inv_erreverb_gui.glade
 inv_filter_gui.xml:	inv_filter_gui.glade
-inv_flange_gui.xml:	inv_flange_gui.glade
 inv_input_gui.xml:	inv_input_gui.glade
+inv_phaser_gui.xml:	inv_phaser_gui.glade
 inv_tube_gui.xml:	inv_tube_gui.glade
 
 

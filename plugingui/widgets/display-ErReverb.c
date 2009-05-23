@@ -487,10 +487,10 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 
 		sx=0;
 		sy=0;
-		minx=99999999999;
-		maxx=-99999999999;
-		miny=99999999999;
-		maxy=-99999999999;
+		minx=9999999;
+		maxx=-9999999;
+		miny=9999999;
+		maxy=-9999999;
 		//project to screen
 		for(i=0;i<8;i++) {
 			inv_display_err_screen(&room[i],&roomS[i],&camera,&lookat);
@@ -617,7 +617,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 
-		min_delay=999999999999;
+		min_delay=9999999;
 		max_delay=0;
 		max_gain=0;
 		er_size=calculateIReverbER(er, MAX_ER, w, l, h, sLR, sFB, dLR, dFB, 1.5, diffusion, SPEED_OF_SOUND);
@@ -704,7 +704,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 
 		sw=pow(w,0.5);
 		sl=pow(l,0.5);
-		scale=9999999999999;
+		scale=9999999;
 		scale = 290/sw < scale ? 290/sw : scale;
 		scale = 268/sl < scale ? 268/sl : scale;
 
@@ -796,16 +796,16 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		if(l<w) {
 			// horz
 			if(sLR<0.0) {
-				cairo_move_to(cr,xc+7,yc+extents.height/2);
+				cairo_move_to(cr,xc+7,yc-extents.y_bearing/2);
 			} else {
-				cairo_move_to(cr,xc-7-extents.width,yc+extents.height/2);
+				cairo_move_to(cr,xc-7-extents.width,yc-extents.y_bearing/2);
 			}
 		} else {
 			// vert
 			if(sFB<0.75) {
 				cairo_move_to(cr,xc-extents.width/2,yc-6);
 			} else {
-				cairo_move_to(cr,xc-extents.width/2,yc+5+extents.height);
+				cairo_move_to(cr,xc-extents.width/2,yc+5-extents.y_bearing);
 			}
 		}
 		cairo_show_text(cr,label);
@@ -834,16 +834,16 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		if(l<w) {
 			// horz
 			if(dLR<0.0) {
-				cairo_move_to(cr,xc+7,yc-1+extents.height/2);
+				cairo_move_to(cr,xc+7,yc-1-extents.y_bearing/2);
 			} else {
-				cairo_move_to(cr,xc-7-extents.width,yc-1+extents.height/2);
+				cairo_move_to(cr,xc-7-extents.width,yc-1-extents.y_bearing/2);
 			}
 		} else {
 			// vert
 			if(dFB<0.25) {
 				cairo_move_to(cr,xc-extents.width/2,yc-6);
 			} else {
-				cairo_move_to(cr,xc-extents.width/2,yc+5+extents.height);
+				cairo_move_to(cr,xc-extents.width/2,yc+5-extents.y_bearing);
 			}
 		}
 		cairo_show_text(cr,label);
@@ -1035,7 +1035,7 @@ inv_display_err_find_active_dot(float l, float w, float sLR, float sFB, float dL
 
 	sw=pow(w,0.5);
 	sl=pow(l,0.5);
-	scale=9999999999999;
+	scale=9999999;
 	scale = 290/sw < scale ? 290/sw : scale;
 	scale = 268/sl < scale ? 268/sl : scale;
 
@@ -1067,7 +1067,7 @@ inv_display_err_update_active_dot(gint dot, float l, float w, float x, float y, 
 	float sl,sw,scale;
 	sw=pow(w,0.5);
 	sl=pow(l,0.5);
-	scale=9999999999999;
+	scale=9999999;
 	scale = 290/sw < scale ? 290/sw : scale;
 	scale = 268/sl < scale ? 268/sl : scale;
 

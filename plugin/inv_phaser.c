@@ -1,6 +1,6 @@
 /* 
 
-    This LADSPA plugin provides an early reflection reverb from a mono source
+    This LADSPA plugin provides phaser plugins
 
     (c) Fraser Stuart 2009
 
@@ -47,11 +47,11 @@
 #include <math.h>
 #include <lv2.h>
 #include "library/common.h"
-#include "inv_flange.h"
+#include "inv_phaser.h"
 
-static LV2_Descriptor *IFlangeMonoDescriptor = NULL;
-static LV2_Descriptor *IFlangeStereoDescriptor = NULL;
-static LV2_Descriptor *IFlangeSumDescriptor = NULL;
+static LV2_Descriptor *IPhaserMonoDescriptor = NULL;
+static LV2_Descriptor *IPhaserStereoDescriptor = NULL;
+static LV2_Descriptor *IPhaserSumDescriptor = NULL;
 
 
 
@@ -112,20 +112,20 @@ typedef struct {
 	float * SpaceLEnd;
 	float * SpaceREnd;
 
-} IFlange;
+} IPhaser;
 
 
 static LV2_Handle 
-instantiateIFlange(const LV2_Descriptor *descriptor, double s_rate, const char *path, const LV2_Feature * const* features)
+instantiateIPhaser(const LV2_Descriptor *descriptor, double s_rate, const char *path, const LV2_Feature * const* features)
 {
-	IFlange *plugin = (IFlange *)malloc(sizeof(IFlange));
+	IPhaser *plugin = (IPhaser *)malloc(sizeof(IPhaser));
 	if(plugin==NULL)
 		return NULL;
 
 	/* set some initial params */
 	plugin->SampleRate=s_rate;
 	plugin->Offset =  s_rate / 10000;  /* 10khz wavelength */
-	plugin->SpaceSize = FLANGE_SPACE_SIZE * s_rate / 1000;
+	plugin->SpaceSize = PHASER_SPACE_SIZE * s_rate / 1000;
 
 	/* the delay space */
 	if((plugin->SpaceL  = (float *)malloc(sizeof(float) * plugin->SpaceSize))==NULL)
@@ -139,59 +139,59 @@ instantiateIFlange(const LV2_Descriptor *descriptor, double s_rate, const char *
 
 
 static void 
-connectPortIFlange(LV2_Handle instance, uint32_t port, void *data)
+connectPortIPhaser(LV2_Handle instance, uint32_t port, void *data)
 {
-	IFlange *plugin = (IFlange *)instance;
+	IPhaser *plugin = (IPhaser *)instance;
 	switch (port) {
-		case IFLANGE_BYPASS:
+		case IPHASER_BYPASS:
 			plugin->ControlBypass = data;
 			break;
-		case IFLANGE_CYCLE:
+		case IPHASER_CYCLE:
 			plugin->ControlCycle = data;
 			break;
-		case IFLANGE_PHASE:
+		case IPHASER_PHASE:
 			plugin->ControlPhase = data;
 			break;
-		case IFLANGE_WIDTH:
+		case IPHASER_WIDTH:
 			plugin->ControlWidth = data;
 			break;
-		case IFLANGE_DEPTH:
+		case IPHASER_DEPTH:
 			plugin->ControlDepth = data;
 			break;
-		case IFLANGE_NOCLIP:
+		case IPHASER_NOCLIP:
 			plugin->ControlNoClip = data;
 			break;
-		case IFLANGE_LAMP_L:
+		case IPHASER_LAMP_L:
 			plugin->LampLfoL = data;
 			break;
-		case IFLANGE_LAMP_R:
+		case IPHASER_LAMP_R:
 			plugin->LampLfoR = data;
 			break;
-		case IFLANGE_LAMP_NOCLIP:
+		case IPHASER_LAMP_NOCLIP:
 			plugin->LampNoClip = data;
 			break;
-		case IFLANGE_AUDIO_INL:
+		case IPHASER_AUDIO_INL:
 			plugin->AudioInputBufferL = data;
 			break;
-		case IFLANGE_AUDIO_INR:
+		case IPHASER_AUDIO_INR:
 			plugin->AudioInputBufferR = data;
 			break;
-		case IFLANGE_AUDIO_OUTL:
+		case IPHASER_AUDIO_OUTL:
 			plugin->AudioOutputBufferL = data;
 			break;
-		case IFLANGE_AUDIO_OUTR:
+		case IPHASER_AUDIO_OUTR:
 			plugin->AudioOutputBufferR = data;
 			break;
-		case IFLANGE_METER_INL:
+		case IPHASER_METER_INL:
 			plugin->MeterInputL = data;
 			break;
-		case IFLANGE_METER_INR:
+		case IPHASER_METER_INR:
 			plugin->MeterInputR = data;
 			break;
-		case IFLANGE_METER_OUTL:
+		case IPHASER_METER_OUTL:
 			plugin->MeterOutputL = data;
 			break;
-		case IFLANGE_METER_OUTR:
+		case IPHASER_METER_OUTR:
 			plugin->MeterOutputR = data;
 			break;
 	}
@@ -199,9 +199,9 @@ connectPortIFlange(LV2_Handle instance, uint32_t port, void *data)
 
 
 static void 
-activateIFlange(LV2_Handle instance) 
+activateIPhaser(LV2_Handle instance) 
 {
-	IFlange *plugin = (IFlange *)instance;
+	IPhaser *plugin = (IPhaser *)instance;
 
 	unsigned long i;
 	float * p;
@@ -237,17 +237,17 @@ activateIFlange(LV2_Handle instance)
 
 	plugin->AngleLast 	= 0; 
 
-	plugin->ConvertedBypass = convertParam(IFLANGE_BYPASS, plugin->LastBypass, plugin->SampleRate);  
-	plugin->ConvertedCycle  = convertParam(IFLANGE_CYCLE,  plugin->LastCycle,  plugin->SampleRate);  
-	plugin->ConvertedPhase  = convertParam(IFLANGE_PHASE,  plugin->LastPhase,  plugin->SampleRate);  
-	plugin->ConvertedWidth  = convertParam(IFLANGE_WIDTH,  plugin->LastWidth,  plugin->SampleRate);  
-	plugin->ConvertedDepth  = convertParam(IFLANGE_DEPTH,  plugin->LastDepth,  plugin->SampleRate);  
-	plugin->ConvertedNoClip = convertParam(IFLANGE_NOCLIP, plugin->LastNoClip, plugin->SampleRate);  
+	plugin->ConvertedBypass = convertParam(IPHASER_BYPASS, plugin->LastBypass, plugin->SampleRate);  
+	plugin->ConvertedCycle  = convertParam(IPHASER_CYCLE,  plugin->LastCycle,  plugin->SampleRate);  
+	plugin->ConvertedPhase  = convertParam(IPHASER_PHASE,  plugin->LastPhase,  plugin->SampleRate);  
+	plugin->ConvertedWidth  = convertParam(IPHASER_WIDTH,  plugin->LastWidth,  plugin->SampleRate);  
+	plugin->ConvertedDepth  = convertParam(IPHASER_DEPTH,  plugin->LastDepth,  plugin->SampleRate);  
+	plugin->ConvertedNoClip = convertParam(IPHASER_NOCLIP, plugin->LastNoClip, plugin->SampleRate);  
 }
 
 
 static void 
-runMonoIFlange(LV2_Handle instance, uint32_t SampleCount) 
+runMonoIPhaser(LV2_Handle instance, uint32_t SampleCount) 
 {
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
@@ -274,16 +274,16 @@ runMonoIFlange(LV2_Handle instance, uint32_t SampleCount)
 	float * SpaceLEnd;
 	float * SpaceREnd;
 
-	IFlange *plugin = (IFlange *)instance;
+	IPhaser *plugin = (IPhaser *)instance;
 	pParamFunc = &convertParam;
 
 	/* check if any other params have changed */
-	checkParamChange(IFLANGE_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
 
 	fBypass         = plugin->ConvertedBypass;
@@ -416,7 +416,7 @@ runMonoIFlange(LV2_Handle instance, uint32_t SampleCount)
 
 
 static void 
-runStereoIFlange(LV2_Handle instance, uint32_t SampleCount) 
+runStereoIPhaser(LV2_Handle instance, uint32_t SampleCount) 
 {
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
@@ -444,16 +444,16 @@ runStereoIFlange(LV2_Handle instance, uint32_t SampleCount)
 	float * SpaceLEnd;
 	float * SpaceREnd;
 
-	IFlange *plugin = (IFlange *)instance;
+	IPhaser *plugin = (IPhaser *)instance;
 	pParamFunc = &convertParam;
 
 	/* check if any other params have changed */
-	checkParamChange(IFLANGE_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
 
 	fBypass         = plugin->ConvertedBypass;
@@ -595,7 +595,7 @@ runStereoIFlange(LV2_Handle instance, uint32_t SampleCount)
 
 
 static void 
-runSumIFlange(LV2_Handle instance, uint32_t SampleCount) 
+runSumIPhaser(LV2_Handle instance, uint32_t SampleCount) 
 {
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
 	float * pfAudioInputL;
@@ -623,16 +623,16 @@ runSumIFlange(LV2_Handle instance, uint32_t SampleCount)
 	float * SpaceLEnd;
 	float * SpaceREnd;
 
-	IFlange *plugin = (IFlange *)instance;
+	IPhaser *plugin = (IPhaser *)instance;
 	pParamFunc = &convertParam;
 
 	/* check if any other params have changed */
-	checkParamChange(IFLANGE_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IFLANGE_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
+	checkParamChange(IPHASER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
 
 	fBypass         = plugin->ConvertedBypass;
@@ -767,9 +767,9 @@ runSumIFlange(LV2_Handle instance, uint32_t SampleCount)
 
 
 static void 
-cleanupIFlange(LV2_Handle instance)
+cleanupIPhaser(LV2_Handle instance)
 {
-	IFlange *plugin = (IFlange *)instance;
+	IPhaser *plugin = (IPhaser *)instance;
 
 	free(plugin->SpaceL);
 	free(plugin->SpaceR);
@@ -780,41 +780,41 @@ cleanupIFlange(LV2_Handle instance)
 static void 
 init()
 {
-	IFlangeMonoDescriptor =
+	IPhaserMonoDescriptor =
 	 (LV2_Descriptor *)malloc(sizeof(LV2_Descriptor));
 
-	IFlangeMonoDescriptor->URI 		= IFLANGE_MONO_URI;
-	IFlangeMonoDescriptor->activate 	= activateIFlange;
-	IFlangeMonoDescriptor->cleanup 	= cleanupIFlange;
-	IFlangeMonoDescriptor->connect_port 	= connectPortIFlange;
-	IFlangeMonoDescriptor->deactivate 	= NULL;
-	IFlangeMonoDescriptor->instantiate 	= instantiateIFlange;
-	IFlangeMonoDescriptor->run 		= runMonoIFlange;
-	IFlangeMonoDescriptor->extension_data	= NULL;
+	IPhaserMonoDescriptor->URI 		= IPHASER_MONO_URI;
+	IPhaserMonoDescriptor->activate 	= activateIPhaser;
+	IPhaserMonoDescriptor->cleanup 		= cleanupIPhaser;
+	IPhaserMonoDescriptor->connect_port 	= connectPortIPhaser;
+	IPhaserMonoDescriptor->deactivate 	= NULL;
+	IPhaserMonoDescriptor->instantiate 	= instantiateIPhaser;
+	IPhaserMonoDescriptor->run 		= runMonoIPhaser;
+	IPhaserMonoDescriptor->extension_data	= NULL;
 
-	IFlangeStereoDescriptor =
+	IPhaserStereoDescriptor =
 	 (LV2_Descriptor *)malloc(sizeof(LV2_Descriptor));
 
-	IFlangeStereoDescriptor->URI 		= IFLANGE_STEREO_URI;
-	IFlangeStereoDescriptor->activate 	= activateIFlange;
-	IFlangeStereoDescriptor->cleanup 	= cleanupIFlange;
-	IFlangeStereoDescriptor->connect_port 	= connectPortIFlange;
-	IFlangeStereoDescriptor->deactivate 	= NULL;
-	IFlangeStereoDescriptor->instantiate 	= instantiateIFlange;
-	IFlangeStereoDescriptor->run 		= runStereoIFlange;
-	IFlangeStereoDescriptor->extension_data	= NULL;
+	IPhaserStereoDescriptor->URI 		= IPHASER_STEREO_URI;
+	IPhaserStereoDescriptor->activate 	= activateIPhaser;
+	IPhaserStereoDescriptor->cleanup 	= cleanupIPhaser;
+	IPhaserStereoDescriptor->connect_port 	= connectPortIPhaser;
+	IPhaserStereoDescriptor->deactivate 	= NULL;
+	IPhaserStereoDescriptor->instantiate 	= instantiateIPhaser;
+	IPhaserStereoDescriptor->run 		= runStereoIPhaser;
+	IPhaserStereoDescriptor->extension_data	= NULL;
 
-	IFlangeSumDescriptor =
+	IPhaserSumDescriptor =
 	 (LV2_Descriptor *)malloc(sizeof(LV2_Descriptor));
 
-	IFlangeSumDescriptor->URI 		= IFLANGE_SUM_URI;
-	IFlangeSumDescriptor->activate 		= activateIFlange;
-	IFlangeSumDescriptor->cleanup 		= cleanupIFlange;
-	IFlangeSumDescriptor->connect_port 	= connectPortIFlange;
-	IFlangeSumDescriptor->deactivate 	= NULL;
-	IFlangeSumDescriptor->instantiate 	= instantiateIFlange;
-	IFlangeSumDescriptor->run 		= runSumIFlange;
-	IFlangeSumDescriptor->extension_data	= NULL;
+	IPhaserSumDescriptor->URI 		= IPHASER_SUM_URI;
+	IPhaserSumDescriptor->activate 		= activateIPhaser;
+	IPhaserSumDescriptor->cleanup 		= cleanupIPhaser;
+	IPhaserSumDescriptor->connect_port 	= connectPortIPhaser;
+	IPhaserSumDescriptor->deactivate 	= NULL;
+	IPhaserSumDescriptor->instantiate 	= instantiateIPhaser;
+	IPhaserSumDescriptor->run 		= runSumIPhaser;
+	IPhaserSumDescriptor->extension_data	= NULL;
 
 }
 
@@ -822,15 +822,15 @@ init()
 LV2_SYMBOL_EXPORT
 const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
-	if (!IFlangeMonoDescriptor) init();
+	if (!IPhaserMonoDescriptor) init();
 
 	switch (index) {
 		case 0:
-			return IFlangeMonoDescriptor;
+			return IPhaserMonoDescriptor;
 		case 1:
-			return IFlangeStereoDescriptor;
+			return IPhaserStereoDescriptor;
 		case 2:
-			return IFlangeSumDescriptor;
+			return IPhaserSumDescriptor;
 
 		default:
 			return NULL;
@@ -839,11 +839,6 @@ const LV2_Descriptor *lv2_descriptor(uint32_t index)
 
 
 /*****************************************************************************/
-#define IFLANGE_CYCLE		1
-#define IFLANGE_PHASE 		2
-#define IFLANGE_WIDTH 		3
-#define IFLANGE_DEPTH 		4
-#define IFLANGE_NOCLIP 		5
 
 
 float 
@@ -852,14 +847,14 @@ convertParam(unsigned long param, float value, double sr) {
 
 	switch(param)
 	{
-		case IFLANGE_BYPASS:
-		case IFLANGE_NOCLIP:
+		case IPHASER_BYPASS:
+		case IPHASER_NOCLIP:
 			if(value<=0.0)
 				result= 0; 
 			else
 				result= 1;
 			break;
-		case IFLANGE_CYCLE:
+		case IPHASER_CYCLE:
 			if (value < 0.5)
 				result = PI_2/(0.5*sr);
 			else if (value <= 500.0)
@@ -867,7 +862,7 @@ convertParam(unsigned long param, float value, double sr) {
 			else
 				result = PI_2/(500.0 * sr);
 			break;
-		case IFLANGE_PHASE:
+		case IPHASER_PHASE:
 			if(value<-180)
 				result = -PI;
 			else if (value < 180)
@@ -875,7 +870,7 @@ convertParam(unsigned long param, float value, double sr) {
 			else
 				result = PI;
 			break;
-		case IFLANGE_WIDTH:
+		case IPHASER_WIDTH:
 			if(value<1)
 				result = sr/2000.0;
 			else if (value < 15)
@@ -883,7 +878,7 @@ convertParam(unsigned long param, float value, double sr) {
 			else
 				result = 15.0*sr/2000.0;
 			break;
-		case IFLANGE_DEPTH:
+		case IPHASER_DEPTH:
 			if(value<0)
 				result = 0.0;
 			else if (value < 100)

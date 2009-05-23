@@ -18,12 +18,12 @@
 
 */
 
-static void on_inv_flange_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_inv_flange_cycle_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_inv_flange_phase_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_inv_flange_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_inv_flange_depth_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_inv_flange_noclip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_phaser_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_phaser_cycle_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_phaser_phase_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_phaser_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_phaser_depth_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_phaser_noclip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 
 
 

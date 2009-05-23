@@ -20,15 +20,15 @@
 # GENERAL
 
 CC		=	gcc
-LD		=	ld
+LD		=	gcc
 CFLAGS		=	-I. -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
-LDFLAGS		=	-shared -Llibrary -lc -lm  -linv_common
+LDFLAGS		=	-shared -Llibrary -lc -lm  -linv_common -fPIC -DPIC
 
 PLUGINS		=	inv_compressor.so \
                         inv_erreverb.so \
                         inv_filter.so \
-                        inv_flange.so \
                         inv_input.so \
+                        inv_phaser.so \
                         inv_tube.so \
 
 all:	$(PLUGINS)
@@ -39,8 +39,8 @@ all:	$(PLUGINS)
 inv_compressor.so:	inv_compressor.o	inv_compressor.h
 inv_erreverb.so:	inv_erreverb.o		inv_erreverb.h    
 inv_filter.so:		inv_filter.o		inv_filter.h    
-inv_flange.so:		inv_flange.o		inv_flange.h       
 inv_input.so:		inv_input.o		inv_input.h   
+inv_phaser.so:		inv_phaser.o		inv_phaser.h   
 inv_tube.so:		inv_tube.o		inv_tube.h     
      
 

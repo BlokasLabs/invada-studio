@@ -1,6 +1,6 @@
 /* 
 
-    This LV2 extension provides flange gui's
+    This LV2 extension provides phaser gui's
 
     (c) Fraser Stuart 2009
 
@@ -31,11 +31,11 @@
 #include "widgets/lamp.h"
 #include "widgets/meter-peak.h"
 #include "widgets/switch-toggle.h"
-#include "../plugin/inv_flange.h"
-#include "inv_flange_gui.h"
+#include "../plugin/inv_phaser.h"
+#include "inv_phaser_gui.h"
 
 
-static LV2UI_Descriptor *IFlangeGuiDescriptor = NULL;
+static LV2UI_Descriptor *IPhaserGuiDescriptor = NULL;
 
 typedef struct {
 	GtkWidget	*windowContainer;
@@ -64,14 +64,14 @@ typedef struct {
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
 
-} IFlangeGui;
+} IPhaserGui;
 
 
 
 static LV2UI_Handle 
-instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
+instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
-	IFlangeGui *pluginGui = (IFlangeGui *)malloc(sizeof(IFlangeGui));
+	IPhaserGui *pluginGui = (IPhaserGui *)malloc(sizeof(IPhaserGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -89,14 +89,14 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	gtk_init (NULL,NULL);
 
 	builder = gtk_builder_new ();
-	file = g_strdup_printf("%s/gtk/inv_flange_gui.xml",bundle_path);
+	file = g_strdup_printf("%s/gtk/inv_phaser_gui.xml",bundle_path);
 	gtk_builder_add_from_file (builder, file, &err);
 	free(file);
 
-	window = GTK_WIDGET (gtk_builder_get_object (builder, "flange_window"));
+	window = GTK_WIDGET (gtk_builder_get_object (builder, "phaser_window"));
 
 	/* get pointers to some useful widgets from the design */
-	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "flange_container"));
+	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "phaser_container"));
 	pluginGui->heading = GTK_WIDGET (gtk_builder_get_object (builder, "label_heading"));
 
 	/* add custom widgets */
@@ -146,19 +146,19 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 
 
 	/* customise for the plugin */
-	if(!strcmp(plugin_uri,IFLANGE_MONO_URI)) 
+	if(!strcmp(plugin_uri,IPHASER_MONO_URI)) 
 	{
-		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Stereo Flange (mono in)</b>");
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Stereo Phaser (mono in)</b>");
 		pluginGui->InChannels	= 1;
 	}
-	if(!strcmp(plugin_uri,IFLANGE_STEREO_URI)) 
+	if(!strcmp(plugin_uri,IPHASER_STEREO_URI)) 
 	{
-		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Stereo Flange (stereo in)</b>");
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Stereo Phaser (stereo in)</b>");
 		pluginGui->InChannels	= 2;
 	}
-	if(!strcmp(plugin_uri,IFLANGE_SUM_URI)) 
+	if(!strcmp(plugin_uri,IPHASER_SUM_URI)) 
 	{
-		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Stereo Flange (sum L+R in)</b>");
+		gtk_label_set_markup (GTK_LABEL (pluginGui->heading), "<b>Stereo Phaser (sum L+R in)</b>");
 		pluginGui->InChannels	= 1;
 	}
 
@@ -179,7 +179,7 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_flange_bypass_toggle_button_release),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_phaser_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
 	inv_meter_set_mode(INV_METER (pluginGui->meterIn), INV_METER_DRAW_MODE_TOZERO);
@@ -202,7 +202,7 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobCycle),      0.5);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobCycle),      500.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobCycle),    pluginGui->cycle);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobCycle),"motion-notify-event",G_CALLBACK(on_inv_flange_cycle_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobCycle),"motion-notify-event",G_CALLBACK(on_inv_phaser_cycle_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobPhase), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobPhase), INV_KNOB_SIZE_MEDIUM);
@@ -212,7 +212,7 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobPhase), -180);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobPhase), 180);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobPhase), pluginGui->phase);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobPhase),"motion-notify-event",G_CALLBACK(on_inv_flange_phase_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobPhase),"motion-notify-event",G_CALLBACK(on_inv_phaser_phase_knob_motion),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampL),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampL),1.0);
@@ -228,7 +228,7 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobWidth), 1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobWidth), 15.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_flange_width_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_phaser_width_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobDepth), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobDepth), INV_KNOB_SIZE_MEDIUM);
@@ -238,7 +238,7 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobDepth), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobDepth), 100.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDepth), pluginGui->depth);
-	g_signal_connect_after(G_OBJECT(pluginGui->knobDepth),"motion-notify-event",G_CALLBACK(on_inv_flange_depth_knob_motion),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->knobDepth),"motion-notify-event",G_CALLBACK(on_inv_phaser_depth_knob_motion),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF, 0.0);
@@ -248,7 +248,7 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
-	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_flange_noclip_toggle_button_release),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_phaser_noclip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),3.0);
@@ -267,16 +267,16 @@ instantiateIFlangeGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 
 
 static void 
-cleanupIFlangeGui(LV2UI_Handle ui)
+cleanupIPhaserGui(LV2UI_Handle ui)
 {
 	return;
 }
 
 
 static void 
-port_eventIFlangeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
+port_eventIPhaserGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_t format, const void*  buffer)
 {
-	IFlangeGui *pluginGui = (IFlangeGui *)ui;
+	IPhaserGui *pluginGui = (IPhaserGui *)ui;
 
 	float value;
 
@@ -285,7 +285,7 @@ port_eventIFlangeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint3
 		value=* (float *) buffer;
 		switch(port)
 		{
-			case IFLANGE_BYPASS:
+			case IPHASER_BYPASS:
 				pluginGui->bypass=value;
 				if(value <= 0.0) {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
@@ -307,41 +307,41 @@ port_eventIFlangeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint3
 					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
 				}
 				break;
-			case IFLANGE_CYCLE:
+			case IPHASER_CYCLE:
 				pluginGui->cycle=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobCycle), pluginGui->cycle);
 				break;
-			case IFLANGE_PHASE:
+			case IPHASER_PHASE:
 				pluginGui->phase=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobPhase), pluginGui->phase);
 				break;
-			case IFLANGE_WIDTH:
+			case IPHASER_WIDTH:
 				pluginGui->width=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
 				break;
-			case IFLANGE_DEPTH:
+			case IPHASER_DEPTH:
 				pluginGui->depth=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobDepth), pluginGui->depth);
 				break;
-			case IFLANGE_METER_INL:
+			case IPHASER_METER_INL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterIn),value);
 				break;
-			case IFLANGE_METER_INR:
+			case IPHASER_METER_INR:
 				if(pluginGui->InChannels==2) inv_meter_set_RdB(INV_METER (pluginGui->meterIn),value);
 				break;
-			case IFLANGE_METER_OUTL:
+			case IPHASER_METER_OUTL:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterOut),value);
 				break;
-			case IFLANGE_METER_OUTR:
+			case IPHASER_METER_OUTR:
 				inv_meter_set_RdB(INV_METER (pluginGui->meterOut),value);
 				break;
-			case IFLANGE_LAMP_L:
+			case IPHASER_LAMP_L:
 				inv_lamp_set_value(INV_LAMP (pluginGui->lampL),value);
 				break;
-			case IFLANGE_LAMP_R:
+			case IPHASER_LAMP_R:
 				inv_lamp_set_value(INV_LAMP (pluginGui->lampR),value);
 				break;
-			case IFLANGE_LAMP_NOCLIP:
+			case IPHASER_LAMP_NOCLIP:
 				inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),value);
 				break;
 		}
@@ -352,25 +352,25 @@ port_eventIFlangeGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint3
 static void 
 init()
 {
-	IFlangeGuiDescriptor =
+	IPhaserGuiDescriptor =
 	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
 
-	IFlangeGuiDescriptor->URI 		= IFLANGE_GUI_URI;
-	IFlangeGuiDescriptor->instantiate 	= instantiateIFlangeGui;
-	IFlangeGuiDescriptor->cleanup		= cleanupIFlangeGui;
-	IFlangeGuiDescriptor->port_event	= port_eventIFlangeGui;
-	IFlangeGuiDescriptor->extension_data 	= NULL;
+	IPhaserGuiDescriptor->URI 		= IPHASER_GUI_URI;
+	IPhaserGuiDescriptor->instantiate 	= instantiateIPhaserGui;
+	IPhaserGuiDescriptor->cleanup		= cleanupIPhaserGui;
+	IPhaserGuiDescriptor->port_event	= port_eventIPhaserGui;
+	IPhaserGuiDescriptor->extension_data 	= NULL;
 
 }
 
 
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IFlangeGuiDescriptor) init();
+	if (!IPhaserGuiDescriptor) init();
 
 	switch (index) {
 		case 0:
-			return IFlangeGuiDescriptor;
+			return IPhaserGuiDescriptor;
 	default:
 		return NULL;
 	}
@@ -380,63 +380,63 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 /*****************************************************************************/
 
 static void 
-on_inv_flange_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+on_inv_phaser_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
-	IFlangeGui *pluginGui = (IFlangeGui *) data;
+	IPhaserGui *pluginGui = (IPhaserGui *) data;
 
 	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
-	(*pluginGui->write_function)(pluginGui->controller, IFLANGE_BYPASS, 4, 0, &pluginGui->bypass);
+	(*pluginGui->write_function)(pluginGui->controller, IPHASER_BYPASS, 4, 0, &pluginGui->bypass);
 	return;
 }
 
 static void 
-on_inv_flange_cycle_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+on_inv_phaser_cycle_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFlangeGui *pluginGui = (IFlangeGui *) data;
+	IPhaserGui *pluginGui = (IPhaserGui *) data;
 
 	pluginGui->cycle=inv_knob_get_value(INV_KNOB (widget));
-	(*pluginGui->write_function)(pluginGui->controller, IFLANGE_CYCLE, 4, 0, &pluginGui->cycle);
+	(*pluginGui->write_function)(pluginGui->controller, IPHASER_CYCLE, 4, 0, &pluginGui->cycle);
 	return;
 }
 
 static void 
-on_inv_flange_phase_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+on_inv_phaser_phase_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFlangeGui *pluginGui = (IFlangeGui *) data;
+	IPhaserGui *pluginGui = (IPhaserGui *) data;
 
 	pluginGui->phase=inv_knob_get_value(INV_KNOB (widget));
-	(*pluginGui->write_function)(pluginGui->controller, IFLANGE_PHASE, 4, 0, &pluginGui->phase);
+	(*pluginGui->write_function)(pluginGui->controller, IPHASER_PHASE, 4, 0, &pluginGui->phase);
 	return;
 }
 
 static void 
-on_inv_flange_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+on_inv_phaser_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFlangeGui *pluginGui = (IFlangeGui *) data;
+	IPhaserGui *pluginGui = (IPhaserGui *) data;
 
 	pluginGui->width=inv_knob_get_value(INV_KNOB (widget));
-	(*pluginGui->write_function)(pluginGui->controller, IFLANGE_WIDTH, 4, 0, &pluginGui->width);
+	(*pluginGui->write_function)(pluginGui->controller, IPHASER_WIDTH, 4, 0, &pluginGui->width);
 	return;
 }
 
 static void 
-on_inv_flange_depth_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+on_inv_phaser_depth_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	IFlangeGui *pluginGui = (IFlangeGui *) data;
+	IPhaserGui *pluginGui = (IPhaserGui *) data;
 
 	pluginGui->depth=inv_knob_get_value(INV_KNOB (widget));
-	(*pluginGui->write_function)(pluginGui->controller, IFLANGE_DEPTH, 4, 0, &pluginGui->depth);
+	(*pluginGui->write_function)(pluginGui->controller, IPHASER_DEPTH, 4, 0, &pluginGui->depth);
 	return;
 }
 
 static void 
-on_inv_flange_noclip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+on_inv_phaser_noclip_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 
-	IFlangeGui *pluginGui = (IFlangeGui *) data;
+	IPhaserGui *pluginGui = (IPhaserGui *) data;
 
 	pluginGui->noclip=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
-	(*pluginGui->write_function)(pluginGui->controller, IFLANGE_NOCLIP, 4, 0, &pluginGui->noclip);
+	(*pluginGui->write_function)(pluginGui->controller, IPHASER_NOCLIP, 4, 0, &pluginGui->noclip);
 	return;
 }

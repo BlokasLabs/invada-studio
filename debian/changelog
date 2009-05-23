@@ -1,3 +1,17 @@
+invada-studio-plugins-lv2 (0.1.0-3) unstable; urgency=low
+
+  * Removed -fno-stack-protector option, changed linker to gcc.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sun, 17 May 2009 04:00:00 +1000
+
+
+invada-studio-plugins-lv2 (0.1.0-2) unstable; urgency=low
+
+  * Added -fno-stack-protector to compile options to avoid "undefined reference to `__stack_chk_fail_local'" compile error.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:00:00 +1000
+
+
 invada-studio-plugins-lv2 (0.1.0-1) unstable; urgency=low
 
   * Initial Release.

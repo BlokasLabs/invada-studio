@@ -1,25 +1,25 @@
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy4) hardy; urgency=low
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic4) karmic; urgency=low
 
   * Removed -fno-stack-protector option, changed linker to gcc.
 
  -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 04:00:00 +1000
 
 
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy3) hardy; urgency=low
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic3) karmic; urgency=low
 
   * Fixing stupid packaging error.
 
  -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:30:00 +1000
 
 
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy2) hardy; urgency=low
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic2) karmic; urgency=low
 
   * Added -fno-stack-protector to compile options to avoid "undefined reference to `__stack_chk_fail_local'" compile error.
 
  -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:00:00 +1000
 
 
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy1) hardy; urgency=low
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic1) karmic; urgency=low
 
   * Initial Release.
 

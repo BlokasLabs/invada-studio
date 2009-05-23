@@ -37,7 +37,7 @@
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     doap:maintainer [
 	foaf:name "Invada";
-	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     lv2:optionalFeature lv2:hardRtCapable ;

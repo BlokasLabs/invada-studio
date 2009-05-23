@@ -50,7 +50,7 @@
     doap:name "Invada Compressor (mono)" ;
     doap:maintainer [
 	foaf:name "Invada";
-	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
@@ -169,7 +169,7 @@
     doap:name "Invada Compressor (stereo)" ;
     doap:maintainer [
 	foaf:name "Invada";
-	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=---TBA---> ;
+	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;

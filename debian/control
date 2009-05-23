@@ -7,7 +7,7 @@ Standards-Version: 3.7.3.0
 
 Package: invada-studio-plugins-lv2
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libcairo2, libgnome2-0, libglade2-0, libxml2, libglib2.0-0, libgtk2.0-0
 Provides: lv2-plugin
 Suggests: ardour, jack-rack, hydrogen, muse, rosegarden
 Description: Invada Studio Plugins - a set of LV2 audio plugins.

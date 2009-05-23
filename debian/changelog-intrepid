@@ -1,3 +1,24 @@
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~intrepid4) intrepid; urgency=low
+
+  * Removed -fno-stack-protector option, changed linker to gcc.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 04:00:00 +1000
+
+
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~intrepid3) intrepid; urgency=low
+
+  * Fixing stupid packaging error.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:30:00 +1000
+
+
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~intrepid2) intrepid; urgency=low
+
+  * Added -fno-stack-protector to compile options to avoid "undefined reference to `__stack_chk_fail_local'" compile error.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:00:00 +1000
+
+
 invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~intrepid1) intrepid; urgency=low
 
   * Initial Release.

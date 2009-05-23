@@ -679,7 +679,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 				break;
 		}
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,xc-(extents.width/2)-1,yc+r+ll+11+extents.height);
+		cairo_move_to(cr,xc-(extents.width/2)-1,yc+r+ll+11-extents.y_bearing);
 		cairo_show_text(cr,label);
 
 		cairo_new_path(cr);

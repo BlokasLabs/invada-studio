@@ -419,7 +419,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 			cairo_set_source_rgb(cr, grey, grey, grey);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), extents.height + 3);
+			cairo_move_to(cr,31+indent-(extents.width/2), 3-extents.y_bearing);
 			cairo_show_text(cr,off_text);
 
 			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
@@ -462,7 +462,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 			cairo_set_source_rgb(cr, off.R, off.G, off.B);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), extents.height + 3);
+			cairo_move_to(cr,31+indent-(extents.width/2), 3-extents.y_bearing);
 			cairo_show_text(cr,off_text);
 
 			max = on.R > on.G ? on.R : on.G;
