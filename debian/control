@@ -20,9 +20,9 @@ Description: Invada Studio Plugins - a set of LV2 audio plugins.
  * High Pass (Mono and Stereo version)
  Gentle high pass and low pass filters
  .
- Flange Plugins
- * Stereo Flange (Mono, Stereo and Sum version)
- Long slow stereo flanger.
+ Phaser Plugins
+ * Stereo Phaser (Mono, Stereo and Sum version)
+ Long slow stereo phaser.
  .
  Distortion Plugins
  * Tube - (Mono and Stereo version)

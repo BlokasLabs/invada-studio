@@ -161,6 +161,7 @@ inv_display_comp_class_init(InvDisplayCompClass *klass)
 static void
 inv_display_comp_init(InvDisplayComp *displayComp)
 {
+	gint i;
 	displayComp->bypass=INV_PLUGIN_ACTIVE;
 	displayComp->rms=0.5;
 	displayComp->attack=0.00001;
@@ -175,6 +176,12 @@ inv_display_comp_init(InvDisplayComp *displayComp)
 	displayComp->Lastthreshold=displayComp->threshold;
 	displayComp->Lastratio=displayComp->ratio;
 	displayComp->Lastgain=displayComp->gain;
+
+	displayComp->SIGmax=0.0;
+	for (i=0;i<386;i++) {
+		displayComp->SIG[i]=inv_display_comp_rms_waveform((float) i, 386, 64);
+		displayComp->SIGmax= fabs(displayComp->SIG[i]) > displayComp->SIGmax ? displayComp->SIG[i] : displayComp->SIGmax;
+	}
 }
 
 
@@ -187,7 +194,7 @@ inv_display_comp_size_request(GtkWidget *widget,
 	g_return_if_fail(requisition != NULL);
 
 	requisition->width = 600;
-	requisition->height = 156;
+	requisition->height = 234;
 }
 
 
@@ -226,7 +233,7 @@ inv_display_comp_realize(GtkWidget *widget)
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
 	attributes.width = 600;
-	attributes.height = 156;
+	attributes.height = 234;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
 	attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
@@ -262,7 +269,7 @@ static void
 inv_display_comp_paint(GtkWidget *widget, gint mode)
 {
 	gint		bypass;
-	float 		rms,rmsC,rmsV;
+	float 		rms;
 	float 		attack;
 	float 		release;
 	float 		threshold;
@@ -270,6 +277,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 	float 		gain;	
 
 	gint		i;
+	float		rmsC,rmsV,attackC,releaseC,thresholdC,env;
 	float		y,threshsig;
 	cairo_t 	*cr;
 	GtkStyle	*style;
@@ -292,17 +300,17 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
 		cairo_set_line_width(cr,1);
 
-		for(i=0;i<3;i++) {
+		for(i=0;i<2;i++) {
 			gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
-			cairo_move_to(cr, (i*200), 155);
-			cairo_line_to(cr, (i*200), 0);
-			cairo_line_to(cr, (i*200)+199, 0);
+			cairo_move_to(cr, (i*300), 233);
+			cairo_line_to(cr, (i*300), 0);
+			cairo_line_to(cr, (i*300)+299, 0);
 			cairo_stroke(cr);
 
 			gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
-			cairo_move_to(cr, (i*200), 155);
-			cairo_line_to(cr, (i*200)+199, 155);
-			cairo_line_to(cr, (i*200)+199, 0);
+			cairo_move_to(cr, (i*300), 233);
+			cairo_line_to(cr, (i*300)+299, 233);
+			cairo_line_to(cr, (i*300)+299, 0);
 			cairo_stroke(cr);
 
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
@@ -313,7 +321,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			} else {
 				cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
 			}
-			cairo_rectangle(cr, (i*200)+1, 1, 198, 154 );
+			cairo_rectangle(cr, (i*300)+1, 1, 298, 232 );
 			cairo_fill(cr);
 		}
 
@@ -326,17 +334,21 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		}
 		
 		cairo_set_font_size(cr,10);
-		sprintf(label,"Detector");
+		sprintf(label,"Detector And Envelope");
 		cairo_move_to(cr,75,12);
 		cairo_show_text(cr,label);
 
 		cairo_set_font_size(cr,9);
 		sprintf(label,"Audio");
-		cairo_move_to(cr,35,152);
+		cairo_move_to(cr,35,230);
 		cairo_show_text(cr,label);
 
 		sprintf(label,"Detected Signal");
-		cairo_move_to(cr,95,152);
+		cairo_move_to(cr,105,230);
+		cairo_show_text(cr,label);
+
+		sprintf(label,"Envelope");
+		cairo_move_to(cr,225,230);
 		cairo_show_text(cr,label);
 
 		if(bypass==INV_PLUGIN_BYPASS) {
@@ -347,30 +359,25 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 
 
 		cairo_set_line_width(cr,1.0);
-		cairo_move_to(cr, 25, 152);
-		cairo_line_to(cr, 31, 146);
+		cairo_move_to(cr, 25, 230);
+		cairo_line_to(cr, 31, 222);
 		cairo_stroke(cr);
+
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.25);
+		} else {
+			cairo_set_source_rgba(cr, 1.0, 0.1, 0.0, 0.25);
+		}
+		cairo_rectangle(cr, 95, 222, 6, 6 );
+		cairo_fill(cr);
 
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 		} else {
-			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
+			cairo_set_source_rgb(cr, 0.0, 0.1, 1.0);
 		}
-		cairo_rectangle(cr, 85, 146, 6, 6 );
+		cairo_rectangle(cr, 215, 222, 6, 6 );
 		cairo_fill(cr);
-
-		/* envelope labels */
-		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-		} else {
-			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-		}
-		
-		cairo_set_font_size(cr,10);
-		sprintf(label,"Envelope");
-		cairo_move_to(cr,275,12);
-		cairo_show_text(cr,label);
 
 		/* compressor labels */
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
@@ -382,7 +389,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		
 		cairo_set_font_size(cr,10);
 		sprintf(label,"Compressor");
-		cairo_move_to(cr,470,12);
+		cairo_move_to(cr,415,12);
 		cairo_show_text(cr,label);
 
 		if(bypass==INV_PLUGIN_BYPASS) {
@@ -390,10 +397,10 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 1, 1, 1);
 		}
-		cairo_rectangle(cr, 566, 17, 1, 113);
+		cairo_rectangle(cr, 566, 17, 1, 191);
 		cairo_fill(cr);
 
-		cairo_rectangle(cr, 406, 129, 160, 1);
+		cairo_rectangle(cr, 306, 207, 260, 1);
 		cairo_fill(cr);
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
@@ -406,18 +413,18 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		for(i=0;i<8;i+=2)
 		{
 			sprintf(label,"%3idB",-(i*6));
-			cairo_move_to(cr,569,34+(i*14));
+			cairo_move_to(cr,569,42+(i*21));
 			cairo_show_text(cr,label);
 
 			sprintf(label,"%idB",-(i*6));
 			switch(i) {
 				case 0:
-					cairo_move_to(cr,540-(i*20),141);
+					cairo_move_to(cr,530-(i*30),219);
 					break;
 				case 2:
 				case 4:
 				case 6:
-					cairo_move_to(cr,535-(i*20),141);
+					cairo_move_to(cr,525-(i*30),219);
 					break;
 			}
 			cairo_show_text(cr,label);
@@ -430,11 +437,11 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		}
 		cairo_set_font_size(cr,9);
 		sprintf(label,"Original");
-		cairo_move_to(cr,435,152);
+		cairo_move_to(cr,385,230);
 		cairo_show_text(cr,label);
 
 		sprintf(label,"Compressed");
-		cairo_move_to(cr,515,152);
+		cairo_move_to(cr,465,230);
 		cairo_show_text(cr,label);
 
 		if(bypass==INV_PLUGIN_BYPASS) {
@@ -443,8 +450,8 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
 		}
 		cairo_set_line_width(cr,1.0);
-		cairo_move_to(cr, 425, 152);
-		cairo_line_to(cr, 431, 146);
+		cairo_move_to(cr, 375, 230);
+		cairo_line_to(cr, 381, 222);
 		cairo_stroke(cr);
 
 		if(bypass==INV_PLUGIN_BYPASS) {
@@ -453,8 +460,8 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
 		}
 		cairo_set_line_width(cr,2.0);
-		cairo_move_to(cr, 505, 152);
-		cairo_line_to(cr, 511, 146);
+		cairo_move_to(cr, 455, 230);
+		cairo_line_to(cr, 461, 222);
 		cairo_stroke(cr);
 
 
@@ -475,6 +482,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 
 		rmsC= (pow(rms,3) * 400)+1; 
 		rmsV=0;
+		INV_DISPLAY_COMP(widget)->RMSmax=0;
 
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
@@ -485,8 +493,12 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_move_to(cr, 4, 77);
 			
 		for (i=0;i<386;i++) {
-			y=inv_display_comp_rms_waveform((float) i, 386, 64);
+			y=INV_DISPLAY_COMP(widget)->SIG[i];
 			rmsV = sqrt(( (rmsC-1)*rmsV*rmsV + y*y ) / rmsC); 
+			INV_DISPLAY_COMP(widget)->RMS[i]=rmsV;
+			INV_DISPLAY_COMP(widget)->RMSmax = fabs(INV_DISPLAY_COMP(widget)->RMS[i]) > INV_DISPLAY_COMP(widget)->RMSmax ? 
+							INV_DISPLAY_COMP(widget)->RMS[i] : 
+							INV_DISPLAY_COMP(widget)->RMSmax;
 			cairo_line_to(cr, 4+((float)i/2), 77-rmsV);
 		}
 		cairo_line_to(cr, 197, 77);
@@ -510,12 +522,119 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_move_to(cr, 4, 77);
 			
 		for (i=0;i<386;i++) {
-			y=inv_display_comp_rms_waveform((float) i, 386, 64);
+			y=INV_DISPLAY_COMP(widget)->SIG[i];
 			cairo_line_to(cr, 4+((float)i/2), 77-y);
 		}
 		cairo_stroke(cr);
 	}
+/*
+
+	if(mode      == INV_DISPLAYCOMP_DRAW_ALL 
+	|| rms       != INV_DISPLAY_COMP(widget)->Lastrms 
+	|| attack    != INV_DISPLAY_COMP(widget)->Lastattack 
+	|| release   != INV_DISPLAY_COMP(widget)->Lastrelease
+	|| threshold != INV_DISPLAY_COMP(widget)->Lastthreshold 
+	|| ratio     != INV_DISPLAY_COMP(widget)->Lastratio ) {
+
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
+		cairo_rectangle(cr, 203, 13, 194, 117 );
+		cairo_fill(cr);
+
+		scale = 98/INV_DISPLAY_COMP(widget)->RMSmax;
+		attackC=  1 - pow(10, -301.0301 / (attack*1000000.0)); 
+		releaseC= 1 - pow(10, -301.0301 / (release*1000000.0)); 
+		thresholdC=pow(10, threshold/20.0)*64*scale;
+
+		//compute new evelope if needed
+		if(mode      == INV_DISPLAYCOMP_DRAW_ALL 
+		|| rms       != INV_DISPLAY_COMP(widget)->Lastrms 
+		|| attack    != INV_DISPLAY_COMP(widget)->Lastattack 
+		|| release   != INV_DISPLAY_COMP(widget)->Lastrelease ) {
+			env=0;
+			for (i=0;i<386;i++) {
+				env += (INV_DISPLAY_COMP(widget)->RMS[i] > env) ? 
+					attackC  * (INV_DISPLAY_COMP(widget)->RMS[i] - env) : 
+					releaseC * (INV_DISPLAY_COMP(widget)->RMS[i] - env) ;
+				INV_DISPLAY_COMP(widget)->ENV[i]=env;
+			}
+		}
+
+		//draw envelope
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		} else {
+			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
+		}
+		cairo_set_line_width(cr,1.0);
+		cairo_move_to(cr, 204, 122);
+
+		for (i=0;i<386;i++) {
+			cairo_line_to(cr, 204+((float)i/2), 122-(INV_DISPLAY_COMP(widget)->ENV[i]*scale));
+		}
+		cairo_line_to(cr, 397, 122);
+		cairo_line_to(cr, 204, 122);
+		cairo_fill(cr);
+
+		//threshold
+		if(thresholdC < 109) {
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.25);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 0.1, 0.0, 0.25);
+			}
+
+			cairo_save(cr);
+			cairo_rectangle(cr, 203, 13, 194, 111-thresholdC );
+			cairo_clip(cr);
+
+			cairo_move_to(cr, 204, 122-thresholdC);
+
+			for (i=0;i<386;i++) {
+				if(thresholdC > INV_DISPLAY_COMP(widget)->ENV[i]*scale) {
+					cairo_line_to(cr, 204+((float)i/2), 122-thresholdC);
+				} else {
+					y = ((INV_DISPLAY_COMP(widget)->ENV[i]*scale) - thresholdC)/ratio;
+					cairo_line_to(cr, 204+((float)i/2), 122 - thresholdC - y);
+				}
+
+			}
+			cairo_line_to(cr, 397, 122-thresholdC);
+			cairo_line_to(cr, 204, 122-thresholdC);
+			cairo_fill(cr);
+			cairo_restore(cr);
+
+		}
+		//axis
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+		} else {
+			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
+		}
+		cairo_rectangle(cr, 204, 122, 192, 1 );
+		cairo_fill(cr);
+
+		//detected signal
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.25);
+		} else {
+			cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
+		}
+		cairo_set_line_width(cr,1.0);
+		cairo_move_to(cr, 204, 122);
 	
+
+		for (i=0;i<386;i++) {
+			y=INV_DISPLAY_COMP(widget)->RMS[i] * scale;
+			cairo_line_to(cr, 204+((float)i/2), 122-y);
+		}
+		cairo_stroke(cr);
+	}
+*/
+
 	/* compressor display */
 	if(mode      == INV_DISPLAYCOMP_DRAW_ALL 
 	|| threshold != INV_DISPLAY_COMP(widget)->Lastthreshold 
@@ -527,47 +646,50 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
 		}
-		cairo_rectangle(cr, 406, 17, 160, 112 );
+		cairo_rectangle(cr, 306, 17, 260, 190 );
 		cairo_fill(cr);
+
 		for(i=1;i<8;i+=2) {
 			if(bypass==INV_PLUGIN_BYPASS) {
 				cairo_set_source_rgb(cr, 0.15, 0.15, 0.15);
 			} else {
 				cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
 			}
-			cairo_rectangle(cr, 386+(i*20), 17, 1, 112);
+			cairo_rectangle(cr, 296+(i*30), 17, 1, 190);
 			cairo_fill(cr);
-			cairo_rectangle(cr, 406, 3+(i*14), 160, 1);
+			cairo_rectangle(cr, 306, 38+(i*21), 260, 1);
 			cairo_fill(cr);
 		}
-		for(i=0;i<7;i+=2) {
+
+		for(i=0;i<5;i+=2) {
 			if(bypass==INV_PLUGIN_BYPASS) {
 				cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
 			} else {
 				cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
 			}
-			cairo_rectangle(cr, 426+(i*20), 17, 1, 112);
+			cairo_rectangle(cr, 356+(i*30), 17, 1, 190);
 			cairo_fill(cr);
-			cairo_rectangle(cr, 406, 31+(i*14), 160, 1);
+			cairo_rectangle(cr, 306, 80+(i*21), 260, 1);
 			cairo_fill(cr);
 		}
+
 
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 		} else {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		}
-		cairo_rectangle(cr, 546, 17, 1, 112);
+		cairo_rectangle(cr, 536, 17, 1, 190);
 		cairo_fill(cr);
-		cairo_rectangle(cr, 406, 31, 160, 1);
+		cairo_rectangle(cr, 306, 38, 260, 1);
 		cairo_fill(cr);
 
-		cairo_rectangle(cr, 406, 17, 160, 112 );
+		cairo_rectangle(cr, 306, 17, 260, 190 );
 		cairo_clip(cr);
 
 		/* compressed signal */
 
-		// gain change at +6 db
+		// gain change at +6 db <- GRAPH MUST END HERE
 		threshsig=pow(10,threshold/20);
 		y = 20*log10(threshsig+((2-threshsig)/ratio));
 
@@ -578,15 +700,15 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		}
 		cairo_set_line_width(cr,2);
 
-		cairo_move_to(cr, 406                 , 129-(14*gain/6));
-		cairo_line_to(cr, 546+(20*threshold/6), 31-(14*gain/6)-(14*threshold/6));
-		cairo_line_to(cr, 566                 , 31-(14*gain/6)-(14*y/6)); 
+		cairo_move_to(cr, 306                 , 200-(21*gain/6));
+		cairo_line_to(cr, 536+(30*threshold/6), 38-(21*gain/6)-(21*threshold/6));
+		cairo_line_to(cr, 566                 , 38-(21*gain/6)-(21*y/6)); 
 		cairo_stroke(cr);
 
 		/* original signal */
 		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
 		cairo_set_line_width(cr,1.0);
-		cairo_move_to(cr, 406, 129);
+		cairo_move_to(cr, 306, 200);
 		cairo_line_to(cr, 566, 17);
 		cairo_stroke(cr);
 

@@ -36,6 +36,10 @@ struct _InvDisplayComp {
 	float Lastthreshold;
 	float Lastratio;
 	float Lastgain;
+
+	float SIG[386], SIGmax;
+	float RMS[386], RMSmax;
+	float ENV[386];
 };
 
 struct _InvDisplayCompClass {

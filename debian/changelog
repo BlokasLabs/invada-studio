@@ -1,3 +1,10 @@
+invada-studio-plugins-lv2 (0.1.0-4) unstable; urgency=low
+
+  * Renamed the flange plugins to phaser.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 23 May 2009 15:00:00 +1000
+
+
 invada-studio-plugins-lv2 (0.1.0-3) unstable; urgency=low
 
   * Removed -fno-stack-protector option, changed linker to gcc.

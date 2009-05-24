@@ -111,7 +111,6 @@ inv_phase_meter_init(InvPhaseMeter *meter)
 
 	meter->mOff90.R=0.4;	meter->mOff90.G=0.2;	meter->mOff90.B=0.0;
 	meter->mOn90.R =0.6;	meter->mOn90.G =0.0;	meter->mOn90.B =0.0;
-
 }
 
 
@@ -200,6 +199,9 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 {
 	gint 			phase;
 	gint 			bypass;
+
+	gint 			i;
+	gint			fh;
 	cairo_t 		*cr;
 	float 			Pon;
 	GtkStyle		*style;
@@ -208,9 +210,9 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 	struct colour		led;
 	cairo_text_extents_t 	extents;
 
-	style = gtk_widget_get_style(widget);
+	style   = gtk_widget_get_style(widget);
 	bypass = INV_PHASE_METER(widget)->bypass;
-	phase = (gint)((INV_PHASE_METER(widget)->phase*57.295779506)+0.2);
+	phase  = (gint)((INV_PHASE_METER(widget)->phase*57.295779506)+0.2);
 
 	cr = gdk_cairo_create(widget->window);
 
@@ -269,36 +271,39 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
+		strcpy(label,"0");
+		cairo_text_extents (cr,label,&extents);
+		fh=extents.height;
 
 		strcpy(label,"-90");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,13-(2*extents.width/3),31);
+		cairo_move_to(cr,13-(2*extents.width/3),25+fh);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"-45");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,103-(2*extents.width/3),31);
+		cairo_move_to(cr,103-(2*extents.width/3),25+fh);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"0");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,193.5-(extents.width/2),31);
+		cairo_move_to(cr,194-(extents.width/2),25+fh);
+	
 		cairo_show_text(cr,label);
 
 		strcpy(label,"45");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,283-(extents.width/2),31);
+		cairo_move_to(cr,284-(extents.width/2),25+fh);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"90");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,373-(extents.width/2),31);
+		cairo_move_to(cr,374-(extents.width/2),25+fh);
 		cairo_show_text(cr,label);
 
 
 	}
 
-	gint i;
 
 	inv_phase_meter_colour(widget, bypass, 0, 1, &led);
 	cairo_set_source_rgb(cr, led.R, led.G, led.B);
