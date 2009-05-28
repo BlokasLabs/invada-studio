@@ -175,6 +175,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<small><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_filter_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
@@ -202,6 +203,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobFreq), 20.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobFreq), 20000.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobFreq), pluginGui->freq);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobFreq), "<small><b>Description:</b> This knob sets the frequency the filter is centered at.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobFreq),"motion-notify-event",G_CALLBACK(on_inv_filter_freq_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_ACTIVE);
@@ -213,6 +215,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobGain), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 12.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobGain), "<small><b>Description:</b> This knob sets the output gain of the filter.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_filter_gain_knob_motion),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
@@ -223,6 +226,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), "<small><b>Description:</b> This switch activates soft-clipping on the output. The soft clipping function outputs a value between -3dB and 0dB for input values between -3dB and +infinity.\n<b>Usage:</b> Click to toggle between values.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_filter_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);

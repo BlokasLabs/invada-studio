@@ -86,6 +86,7 @@ void inv_knob_set_units(InvKnob *knob, char *units);
 void inv_knob_set_min(InvKnob *knob, float num);
 void inv_knob_set_max(InvKnob *knob, float num);
 void inv_knob_set_value(InvKnob *knob, float num);
+void inv_knob_set_tooltip(InvKnob *knob, gchar *tip);
 float inv_knob_get_value(InvKnob *knob);
 
 

@@ -178,10 +178,12 @@ inv_display_comp_init(InvDisplayComp *displayComp)
 	displayComp->Lastgain=displayComp->gain;
 
 	displayComp->SIGmax=0.0;
-	for (i=0;i<386;i++) {
-		displayComp->SIG[i]=inv_display_comp_rms_waveform((float) i, 386, 64);
+	for (i=0;i<292;i++) {
+		displayComp->SIG[i]=inv_display_comp_rms_waveform((float) i, 292, 104);
 		displayComp->SIGmax= fabs(displayComp->SIG[i]) > displayComp->SIGmax ? displayComp->SIG[i] : displayComp->SIGmax;
 	}
+
+	
 }
 
 
@@ -277,7 +279,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 	float 		gain;	
 
 	gint		i;
-	float		rmsC,rmsV,attackC,releaseC,thresholdC,env;
+	float		rmsC,rmsV,attackC,releaseC,env;
 	float		y,threshsig;
 	cairo_t 	*cr;
 	GtkStyle	*style;
@@ -470,98 +472,52 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 
 	/* rms display */
 	if(mode == INV_DISPLAYCOMP_DRAW_ALL 
-	|| rms  != INV_DISPLAY_COMP(widget)->Lastrms ) {
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-		} else {
-			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-		}
-
-		cairo_rectangle(cr, 3, 13, 194, 129 );
-		cairo_fill(cr);
-
-		rmsC= (pow(rms,3) * 400)+1; 
-		rmsV=0;
-		INV_DISPLAY_COMP(widget)->RMSmax=0;
-
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
-		} else {
-			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
-		}
-		cairo_set_line_width(cr,1.0);
-		cairo_move_to(cr, 4, 77);
-			
-		for (i=0;i<386;i++) {
-			y=INV_DISPLAY_COMP(widget)->SIG[i];
-			rmsV = sqrt(( (rmsC-1)*rmsV*rmsV + y*y ) / rmsC); 
-			INV_DISPLAY_COMP(widget)->RMS[i]=rmsV;
-			INV_DISPLAY_COMP(widget)->RMSmax = fabs(INV_DISPLAY_COMP(widget)->RMS[i]) > INV_DISPLAY_COMP(widget)->RMSmax ? 
-							INV_DISPLAY_COMP(widget)->RMS[i] : 
-							INV_DISPLAY_COMP(widget)->RMSmax;
-			cairo_line_to(cr, 4+((float)i/2), 77-rmsV);
-		}
-		cairo_line_to(cr, 197, 77);
-		cairo_line_to(cr, 4, 77);
-		cairo_fill(cr);
-
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-		} else {
-			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
-		}
-		cairo_rectangle(cr, 4, 77, 192, 1 );
-		cairo_fill(cr);
-
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.25);
-		} else {
-			cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
-		}
-		cairo_set_line_width(cr,1.0);
-		cairo_move_to(cr, 4, 77);
-			
-		for (i=0;i<386;i++) {
-			y=INV_DISPLAY_COMP(widget)->SIG[i];
-			cairo_line_to(cr, 4+((float)i/2), 77-y);
-		}
-		cairo_stroke(cr);
-	}
-/*
-
-	if(mode      == INV_DISPLAYCOMP_DRAW_ALL 
-	|| rms       != INV_DISPLAY_COMP(widget)->Lastrms 
+	|| rms  != INV_DISPLAY_COMP(widget)->Lastrms 
 	|| attack    != INV_DISPLAY_COMP(widget)->Lastattack 
-	|| release   != INV_DISPLAY_COMP(widget)->Lastrelease
-	|| threshold != INV_DISPLAY_COMP(widget)->Lastthreshold 
-	|| ratio     != INV_DISPLAY_COMP(widget)->Lastratio ) {
-
+	|| release   != INV_DISPLAY_COMP(widget)->Lastrelease ) {
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
 		} else {
 			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
 		}
-		cairo_rectangle(cr, 203, 13, 194, 117 );
+
+		cairo_rectangle(cr, 3, 13, 294, 208 );
 		cairo_fill(cr);
 
-		scale = 98/INV_DISPLAY_COMP(widget)->RMSmax;
-		attackC=  1 - pow(10, -301.0301 / (attack*1000000.0)); 
-		releaseC= 1 - pow(10, -301.0301 / (release*1000000.0)); 
-		thresholdC=pow(10, threshold/20.0)*64*scale;
-
-		//compute new evelope if needed
-		if(mode      == INV_DISPLAYCOMP_DRAW_ALL 
-		|| rms       != INV_DISPLAY_COMP(widget)->Lastrms 
-		|| attack    != INV_DISPLAY_COMP(widget)->Lastattack 
-		|| release   != INV_DISPLAY_COMP(widget)->Lastrelease ) {
+		if(mode == INV_DISPLAYCOMP_DRAW_ALL 
+		|| rms  != INV_DISPLAY_COMP(widget)->Lastrms ) {
+			//compute new rms if needed
+			rmsC= (pow(rms,3) * 400)+1; 
+			rmsV=0;
+			attackC=  1 - pow(10, -301.0301 / (attack*1000000.0)); 
+			releaseC= 1 - pow(10, -301.0301 / (release*1000000.0)); 
 			env=0;
-			for (i=0;i<386;i++) {
+			for (i=0;i<292;i++) {
+				y=INV_DISPLAY_COMP(widget)->SIG[i];
+				rmsV = sqrt(( (rmsC-1)*rmsV*rmsV + y*y ) / rmsC); 
+				INV_DISPLAY_COMP(widget)->RMS[i]=rmsV;
+				env += (INV_DISPLAY_COMP(widget)->RMS[i] > env) ? 
+					attackC  * (INV_DISPLAY_COMP(widget)->RMS[i] - env) : 
+					releaseC * (INV_DISPLAY_COMP(widget)->RMS[i] - env) ;
+				INV_DISPLAY_COMP(widget)->ENV[i]=env;
+			}
+
+		} else if(attack    != INV_DISPLAY_COMP(widget)->Lastattack 
+		       || release   != INV_DISPLAY_COMP(widget)->Lastrelease ) {
+			//compute new evelope if needed
+			attackC=  1 - pow(10, -301.0301 / (attack*1000000.0)); 
+			releaseC= 1 - pow(10, -301.0301 / (release*1000000.0)); 
+			env=0;
+			for (i=0;i<292;i++) {
 				env += (INV_DISPLAY_COMP(widget)->RMS[i] > env) ? 
 					attackC  * (INV_DISPLAY_COMP(widget)->RMS[i] - env) : 
 					releaseC * (INV_DISPLAY_COMP(widget)->RMS[i] - env) ;
 				INV_DISPLAY_COMP(widget)->ENV[i]=env;
 			}
 		}
+
+
+
 
 		//draw envelope
 		if(bypass==INV_PLUGIN_BYPASS) {
@@ -570,70 +526,55 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
 		}
 		cairo_set_line_width(cr,1.0);
-		cairo_move_to(cr, 204, 122);
+		cairo_move_to(cr, 4, 117);
 
-		for (i=0;i<386;i++) {
-			cairo_line_to(cr, 204+((float)i/2), 122-(INV_DISPLAY_COMP(widget)->ENV[i]*scale));
+		for (i=0;i<292;i++) {
+			cairo_line_to(cr, 4+i, 117-INV_DISPLAY_COMP(widget)->ENV[i]);
 		}
-		cairo_line_to(cr, 397, 122);
-		cairo_line_to(cr, 204, 122);
+		cairo_line_to(cr, 295, 117);
+		cairo_line_to(cr, 4, 117);
 		cairo_fill(cr);
 
-		//threshold
-		if(thresholdC < 109) {
-			if(bypass==INV_PLUGIN_BYPASS) {
-				cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.25);
-			} else {
-				cairo_set_source_rgba(cr, 1.0, 0.1, 0.0, 0.25);
-			}
-
-			cairo_save(cr);
-			cairo_rectangle(cr, 203, 13, 194, 111-thresholdC );
-			cairo_clip(cr);
-
-			cairo_move_to(cr, 204, 122-thresholdC);
-
-			for (i=0;i<386;i++) {
-				if(thresholdC > INV_DISPLAY_COMP(widget)->ENV[i]*scale) {
-					cairo_line_to(cr, 204+((float)i/2), 122-thresholdC);
-				} else {
-					y = ((INV_DISPLAY_COMP(widget)->ENV[i]*scale) - thresholdC)/ratio;
-					cairo_line_to(cr, 204+((float)i/2), 122 - thresholdC - y);
-				}
-
-			}
-			cairo_line_to(cr, 397, 122-thresholdC);
-			cairo_line_to(cr, 204, 122-thresholdC);
-			cairo_fill(cr);
-			cairo_restore(cr);
-
-		}
-		//axis
+		// draw axis
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
 		} else {
 			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
 		}
-		cairo_rectangle(cr, 204, 122, 192, 1 );
+		cairo_rectangle(cr, 4, 117, 292, 1 );
 		cairo_fill(cr);
 
-		//detected signal
+
+		//draw rms
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.25);
+		} else {
+			cairo_set_source_rgba(cr, 1.0, 0.1, 0.0, 0.25);
+		}
+		cairo_set_line_width(cr,1.0);
+		cairo_move_to(cr, 4, 117);
+		for (i=0;i<292;i++) {
+			cairo_line_to(cr, 4+i, 117-INV_DISPLAY_COMP(widget)->RMS[i]);
+		}
+		cairo_line_to(cr, 295, 117);
+		cairo_line_to(cr, 4, 117);
+		cairo_fill(cr);
+
+
+		//draw original signal
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgba(cr, 0.7, 0.7, 0.7, 0.25);
 		} else {
 			cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
 		}
 		cairo_set_line_width(cr,1.0);
-		cairo_move_to(cr, 204, 122);
-	
-
-		for (i=0;i<386;i++) {
-			y=INV_DISPLAY_COMP(widget)->RMS[i] * scale;
-			cairo_line_to(cr, 204+((float)i/2), 122-y);
+		cairo_move_to(cr, 4, 117);
+		for (i=0;i<292;i++) {
+			cairo_line_to(cr, 4+i, 117-INV_DISPLAY_COMP(widget)->SIG[i]);
 		}
 		cairo_stroke(cr);
 	}
-*/
+
 
 	/* compressor display */
 	if(mode      == INV_DISPLAYCOMP_DRAW_ALL 
@@ -754,17 +695,17 @@ inv_display_comp_rms_waveform(float pos, float width, float height)
 	
 	value=0;
 
-	if(pos < width/2) {
-		theta=2*INV_PI*(13.5*pow(2*pos/width,0.5));
-		heightr=1-(pow(2*pos/width,0.1));
+	if(pos < width/3) {
+		theta=2*INV_PI*(13.5*pow(3*pos/width,0.5));
+		heightr=1-(pow(3*pos/width,0.1));
 		value+=3*height*heightr*sin(theta);
 	}
 
-	if(pos > width/2) {
-		theta=2*INV_PI*(5* 2* (pos-width/2) / width );
-		theta2=2*INV_PI*(20* 2* (pos-width/2) / width );
-		heightr=1-(pow(2*(pos-width/2)/width,20));
-		heightr2=1-(pow(2*(pos-width/2)/width,0.5));
+	if(pos > width/3) {
+		theta=2*INV_PI*(8* 3* (pos-width/3) / (2*width) );
+		theta2=2*INV_PI*(32* 3* (pos-width/3) / (2*width) );
+		heightr=1-(pow(3*(pos-width/3)/(2*width),12));
+		heightr2=1-(pow(3*(pos-width/3)/(2*width),0.5));
 		value+=0.6*height*heightr*sin(theta) + 0.2*height*heightr2*sin(theta2);
 	}
 	return value;

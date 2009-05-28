@@ -152,6 +152,12 @@ inv_knob_set_value(InvKnob *knob, float num)
 		inv_knob_paint(GTK_WIDGET(knob),INV_KNOB_DRAW_DATA);
 }
 
+void 
+inv_knob_set_tooltip(InvKnob *knob, gchar *tip)
+{
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(knob),tip);
+}
+
 float
 inv_knob_get_value(InvKnob *knob)
 {
@@ -759,15 +765,19 @@ inv_knob_motion_notify_event(GtkWidget *widget, GdkEventMotion *event)
 {
 	g_assert(INV_IS_KNOB(widget));
 
-	INV_KNOB(widget)->value = inv_value_from_motion(INV_KNOB(widget)->click_x-event->x, 
-							INV_KNOB(widget)->click_y-event->y, 
-							INV_KNOB(widget)->value, 
-							INV_KNOB(widget)->curve, 
-							INV_KNOB(widget)->min, 
-							INV_KNOB(widget)->max );
-	INV_KNOB(widget)->click_y = event->y; 
-	inv_knob_paint(widget,INV_KNOB_DRAW_DATA);
-	return FALSE; //let the after signal run
+	if((GTK_WIDGET (widget)->state)==GTK_STATE_ACTIVE) {
+		INV_KNOB(widget)->value = inv_value_from_motion(INV_KNOB(widget)->click_x-event->x, 
+								INV_KNOB(widget)->click_y-event->y, 
+								INV_KNOB(widget)->value, 
+								INV_KNOB(widget)->curve, 
+								INV_KNOB(widget)->min, 
+								INV_KNOB(widget)->max );
+		INV_KNOB(widget)->click_y = event->y; 
+		inv_knob_paint(widget,INV_KNOB_DRAW_DATA);
+		return FALSE; //let the after signal run
+	} else {
+		return TRUE;
+	}
 }
 
 static gboolean 

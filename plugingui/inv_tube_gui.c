@@ -158,6 +158,7 @@ instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<small><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_tube_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
@@ -181,6 +182,7 @@ instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	inv_knob_set_min(INV_KNOB (pluginGui->knobDrive), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobDrive), 18.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDrive), pluginGui->drive);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobDrive), "<small><b>Description:</b> This knob sets the drive or input gain of the tube.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDrive),"motion-notify-event",G_CALLBACK(on_inv_tube_drive_knob_motion),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampDrive),0.0);
@@ -195,6 +197,7 @@ instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	inv_knob_set_min(INV_KNOB (pluginGui->knobDC), -1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobDC), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDC), pluginGui->dc);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobDC), "<small><b>Description:</b> This knob sends the signal into the tube with a DC offset. This causes asymmetrical distortion.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDC),"motion-notify-event",G_CALLBACK(on_inv_tube_dc_knob_motion),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_PLUGIN_ACTIVE);
@@ -205,6 +208,7 @@ instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_ON,  "Reversed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhase), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->togglePhase), "<small><b>Description:</b> This switch sets the phase of the tube. Reversed phase tube sounds best with 30%-40% blend.\n<b>Usage:</b> Click to toggle between values.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhase),"button-release-event",G_CALLBACK(on_inv_tube_phase_toggle_button_release),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobBlend), INV_PLUGIN_ACTIVE);
@@ -216,6 +220,7 @@ instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	inv_knob_set_min(INV_KNOB (pluginGui->knobBlend), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobBlend), 100.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobBlend), pluginGui->blend);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobBlend), "<small><b>Description:</b> This knob sends the blend of the tube with the original signal.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobBlend),"motion-notify-event",G_CALLBACK(on_inv_tube_blend_knob_motion),pluginGui);
 
 	/* strip the parent window from the design so the host can attach its own */

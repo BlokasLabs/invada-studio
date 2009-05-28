@@ -144,6 +144,13 @@ void inv_switch_toggle_set_label(InvSwitchToggle *switch_toggle, const char *tex
 		strncpy(switch_toggle->label,text,14);
 }
 
+void inv_switch_toggle_set_tooltip(InvSwitchToggle *switch_toggle, gchar *tip)
+{
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(switch_toggle),tip);
+}
+
+
+
 GtkWidget * inv_switch_toggle_new()
 {
 	return GTK_WIDGET(gtk_type_new(inv_switch_toggle_get_type()));

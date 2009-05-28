@@ -58,10 +58,11 @@ void inv_switch_toggle_set_bypass(InvSwitchToggle *switch_toggle, gint num);
 void inv_switch_toggle_toggle(InvSwitchToggle *switch_toggle);
 void inv_switch_toggle_set_state(InvSwitchToggle *switch_toggle, gint state);
 void inv_switch_toggle_set_value(InvSwitchToggle *switch_toggle, gint state, float value);
-float inv_switch_toggle_get_value(InvSwitchToggle *switch_toggle);
 void inv_switch_toggle_set_colour(InvSwitchToggle *switch_toggle, gint state, float R, float G, float B);
 void inv_switch_toggle_set_text(InvSwitchToggle *switch_toggle, gint state, const char *text);
 void inv_switch_toggle_set_label(InvSwitchToggle *switch_toggle, const char *text);
+void inv_switch_toggle_set_tooltip(InvSwitchToggle *switch_toggle, gchar *tip);
+float inv_switch_toggle_get_value(InvSwitchToggle *switch_toggle);
 
 G_END_DECLS
 

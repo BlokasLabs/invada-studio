@@ -177,6 +177,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<small><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_erreverb_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
@@ -210,6 +211,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_knob_set_min(INV_KNOB (pluginGui->knobLength),      3.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobLength),      100.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobLength),    pluginGui->length);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobLength), "<small><b>Description:</b> This knob sets the length of the virtual room.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobLength),"motion-notify-event",G_CALLBACK(on_inv_erreverb_length_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
@@ -220,6 +222,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_knob_set_min(INV_KNOB (pluginGui->knobWidth), 3.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobWidth), 100.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->length);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobWidth), "<small><b>Description:</b> This knob sets the width of the virtual room.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_erreverb_width_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobHeight), INV_PLUGIN_ACTIVE);
@@ -230,6 +233,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_knob_set_min(INV_KNOB (pluginGui->knobHeight), 3.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobHeight), 30.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobHeight), pluginGui->length);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobHeight), "<small><b>Description:</b> This knob sets the height of the virtual room.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobHeight),"motion-notify-event",G_CALLBACK(on_inv_erreverb_height_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobHPF), INV_PLUGIN_ACTIVE);
@@ -241,6 +245,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_knob_set_min(INV_KNOB (pluginGui->knobHPF), 20.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobHPF), 2000.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobHPF), pluginGui->hpf);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobHPF), "<small><b>Description:</b> This knob rolls off bottom end as it tends to make reverbs sound muddy.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobHPF),"motion-notify-event",G_CALLBACK(on_inv_erreverb_hpf_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWarmth), INV_PLUGIN_ACTIVE);
@@ -251,6 +256,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_knob_set_min(INV_KNOB (pluginGui->knobWarmth), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobWarmth), 100.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWarmth), pluginGui->warmth);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobWarmth), "<small><b>Description:</b> This knob sets the high frequency loss of reflections within the room. Low values have little loss (like a tiled room). High values have a lot of loss.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWarmth),"motion-notify-event",G_CALLBACK(on_inv_erreverb_warmth_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobDiffusion), INV_PLUGIN_ACTIVE);
@@ -261,6 +267,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	inv_knob_set_min(INV_KNOB (pluginGui->knobDiffusion), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobDiffusion), 100.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDiffusion), pluginGui->diffusion);
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobDiffusion), "<small><b>Description:</b> This knob sets the scattering of reflections which simulates rough or uneven surfaces within the virtual room.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDiffusion),"motion-notify-event",G_CALLBACK(on_inv_erreverb_diffusion_knob_motion),pluginGui);
 
 
