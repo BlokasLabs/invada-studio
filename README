@@ -65,13 +65,9 @@ Change the Makefile if you'd like to have them in an alternate system location
 BUILDING (Debian and derivatives)
 =================================
 Packages for Debian and derivatives (Ubuntu etc) can be built from this archive. You'll need a Debian build environment.
-To install the build environment run the following:
+To install the build environment and dependancies run the following:
 
-sudo apt-get install build-essential debhelper fakeroot 
-
-To install build dependancies run the following
-
-sudo apt-get install lv2core libgtk2.0-0 libcairo2 libgnome2-0 libglade2-0 libxml2 libglib2.0-0 
+sudo apt-get install build-essential debhelper fakeroot libgtk2.0-dev
 
 Go to the directory that was created when you unpacked this archive and then run:
 
@@ -79,6 +75,7 @@ dpkg-buildpackage -rfakeroot -tc
 
 Once done you'll find a 'deb' package for your system in the directory above. Use your favourite package manager to install.
 The plugins will install into "/usr" by default. 
+
 
 
 PACKAGES (Ubuntu and derivatives)

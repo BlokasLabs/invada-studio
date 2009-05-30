@@ -11,9 +11,13 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, libcairo2, libgnome2-0, libglade2-0
 Provides: lv2-plugin
 Suggests: ardour, jack-rack, hydrogen, muse, rosegarden
 Description: Invada Studio Plugins - a set of LV2 audio plugins.
- Utility Plugins
- * Input Module (Stereo only)
- Alter gain, balance, width, phase on a stereo signal
+ Distortion Plugins
+ * Tube - (Mono and Stereo version)
+ Valve warmth/distortion simulation
+ .
+ Dynamics Plugins
+ * Compressor - (Mono and Stereo version)
+ Peak/RMS soft-clipping compressor
  .
  Filter Plugins
  * Low Pass (Mono and Stereo version)
@@ -24,16 +28,12 @@ Description: Invada Studio Plugins - a set of LV2 audio plugins.
  * Stereo Phaser (Mono, Stereo and Sum version)
  Long slow stereo phaser.
  .
- Distortion Plugins
- * Tube - (Mono and Stereo version)
- Valve warmth/distortion simulation
- .
- Dynamics Plugins
- * Compressor - (Mono and Stereo version)
- Peak/RMS soft-clipping compressor
- .
  Reverb Plugins
  * ER Reverb - (Mono and Sum version) 
  Early reflection based reverb. 
+ .
+ Utility Plugins
+ * Input Module (Stereo only)
+ Alter gain, balance, width, phase on a stereo signal
  .
  Homepage: https://launchpad.net/invada-studio

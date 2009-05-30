@@ -1,3 +1,10 @@
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~intrepid8) intrepid; urgency=low
+
+  * Updated install documentation final test build before releasing.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 30 May 2009 16:00:00 +1000
+
+
 invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~intrepid7) intrepid; urgency=low
 
   * Added Tooltips to all other widgets.
