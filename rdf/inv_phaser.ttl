@@ -79,6 +79,11 @@
 <http://invadarecords.com/plugins/lv2/phaser/mono> 
     a lv2:Plugin, lv2:PhaserPlugin ;
     doap:name "Invada Stereo Phaser (mono in)" ;
+    doap:developer [
+	foaf:name "Fraser Stuart";
+	foaf:homepage <https://launchpad.net/invada-studio> ;
+	foaf:mbox <mailto:fraser@arkhostings.com> ;
+    ] ;
     doap:maintainer [
 	foaf:name "Invada";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
@@ -197,6 +202,11 @@
 <http://invadarecords.com/plugins/lv2/phaser/stereo> 
     a lv2:Plugin, lv2:PhaserPlugin ;
     doap:name "Invada Stereo Phaser (stereo in)" ;
+    doap:developer [
+	foaf:name "Fraser Stuart";
+	foaf:homepage <https://launchpad.net/invada-studio> ;
+	foaf:mbox <mailto:fraser@arkhostings.com> ;
+    ] ;
     doap:maintainer [
 	foaf:name "Invada";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
@@ -329,6 +339,11 @@
 <http://invadarecords.com/plugins/lv2/phaser/sum> 
     a lv2:Plugin, lv2:PhaserPlugin ;
     doap:name "Invada Stereo Phaser (sum L+R in)" ;
+    doap:developer [
+	foaf:name "Fraser Stuart";
+	foaf:homepage <https://launchpad.net/invada-studio> ;
+	foaf:mbox <mailto:fraser@arkhostings.com> ;
+    ] ;
     doap:maintainer [
 	foaf:name "Invada";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;

@@ -1,3 +1,10 @@
+invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic6) karmic; urgency=low
+
+  * Added Tooltips to knob and switch widgets.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Fri, 29 May 2009 01:00:00 +1000
+
+
 invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic5) karmic; urgency=low
 
   * Renamed the flange plugins to phaser.

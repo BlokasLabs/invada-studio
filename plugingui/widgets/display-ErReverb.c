@@ -1,3 +1,24 @@
+/* 
+
+    This widget provides a display for Early Reflection Reverbs
+
+    (c) Fraser Stuart 2009
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+*/
 
 #include <stdlib.h>
 #include <math.h>
@@ -211,6 +232,8 @@ inv_display_err_init(InvDisplayErr *displayErr)
 	displayErr->er_size=0;
 
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(displayErr), GTK_CAN_FOCUS);
+
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayErr),"<small><b>Room Shape:</b> This is a 3D representation of the virtual room.\n<b>Impulse Response:</b> This shows the resultant inpulse response of the room.\n<b>Source and Listerner Position:</b> Use this display to position the source and listener in the virtual room.</small>");
 }
 
 
@@ -404,7 +427,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		}
 		cairo_set_font_size(cr,10);
 
-		sprintf(label,"Source And Listener Poistion");
+		sprintf(label,"Source And Listener Position");
 		cairo_move_to(cr,275,11);
 		cairo_show_text(cr,label);
 
@@ -415,7 +438,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		}
 
-		sprintf(label,"(Click and drag to move)");
+		sprintf(label,"(click and drag to move)");
 		cairo_move_to(cr,300,21);
 		cairo_show_text(cr,label);
 

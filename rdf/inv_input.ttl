@@ -4,6 +4,7 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
+@prefix dc:    <http://dublincore.org/documents/dcmi-namespace/> .
 
 
 <http://invadarecords.com/plugins/lv2/input/gui>
@@ -35,13 +36,19 @@
     a lv2:Plugin, lv2:UtilityPlugin ;
     doap:name "Invada Input Module" ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:developer [
+	foaf:name "Fraser Stuart";
+	foaf:homepage <https://launchpad.net/invada-studio> ;
+	foaf:mbox <mailto:fraser@arkhostings.com> ;
+    ] ;
     doap:maintainer [
 	foaf:name "Invada";
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     lv2:optionalFeature lv2:hardRtCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/input/gui>;
+    uiext:ui <http://invadarecords.com/plugins/lv2/input/gui> ;
+    dc:replaces <ladspa:3301> ;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;

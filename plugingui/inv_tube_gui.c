@@ -187,6 +187,7 @@ instantiateITubeGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampDrive),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampDrive),1.0);
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampDrive), "<small>This glows when distortion is occurring.</small>");
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobDC), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobDC), INV_KNOB_SIZE_MEDIUM);

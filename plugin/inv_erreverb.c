@@ -1,6 +1,6 @@
 /* 
 
-    This LADSPA plugin provides an early reflection reverb from a mono source
+    This LV2 plugin provides an early reflection reverb from a mono source
 
     (c) Fraser Stuart 2009
 

@@ -219,9 +219,11 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampL),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampL),1.0);
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampL), "<small>This shows the resultant LFO on the left channel.</small>");
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampR),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampR),1.0);
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampR), "<small>This shows the resultant LFO on the right channel.</small>");
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobWidth), INV_KNOB_SIZE_MEDIUM);
@@ -258,6 +260,7 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),3.0);
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<small>This glows when soft clipping is occurring.</small>");
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);

@@ -259,6 +259,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),3.0);
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<small>This glows when soft clipping is occurring.</small>");
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);

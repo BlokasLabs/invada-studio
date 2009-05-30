@@ -1,6 +1,6 @@
 /* 
 
-    This LADSPA plugin provides phaser plugins
+    This LV2 plugin provides phaser plugins
 
     (c) Fraser Stuart 2009
 
