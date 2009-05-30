@@ -1,55 +1,6 @@
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic8) karmic; urgency=low
-
-  * Updated install documentation final test build before releasing.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 30 May 2009 16:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic7) karmic; urgency=low
-
-  * Added Tooltips to all other widgets.
-  * Updated source to include copyright notices.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 30 May 2009 15:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic6) karmic; urgency=low
-
-  * Added Tooltips to knob and switch widgets.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Fri, 29 May 2009 01:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic5) karmic; urgency=low
-
-  * Renamed the flange plugins to phaser.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 23 May 2009 15:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic4) karmic; urgency=low
-
-  * Removed -fno-stack-protector option, changed linker to gcc.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 04:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic3) karmic; urgency=low
-
-  * Fixing stupid packaging error.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:30:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic2) karmic; urgency=low
-
-  * Added -fno-stack-protector to compile options to avoid "undefined reference to `__stack_chk_fail_local'" compile error.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~karmic1) karmic; urgency=low
+invada-studio-plugins-lv2 (1.0.0-0ubuntu0~ppa1~karmic1) karmic; urgency=low
 
   * Initial Release.
 
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sun, 17 May 2009 15:30:00 +1000
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 30 May 2009 16:00:00 +1000
+

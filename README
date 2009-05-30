@@ -47,7 +47,7 @@ BUILDING
 ========
 To build the plugins the you'll need the following items installed:
 * a working build environment with core includes
-* the lv2 header file (lv2core.h)
+* the lv2 header file (lv2.h)
 * the gtk2 developer libraries & includes
 * the cairo developer libraries & includes
 * the glade2 developer libraries & includes
@@ -56,9 +56,10 @@ Go to the directory that was created when you unpacked this archive and then run
 
 make
 make install-user (to install in ~/.lv2)
-[as root] make install-sys (to install in /usr/local/lib/lv2)
+or
+make install-sys (as root to install in /usr/local/lib/lv2)
 
-Change the Makefile if you'd like to have them in an alternate system location
+Change the Makefile if you'd like to have them in an alternate system location.
 
 
 
@@ -67,7 +68,7 @@ BUILDING (Debian and derivatives)
 Packages for Debian and derivatives (Ubuntu etc) can be built from this archive. You'll need a Debian build environment.
 To install the build environment and dependancies run the following:
 
-sudo apt-get install build-essential debhelper fakeroot libgtk2.0-dev
+sudo apt-get install build-essential debhelper fakeroot lv2core libgtk2.0-dev
 
 Go to the directory that was created when you unpacked this archive and then run:
 
@@ -80,7 +81,7 @@ The plugins will install into "/usr" by default.
 
 PACKAGES (Ubuntu and derivatives)
 =================================
-Pre built binary packagaes for ubuntu are available from https://launchpad.net/invada/ppa
+Pre built binary packagaes for ubuntu are available from https://launchpad.net/~invada/+archive/ppa
 
 
 

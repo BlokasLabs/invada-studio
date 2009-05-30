@@ -1,55 +1,6 @@
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy8) hardy; urgency=low
-
-  * Updated install documentation final test build before releasing.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 30 May 2009 16:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy7) hardy; urgency=low
-
-  * Added Tooltips to all other widgets.
-  * Updated source to include copyright notices.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 30 May 2009 15:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy6) hardy; urgency=low
-
-  * Added Tooltips to knob and switch widgets.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Fri, 29 May 2009 01:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy5) hardy; urgency=low
-
-  * Renamed the flange plugins to phaser.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 23 May 2009 15:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy4) hardy; urgency=low
-
-  * Removed -fno-stack-protector option, changed linker to gcc.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 04:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy3) hardy; urgency=low
-
-  * Fixing stupid packaging error.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:30:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy2) hardy; urgency=low
-
-  * Added -fno-stack-protector to compile options to avoid "undefined reference to `__stack_chk_fail_local'" compile error.
-
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Mon, 18 May 2009 03:00:00 +1000
-
-
-invada-studio-plugins-lv2 (0.1.0-0ubuntu0~ppa1~hardy1) hardy; urgency=low
+invada-studio-plugins-lv2 (1.0.0-0ubuntu0~ppa1~hardy1) hardy; urgency=low
 
   * Initial Release.
 
- -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sun, 17 May 2009 15:30:00 +1000
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 30 May 2009 16:00:00 +1000
+
