@@ -48,9 +48,9 @@ BUILDING
 To build the plugins the you'll need the following items installed:
 * a working build environment with core includes
 * the lv2 header file (lv2core.h)
-* the gtk developer libraries & includes
+* the gtk2 developer libraries & includes
 * the cairo developer libraries & includes
-* the glade developer libraries & includes
+* the glade2 developer libraries & includes
 
 Go to the directory that was created when you unpacked this archive and then run:
 
