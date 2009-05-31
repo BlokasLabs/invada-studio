@@ -69,7 +69,7 @@
 	lv2:index 0 ;
 	lv2:symbol "bypass" ;
 	lv2:name "Bypass" ;
-	lv2:portProperty :toggled ;
+	lv2:portProperty lv2:toggled ;
 	lv2:default 0.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -128,7 +128,7 @@
 	lv2:index 7 ;
 	lv2:symbol "noClip" ;
 	lv2:name "Soft Clip" ;
-	lv2:portProperty :toggled ;
+	lv2:portProperty lv2:toggled ;
 	lv2:default 1.0 ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
@@ -194,7 +194,7 @@
 	lv2:index 0 ;
 	lv2:symbol "bypass" ;
 	lv2:name "Bypass" ;
-	lv2:portProperty :toggled ;
+	lv2:portProperty lv2:toggled ;
 	lv2:default 0.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -253,7 +253,7 @@
 	lv2:index 7 ;
 	lv2:symbol "noClip" ;
 	lv2:name "Soft Clip" ;
-	lv2:portProperty :toggled ;
+	lv2:portProperty lv2:toggled ;
 	lv2:default 1.0 ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
