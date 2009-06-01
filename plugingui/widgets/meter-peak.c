@@ -76,19 +76,21 @@ inv_meter_get_type(void)
 void
 inv_meter_set_bypass(InvMeter *meter, gint num)
 {
-	meter->bypass = num;
-	switch(meter->mode) {
-		case INV_METER_DRAW_MODE_TOZERO:
-			meter->LdB=-90;
-			meter->RdB=-90;
-			break;
-		case INV_METER_DRAW_MODE_FROMZERO:
-			meter->LdB=0;
-			meter->RdB=0;
-			break;
+	if(meter->bypass != num) {
+		meter->bypass = num;
+		switch(meter->mode) {
+			case INV_METER_DRAW_MODE_TOZERO:
+				meter->LdB=-90;
+				meter->RdB=-90;
+				break;
+			case INV_METER_DRAW_MODE_FROMZERO:
+				meter->LdB=0;
+				meter->RdB=0;
+				break;
+		}
+		if(GTK_WIDGET_REALIZED(meter))
+			inv_meter_paint(GTK_WIDGET(meter),INV_METER_DRAW_ALL);
 	}
-	if(GTK_WIDGET_REALIZED(meter))
-		inv_meter_paint(GTK_WIDGET(meter),INV_METER_DRAW_ALL);
 }
 
 void

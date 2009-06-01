@@ -81,8 +81,10 @@ void
 inv_lamp_set_value(InvLamp *lamp, float num)
 {
 	lamp->value = num;
-	if(GTK_WIDGET_REALIZED(lamp))
-		inv_lamp_paint(GTK_WIDGET(lamp),INV_LAMP_DRAW_DATA);
+	if(lamp->value != lamp->lastValue) {
+		if(GTK_WIDGET_REALIZED(lamp))
+			inv_lamp_paint(GTK_WIDGET(lamp),INV_LAMP_DRAW_DATA);
+	}
 }
 
 void inv_lamp_set_tooltip(InvLamp *lamp, gchar *tip)
@@ -258,7 +260,6 @@ inv_lamp_paint(GtkWidget *widget, gint mode)
 
 			cairo_stroke(cr);
 
-
 		case INV_LAMP_DRAW_DATA:
 
 			pat = cairo_pattern_create_radial (xc-1, yc-1, 1.5,
@@ -271,12 +272,13 @@ inv_lamp_paint(GtkWidget *widget, gint mode)
 			cairo_set_source (cr, pat);
 			cairo_arc(cr,xc,yc,r,0,2*INV_PI);
 			cairo_fill(cr);
-
 			INV_LAMP(widget)->lastValue = value;
+
 			break;
 
 
 	}
+
   	cairo_destroy(cr);
 }
 

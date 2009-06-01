@@ -424,6 +424,29 @@ on_inv_erreverb_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event,
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
 	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	if(pluginGui->bypass <= 0.0) {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+		inv_meter_set_bypass(       INV_METER       (pluginGui->meterIn),       INV_PLUGIN_ACTIVE);
+		inv_meter_set_bypass(       INV_METER       (pluginGui->meterOut),      INV_PLUGIN_ACTIVE);
+		inv_display_err_set_bypass( INV_DISPLAY_ERR (pluginGui->display),       INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobLength),    INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWidth),     INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHeight),    INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHPF),       INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWarmth),    INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobDiffusion), INV_PLUGIN_ACTIVE);
+	} else {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
+		inv_meter_set_bypass(       INV_METER       (pluginGui->meterIn),       INV_PLUGIN_BYPASS);
+		inv_meter_set_bypass(       INV_METER       (pluginGui->meterOut),      INV_PLUGIN_BYPASS);
+		inv_display_err_set_bypass( INV_DISPLAY_ERR (pluginGui->display),       INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobLength),    INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWidth),     INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHeight),    INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobHPF),       INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobWarmth),    INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(        INV_KNOB        (pluginGui->knobDiffusion), INV_PLUGIN_BYPASS);
+	}
 	(*pluginGui->write_function)(pluginGui->controller, IERR_BYPASS, 4, 0, &pluginGui->bypass);
 	return;
 }
@@ -434,6 +457,7 @@ on_inv_erreverb_length_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer 
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
 	pluginGui->length=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_err_set_room(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_ROOM_LENGTH, pluginGui->length);
 	(*pluginGui->write_function)(pluginGui->controller, IERR_ROOMLENGTH, 4, 0, &pluginGui->length);
 	return;
 }
@@ -444,6 +468,7 @@ on_inv_erreverb_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer d
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
 	pluginGui->width=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_err_set_room(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_ROOM_WIDTH,  pluginGui->width);
 	(*pluginGui->write_function)(pluginGui->controller, IERR_ROOMWIDTH, 4, 0, &pluginGui->width);
 	return;
 }
@@ -454,6 +479,7 @@ on_inv_erreverb_height_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer 
 	IErReverbGui *pluginGui = (IErReverbGui *) data;
 
 	pluginGui->height=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_err_set_room(INV_DISPLAY_ERR (pluginGui->display),   INV_DISPLAY_ERR_ROOM_HEIGHT, pluginGui->height);
 	(*pluginGui->write_function)(pluginGui->controller, IERR_ROOMHEIGHT, 4, 0, &pluginGui->height);
 	return;
 }

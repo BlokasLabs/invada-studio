@@ -75,9 +75,12 @@ inv_phase_meter_get_type(void)
 void
 inv_phase_meter_set_bypass(InvPhaseMeter *meter, gint num)
 {
-	meter->bypass = num;
-	if(GTK_WIDGET_REALIZED(meter))
-		inv_phase_meter_paint(GTK_WIDGET(meter),INV_PHASE_METER_DRAW_ALL);
+	if(meter->bypass != num) {
+		meter->bypass = num;
+		meter->phase=0;
+		if(GTK_WIDGET_REALIZED(meter))
+			inv_phase_meter_paint(GTK_WIDGET(meter),INV_PHASE_METER_DRAW_ALL);
+	}
 }
 
 void

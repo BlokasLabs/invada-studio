@@ -75,9 +75,11 @@ inv_display_comp_get_type(void)
 void
 inv_display_comp_set_bypass(InvDisplayComp *displayComp, gint num)
 {
-	displayComp->bypass = num;
-	if(GTK_WIDGET_REALIZED(displayComp))
-		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_ALL);
+	if(displayComp->bypass != num) {
+		displayComp->bypass = num;
+		if(GTK_WIDGET_REALIZED(displayComp))
+			inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_ALL);
+	}
 }
 
 void
@@ -88,8 +90,10 @@ inv_display_comp_set_rms(InvDisplayComp *displayComp, float num)
 	else if (num <= 1)
 		displayComp->rms = num;
 	else displayComp->rms = 1;
-	if(GTK_WIDGET_REALIZED(displayComp))
-		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	if(displayComp->rms != displayComp->Lastrms) {
+		if(GTK_WIDGET_REALIZED(displayComp))
+			inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	}
 }
 
 void
@@ -100,8 +104,10 @@ inv_display_comp_set_attack(InvDisplayComp *displayComp, float num)
 	else if (num <= 0.750)
 		displayComp->attack = num;
 	else displayComp->attack = 0.750;
-	if(GTK_WIDGET_REALIZED(displayComp))
-		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	if(displayComp->attack != displayComp->Lastattack) {
+		if(GTK_WIDGET_REALIZED(displayComp))
+			inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	}
 }
 
 void
@@ -112,8 +118,10 @@ inv_display_comp_set_release(InvDisplayComp *displayComp, float num)
 	else if (num <= 5.0)
 		displayComp->release = num;
 	else displayComp->release = 5.0;
-	if(GTK_WIDGET_REALIZED(displayComp))
-		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	if(displayComp->release != displayComp->Lastrelease) {
+		if(GTK_WIDGET_REALIZED(displayComp))
+			inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	}
 }
 
 void
@@ -124,8 +132,10 @@ inv_display_comp_set_threshold(InvDisplayComp *displayComp, float num)
 	else if (num <= 0.0)
 		displayComp->threshold = num;
 	else displayComp->threshold = 0.0;
+	if(displayComp->threshold != displayComp->Lastthreshold) {
 	if(GTK_WIDGET_REALIZED(displayComp))
 		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	}
 }
 
 void
@@ -136,8 +146,10 @@ inv_display_comp_set_ratio(InvDisplayComp *displayComp, float num)
 	else if (num <= 20.0)
 		displayComp->ratio = num;
 	else displayComp->ratio = 20.0;
-	if(GTK_WIDGET_REALIZED(displayComp))
-		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	if(displayComp->ratio != displayComp->Lastratio) {
+		if(GTK_WIDGET_REALIZED(displayComp))
+			inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	}
 }
 
 void
@@ -148,8 +160,10 @@ inv_display_comp_set_gain(InvDisplayComp *displayComp, float num)
 	else if (num <= 36.0)
 		displayComp->gain = num;
 	else displayComp->gain = 36.0;
-	if(GTK_WIDGET_REALIZED(displayComp))
-		inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	if(displayComp->gain != displayComp->Lastgain) {
+		if(GTK_WIDGET_REALIZED(displayComp))
+			inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_DATA);
+	}
 }
 
 
@@ -495,14 +509,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 	|| rms  != INV_DISPLAY_COMP(widget)->Lastrms 
 	|| attack    != INV_DISPLAY_COMP(widget)->Lastattack 
 	|| release   != INV_DISPLAY_COMP(widget)->Lastrelease ) {
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-		} else {
-			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-		}
 
-		cairo_rectangle(cr, 3, 13, 294, 208 );
-		cairo_fill(cr);
 
 		if(mode == INV_DISPLAYCOMP_DRAW_ALL 
 		|| rms  != INV_DISPLAY_COMP(widget)->Lastrms ) {
@@ -536,7 +543,14 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			}
 		}
 
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
 
+		cairo_rectangle(cr, 3, 13, 294, 208 );
+		cairo_fill(cr);
 
 
 		//draw envelope

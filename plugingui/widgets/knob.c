@@ -90,9 +90,11 @@ inv_knob_get_type(void)
 void
 inv_knob_set_bypass(InvKnob *knob, gint num)
 {
-	knob->bypass = num;
-	if(GTK_WIDGET_REALIZED(knob))
-		inv_knob_paint(GTK_WIDGET(knob),INV_KNOB_DRAW_ALL);
+	if(knob->bypass != num) {
+		knob->bypass = num;
+		if(GTK_WIDGET_REALIZED(knob))
+			inv_knob_paint(GTK_WIDGET(knob),INV_KNOB_DRAW_ALL);
+	}
 }
 
 void
@@ -169,9 +171,10 @@ inv_knob_set_value(InvKnob *knob, float num)
 		knob->value = knob->min;
 	else
 		knob->value = num;
-
-	if(GTK_WIDGET_REALIZED(knob))
-		inv_knob_paint(GTK_WIDGET(knob),INV_KNOB_DRAW_DATA);
+	if(knob->value != knob->lastvalue) {
+		if(GTK_WIDGET_REALIZED(knob))
+			inv_knob_paint(GTK_WIDGET(knob),INV_KNOB_DRAW_DATA);
+	}
 }
 
 void 

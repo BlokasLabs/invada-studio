@@ -395,6 +395,25 @@ on_inv_phaser_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, g
 	IPhaserGui *pluginGui = (IPhaserGui *) data;
 
 	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	if(pluginGui->bypass <= 0.0) {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_ACTIVE);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobCycle),    INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPhase),    INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),    INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobDepth),    INV_PLUGIN_ACTIVE);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
+	} else {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_BYPASS);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobCycle),    INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPhase),    INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),    INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobDepth),    INV_PLUGIN_BYPASS);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
+	}
 	(*pluginGui->write_function)(pluginGui->controller, IPHASER_BYPASS, 4, 0, &pluginGui->bypass);
 	return;
 }

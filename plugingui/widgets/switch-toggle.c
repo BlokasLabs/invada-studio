@@ -80,9 +80,11 @@ inv_switch_toggle_get_type(void)
 void
 inv_switch_toggle_set_bypass(InvSwitchToggle *switch_toggle, gint num)
 {
-	switch_toggle->bypass = num;
-	if(GTK_WIDGET_REALIZED(switch_toggle))
-		inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_ALL);
+	if(switch_toggle->bypass != num) {
+		switch_toggle->bypass = num;
+		if(GTK_WIDGET_REALIZED(switch_toggle))
+			inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_ALL);
+	}
 }
 
 void
@@ -108,17 +110,19 @@ inv_switch_toggle_get_value(InvSwitchToggle *switch_toggle)
 void
 inv_switch_toggle_set_state(InvSwitchToggle *switch_toggle, gint state)
 {
-	switch_toggle->state = state;
-	switch(state) {
-		case INV_SWITCH_TOGGLE_ON:
-			switch_toggle->value = switch_toggle->on_value;
-			break;
-		case INV_SWITCH_TOGGLE_OFF:
-			switch_toggle->value = switch_toggle->off_value;
-			break;
+	if(switch_toggle->state != state) {
+		switch_toggle->state = state;
+		switch(state) {
+			case INV_SWITCH_TOGGLE_ON:
+				switch_toggle->value = switch_toggle->on_value;
+				break;
+			case INV_SWITCH_TOGGLE_OFF:
+				switch_toggle->value = switch_toggle->off_value;
+				break;
+		}
+		if(GTK_WIDGET_REALIZED(switch_toggle))
+			inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_DATA);
 	}
-	if(GTK_WIDGET_REALIZED(switch_toggle))
-		inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_DATA);
 }
 
 void inv_switch_toggle_set_value(InvSwitchToggle *switch_toggle, gint state, float value)

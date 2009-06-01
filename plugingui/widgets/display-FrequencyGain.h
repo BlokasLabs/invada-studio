@@ -49,6 +49,9 @@ struct _InvDisplayFG {
 	gint mode;
 	float freq;
 	float gain;
+
+	float Lastfreq;
+	float Lastgain;
 };
 
 struct _InvDisplayFGClass {

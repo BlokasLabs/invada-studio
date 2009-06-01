@@ -463,6 +463,33 @@ on_inv_comp_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpo
 	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	if(pluginGui->bypass <= 0.0) {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_ACTIVE);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterGR),      INV_PLUGIN_ACTIVE);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_ACTIVE);
+		inv_display_comp_set_bypass(  INV_DISPLAY_COMP  (pluginGui->display),      INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRms),      INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobAttack),   INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRelease),  INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobThreshold),INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRatio),    INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobGain),     INV_PLUGIN_ACTIVE);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
+	} else {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_BYPASS);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterGR),      INV_PLUGIN_BYPASS);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_BYPASS);
+		inv_display_comp_set_bypass(  INV_DISPLAY_COMP  (pluginGui->display),      INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRms),      INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobAttack),   INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRelease),  INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobThreshold),INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobRatio),    INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobGain),     INV_PLUGIN_BYPASS);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
+	}
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_BYPASS, 4, 0, &pluginGui->bypass);
 	return;
 }
@@ -473,6 +500,7 @@ static void on_inv_comp_rms_knob_motion(GtkWidget *widget, GdkEvent *event, gpoi
 	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->rms=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_comp_set_rms(INV_DISPLAY_COMP (pluginGui->display), pluginGui->rms);
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_RMS, 4, 0, &pluginGui->rms);
 	return;
 }
@@ -482,6 +510,7 @@ static void on_inv_comp_attack_knob_motion(GtkWidget *widget, GdkEvent *event, g
 	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->attack=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_comp_set_attack(INV_DISPLAY_COMP (pluginGui->display), pluginGui->attack);
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_ATTACK, 4, 0, &pluginGui->attack);
 	return;
 }
@@ -491,6 +520,7 @@ static void on_inv_comp_release_knob_motion(GtkWidget *widget, GdkEvent *event, 
 	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->release=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_comp_set_release(INV_DISPLAY_COMP (pluginGui->display), pluginGui->release);
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_RELEASE, 4, 0, &pluginGui->release);
 	return;
 }
@@ -500,6 +530,7 @@ static void on_inv_comp_threshold_knob_motion(GtkWidget *widget, GdkEvent *event
 	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->threshold=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_comp_set_threshold(INV_DISPLAY_COMP (pluginGui->display), pluginGui->threshold);
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_THRESH, 4, 0, &pluginGui->threshold);
 	return;
 }
@@ -509,6 +540,7 @@ static void on_inv_comp_ratio_knob_motion(GtkWidget *widget, GdkEvent *event, gp
 	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->ratio=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_comp_set_ratio(INV_DISPLAY_COMP (pluginGui->display), pluginGui->ratio);
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_RATIO, 4, 0, &pluginGui->ratio);
 	return;
 }
@@ -519,6 +551,7 @@ static void on_inv_comp_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpo
 	ICompGui *pluginGui = (ICompGui *) data;
 
 	pluginGui->gain=inv_knob_get_value(INV_KNOB (widget));
+	inv_display_comp_set_gain(INV_DISPLAY_COMP (pluginGui->display), pluginGui->gain);
 	(*pluginGui->write_function)(pluginGui->controller, ICOMP_GAIN, 4, 0, &pluginGui->gain);
 	return;
 }

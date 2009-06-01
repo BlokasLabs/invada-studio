@@ -89,9 +89,11 @@ inv_display_err_get_active_dot(InvDisplayErr *displayErr) {
 void
 inv_display_err_set_bypass(InvDisplayErr *displayErr, gint num)
 {
-	displayErr->bypass = num;
-	if(GTK_WIDGET_REALIZED(displayErr))
-		inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_ALL);
+	if(displayErr->bypass != num) {
+		displayErr->bypass = num;
+		if(GTK_WIDGET_REALIZED(displayErr))
+			inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_ALL);
+	}
 }
 
 float 
@@ -122,8 +124,10 @@ inv_display_err_set_room(InvDisplayErr *displayErr, gint axis, float num)
 			displayErr->room[axis]=num;
 			break;
 	}
-	if(GTK_WIDGET_REALIZED(displayErr))
-		inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	if(displayErr->room[axis] != displayErr->Lastroom[axis]) {
+		if(GTK_WIDGET_REALIZED(displayErr))
+			inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	}
 }
 
 void
@@ -141,8 +145,10 @@ inv_display_err_set_source(InvDisplayErr *displayErr, gint axis, float num)
 			displayErr->source[axis]=num;
 			break;
 	}
-	if(GTK_WIDGET_REALIZED(displayErr))
-		inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	if(displayErr->source[axis] != displayErr->Lastsource[axis]) {
+		if(GTK_WIDGET_REALIZED(displayErr))
+			inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	}
 }
 
 void
@@ -160,8 +166,10 @@ inv_display_err_set_dest(InvDisplayErr *displayErr, gint axis, float num)
 			displayErr->dest[axis]=num;
 			break;
 	}
-	if(GTK_WIDGET_REALIZED(displayErr))
-		inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	if(displayErr->dest[axis] != displayErr->Lastdest[axis]) {
+		if(GTK_WIDGET_REALIZED(displayErr))
+			inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	}
 }
 
 void
@@ -171,8 +179,10 @@ inv_display_err_set_diffusion(InvDisplayErr *displayErr, float num)
 	if(num>100) num=1;
 	displayErr->diffusion=num/100;
 
-	if(GTK_WIDGET_REALIZED(displayErr))
-		inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	if(displayErr->diffusion != displayErr->Lastdiffusion) {
+		if(GTK_WIDGET_REALIZED(displayErr))
+			inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_DATA);
+	}
 }
 
 GtkWidget * inv_display_err_new()
@@ -470,13 +480,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	   dFB!=INV_DISPLAY_ERR(widget)->Lastdest[INV_DISPLAY_ERR_FB] ||
 	   mode==INV_DISPLAY_ERR_DRAW_ALL) {
 
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-		} else {
-			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-		}
-		cairo_rectangle(cr, 3, 12, 204, 135 );
-		cairo_fill(cr);
+
 
 		camera.x=4*l;		
 		camera.y=(2*h)+((w+l)/2);	
@@ -543,6 +547,14 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		scale = sx > sy ? sy : sx;
 
 		//plot with scale
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
+		cairo_rectangle(cr, 3, 12, 204, 135 );
+		cairo_fill(cr);
+
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 
 
@@ -631,15 +643,6 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	   diffusion!=INV_DISPLAY_ERR(widget)->Lastdiffusion ||
 	   mode==INV_DISPLAY_ERR_DRAW_ALL) {
 
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-		} else {
-			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-		}
-		cairo_rectangle(cr, 3, 163, 204, 134 );
-		cairo_fill(cr);
-
-
 		min_delay=9999999;
 		max_delay=0;
 		max_gain=0;
@@ -651,6 +654,14 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 			max_gain=fabs(er->GainR) > max_gain ? fabs(er->GainR) : max_gain;
 			er++;
 		}
+
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
+		cairo_rectangle(cr, 3, 163, 204, 134 );
+		cairo_fill(cr);
 
 		// show min and max
 		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
@@ -717,14 +728,6 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	   dFB!=INV_DISPLAY_ERR(widget)->Lastdest[INV_DISPLAY_ERR_FB] ||
 	   mode==INV_DISPLAY_ERR_DRAW_ALL) {
 
-		if(bypass==INV_PLUGIN_BYPASS) {
-			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-		} else {
-			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
-		}
-		cairo_rectangle(cr, 213, 24, 294, 272 );
-		cairo_fill(cr);
-
 		sw=pow(w,0.5);
 		sl=pow(l,0.5);
 		scale=9999999;
@@ -733,6 +736,14 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 
 		sw=sw*scale/2;
 		sl=sl*scale/2;
+
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+		} else {
+			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
+		}
+		cairo_rectangle(cr, 213, 24, 294, 272 );
+		cairo_fill(cr);
 	
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 		if(active_dot==INV_DISPLAY_ERR_DOT_SOURCE) {

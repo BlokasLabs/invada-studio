@@ -415,6 +415,29 @@ on_inv_input_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gp
 	IInputGui *pluginGui = (IInputGui *) data;
 
 	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	if(pluginGui->bypass <= 0.0) {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_ACTIVE);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_ACTIVE);
+		inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_ACTIVE);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_PLUGIN_ACTIVE);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobGain),     INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan),      INV_PLUGIN_ACTIVE);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),    INV_PLUGIN_ACTIVE);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
+	} else {
+		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),      INV_PLUGIN_BYPASS);
+		inv_meter_set_bypass(         INV_METER         (pluginGui->meterOut),     INV_PLUGIN_BYPASS);
+		inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_BYPASS);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_PLUGIN_BYPASS);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobGain),     INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan),      INV_PLUGIN_BYPASS);
+		inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),    INV_PLUGIN_BYPASS);
+		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
+	}
 	(*pluginGui->write_function)(pluginGui->controller, IINPUT_BYPASS, 4, 0, &pluginGui->bypass);
 	return;
 }
