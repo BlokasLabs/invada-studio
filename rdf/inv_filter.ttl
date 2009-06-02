@@ -129,6 +129,7 @@
 	lv2:index 4 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -137,6 +138,7 @@
 	lv2:index 5 ;
 	lv2:symbol "meterOut" ;
 	lv2:name "Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -155,6 +157,9 @@
 	lv2:index 8 ;
 	lv2:symbol "lampDrive" ;
 	lv2:name "Drive" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] .
 
 <http://invadarecords.com/plugins/lv2/filter/lpf/stereo>
@@ -216,6 +221,7 @@
 	lv2:index 4 ;
 	lv2:symbol "meterInL" ;
 	lv2:name "L In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -224,6 +230,7 @@
 	lv2:index 5 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -242,11 +249,15 @@
 	lv2:index 8 ;
 	lv2:symbol "lampDrive" ;
 	lv2:name "Drive" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 9 ;
 	lv2:symbol "meterInR" ;
 	lv2:name "R In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -255,6 +266,7 @@
 	lv2:index 10 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -329,6 +341,7 @@
 	lv2:index 4 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -337,6 +350,7 @@
 	lv2:index 5 ;
 	lv2:symbol "meterOut" ;
 	lv2:name "Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -355,6 +369,9 @@
 	lv2:index 8 ;
 	lv2:symbol "lampDrive" ;
 	lv2:name "Drive" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] .
 
 <http://invadarecords.com/plugins/lv2/filter/hpf/stereo>
@@ -416,6 +433,7 @@
 	lv2:index 4 ;
 	lv2:symbol "meterInL" ;
 	lv2:name "L In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -424,6 +442,7 @@
 	lv2:index 5 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -442,11 +461,15 @@
 	lv2:index 8 ;
 	lv2:symbol "lampDrive" ;
 	lv2:name "Drive" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 9 ;
 	lv2:symbol "meterInR" ;
 	lv2:name "R In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -455,6 +478,7 @@
 	lv2:index 10 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;

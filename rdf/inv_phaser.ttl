@@ -152,16 +152,25 @@
 	lv2:index 6 ;
 	lv2:symbol "lampDrive" ;
 	lv2:name "Drive Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 7 ;
 	lv2:symbol "lampL" ;
 	lv2:name "LFO L Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 8 ;
 	lv2:symbol "lampR" ;
 	lv2:name "LFO R Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 9 ;
@@ -177,6 +186,7 @@
 	lv2:index 11 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -185,6 +195,7 @@
 	lv2:index 12 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -198,6 +209,7 @@
 	lv2:index 14 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -279,16 +291,25 @@
 	lv2:index 6 ;
 	lv2:symbol "lampDrive" ;
 	lv2:name "Drive Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 7 ;
 	lv2:symbol "lampL" ;
 	lv2:name "LFO L Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 8 ;
 	lv2:symbol "lampR" ;
 	lv2:name "LFO R Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 9 ;
@@ -304,6 +325,7 @@
 	lv2:index 11 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -312,6 +334,7 @@
 	lv2:index 12 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -325,6 +348,7 @@
 	lv2:index 14 ;
 	lv2:symbol "meterInL" ;
 	lv2:name "In L" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -338,6 +362,7 @@
 	lv2:index 16 ;
 	lv2:symbol "meterInR" ;
 	lv2:name "In R" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -420,16 +445,25 @@
 	lv2:index 6 ;
 	lv2:symbol "lampDrive" ;
 	lv2:name "Drive Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 7 ;
 	lv2:symbol "lampL" ;
 	lv2:name "LFO L Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 8 ;
 	lv2:symbol "lampR" ;
 	lv2:name "LFO R Lamp" ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 10.0 ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 9 ;
@@ -445,6 +479,7 @@
 	lv2:index 11 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -453,6 +488,7 @@
 	lv2:index 12 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
@@ -466,6 +502,7 @@
 	lv2:index 14 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
+	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
