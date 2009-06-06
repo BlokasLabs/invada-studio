@@ -1,3 +1,15 @@
+invada-studio-plugins-lv2 (1.0.1-0ubuntu0~ppa1~karmic1) karmic; urgency=low
+
+  * Disabled tool-tips while widgets are being interacted with.
+  * Fixed makefile compile & linking options (Bug #381945).
+  * Fixed multile RDF errors affecting host compatibility (Bugs #382021, 
+    #382147, #382150 & #382151).
+  * Made the plugins more tolerant of differing implementations of the UI 
+    Extension (Bug #382147).
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 6 Jun 2009 20:00:00 +1000
+
+
 invada-studio-plugins-lv2 (1.0.0-0ubuntu0~ppa1~karmic1) karmic; urgency=low
 
   * Initial Release.

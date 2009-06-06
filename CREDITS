@@ -3,14 +3,10 @@ support, comments, suggestions, patches etc.
 
 Denise Faulkner - for putting up with me :)
 Thorsten Wilms, Steve Harris, Dave Robillard - for the LV2 spec, without which this wouldn't be possible.
-
+Nedko Arnaudov, Dave Robillard, Philipp Hollunder - for being another pair of eyes (or is that ears?). 
 
 Big thanks to the people making the host applications - without which this software would be useless:
 Ardour [http://ardour.org]
-Hydrogen [http://www.hydrogen-music.org/]
-Jack-Rack [http://jack-rack.sourceforge.net/]
-LMMS [http://lmms.sourceforge.net/]
-Muse [http://muse-sequencer.org/]
-Rosegarden [http://www.rosegardenmusic.com/]
+lv2Rack [http://home.gna.org/zynjacku/]
  
 

@@ -774,6 +774,7 @@ static gboolean
 inv_knob_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
 	g_assert(INV_IS_KNOB(widget));
+	g_object_set(G_OBJECT(widget),"has-tooltip",FALSE,NULL);
 	gtk_widget_set_state(widget,GTK_STATE_ACTIVE);
     	gtk_widget_grab_focus(widget);
 
@@ -810,6 +811,7 @@ inv_knob_button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
 	g_assert(INV_IS_KNOB(widget));
 	gtk_widget_set_state(widget,GTK_STATE_NORMAL);
+	g_object_set(G_OBJECT(widget),"has-tooltip",TRUE,NULL);
 	inv_knob_paint(widget,INV_KNOB_DRAW_ALL);
 
 	return TRUE;

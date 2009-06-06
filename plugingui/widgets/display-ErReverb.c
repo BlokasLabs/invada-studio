@@ -927,6 +927,7 @@ inv_display_err_button_press_event (GtkWidget *widget, GdkEventButton *event)
 			event->y);
 	if(INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_DOT_SOURCE
 	|| INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_DOT_DEST) {
+		g_object_set(G_OBJECT(widget),"has-tooltip",FALSE,NULL);
 		gtk_widget_set_state(widget,GTK_STATE_ACTIVE);
 	    	gtk_widget_grab_focus(widget);
 		inv_display_err_paint(widget,INV_DISPLAY_ERR_DRAW_DATA);
@@ -975,6 +976,7 @@ inv_display_err_button_release_event (GtkWidget *widget, GdkEventButton *event)
 	|| INV_DISPLAY_ERR(widget)->active_dot == INV_DISPLAY_ERR_DOT_DEST) {
 		INV_DISPLAY_ERR(widget)->active_dot= INV_DISPLAY_ERR_DOT_NONE;
 		gtk_widget_set_state(widget,GTK_STATE_NORMAL);
+		g_object_set(G_OBJECT(widget),"has-tooltip",TRUE,NULL);
 		inv_display_err_paint(widget,INV_DISPLAY_ERR_DRAW_DATA);
 	}
 	return TRUE;
