@@ -1,3 +1,10 @@
+invada-studio-plugins-lv2 (1.0.1-0ubuntu0~ppa1~intrepid2) intrepid; urgency=low
+
+  * Spelling mistakes
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sat, 6 Jun 2009 20:00:00 +1000
+
+
 invada-studio-plugins-lv2 (1.0.1-0ubuntu0~ppa1~intrepid1) intrepid; urgency=low
 
   * Disabled tool-tips while widgets are being interacted with.
