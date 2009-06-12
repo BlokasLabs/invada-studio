@@ -48,7 +48,7 @@
     ] ;
     lv2:optionalFeature lv2:hardRtCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/input/gui> ;
-    dc:replaces <ladspa:3301> ;
+    dc:replaces <urn:ladspa:3301> ;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;

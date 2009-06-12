@@ -57,7 +57,7 @@
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/tube/gui> ;
-    dc:replaces <ladspa:3306> ;
+    dc:replaces <urn:ladspa:3306> ;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -158,7 +158,7 @@
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRtCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/tube/gui> ;
-    dc:replaces <ladspa:3307> ;
+    dc:replaces <urn:ladspa:3307> ;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;

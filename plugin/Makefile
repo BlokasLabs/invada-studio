@@ -25,6 +25,7 @@ CFLAGS		=	-I. -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -f
 LDFLAGS		=	-shared -Llibrary -lc -lm  -linv_common -fPIC -DPIC
 
 PLUGINS		=	inv_compressor.so \
+                        inv_delay.so \
                         inv_erreverb.so \
                         inv_filter.so \
                         inv_input.so \
@@ -37,6 +38,7 @@ all:	$(PLUGINS)
 # RULES TO BUILD PLUGINS FROM C CODE
 
 inv_compressor.so:	inv_compressor.o	inv_compressor.h
+inv_delay.so:		inv_delay.o		inv_delay.h    
 inv_erreverb.so:	inv_erreverb.o		inv_erreverb.h    
 inv_filter.so:		inv_filter.o		inv_filter.h    
 inv_input.so:		inv_input.o		inv_input.h   
