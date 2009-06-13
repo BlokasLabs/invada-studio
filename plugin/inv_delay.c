@@ -312,14 +312,21 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	f1DelayOffset	= f1Delay-(float)l1DelaySample;
 	f1PanLGain	= (1-plugin->Converted1Pan)/2;
 	f1PanRGain	= (1+plugin->Converted1Pan)/2;
-	f1FB		= plugin->Converted1FB;
+
 
 	f2Delay		= plugin->Converted2Delay;
 	l2DelaySample	= (unsigned long)f2Delay;
 	f2DelayOffset	= f2Delay-(float)l2DelaySample;
 	f2PanLGain	= (1-plugin->Converted2Pan)/2;
 	f2PanRGain	= (1+plugin->Converted2Pan)/2;
-	f2FB		= plugin->Converted2FB;
+
+	if(fMungeMode < 0.5) {
+		f1FB	= plugin->Converted1FB / (1+fMunge);
+		f2FB	= plugin->Converted2FB / (1+fMunge);
+	} else {
+		f1FB	= plugin->Converted1FB * pow(2.0,-2.0*fMunge);
+		f2FB	= plugin->Converted2FB * pow(2.0,-2.0*fMunge);
+	}
 
 	
 	SpaceSize 	= plugin->SpaceSize;
@@ -361,11 +368,16 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 			In1FB= (1-fMunge)*(In+(f1FB*Out1)) + fMunge*ITube_do(In+(f1FB*Out1),1+fMunge);
 			In2FB= (1-fMunge)*(In+(f2FB*Out2)) + fMunge*ITube_do(In+(f2FB*Out2),1+fMunge);
 			HPF1 = ((fHPFsamples-1) * HPF1 + In1FB) / fHPFsamples;  
-			HPF2 = ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples;  
+			HPF2 = ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples; 
 			LPF1 = ((fLPFsamples-1) * LPF1 + (In1FB-HPF1)) / fLPFsamples; 
-			LPF2 = ((fLPFsamples-1) * LPF2 + (In2FB-HPF2)) / fLPFsamples; 
-			In1Munged = LPF1;
-			In2Munged = LPF2;
+			LPF2 = ((fLPFsamples-1) * LPF2 + (In2FB-HPF2)) / fLPFsamples;  
+			if(fMungeMode<0.5) {
+				In1Munged = LPF1;
+				In2Munged = LPF2;
+			} else {
+				In1Munged = 2 * (In1FB-HPF1) - LPF1;
+				In2Munged = 2 * (In2FB-HPF2) - LPF2;
+			} 
 
 			// add to the delay space
 			if(SpaceLCur+l1DelaySample > SpaceLEnd)
@@ -505,14 +517,20 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	f1DelayOffset	= f1Delay-(float)l1DelaySample;
 	f1PanLGain	= (1-plugin->Converted1Pan)/2;
 	f1PanRGain	= (1+plugin->Converted1Pan)/2;
-	f1FB		= plugin->Converted1FB/ (1+fMunge);
 
 	f2Delay		= plugin->Converted2Delay;
 	l2DelaySample	= (unsigned long)f2Delay;
 	f2DelayOffset	= f2Delay-(float)l2DelaySample;
 	f2PanLGain	= (1-plugin->Converted2Pan)/2;
 	f2PanRGain	= (1+plugin->Converted2Pan)/2;
-	f2FB		= plugin->Converted2FB / (1+fMunge);
+
+	if(fMungeMode < 0.5) {
+		f1FB	= plugin->Converted1FB / (1+fMunge);
+		f2FB	= plugin->Converted2FB / (1+fMunge);
+	} else {
+		f1FB	= plugin->Converted1FB * pow(2.0,-2.0*fMunge);
+		f2FB	= plugin->Converted2FB * pow(2.0,-2.0*fMunge);
+	}
 	
 	SpaceSize 	= plugin->SpaceSize;
 
@@ -554,11 +572,17 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 			In1FB= (1-fMunge)*(In+(f1FB*Out1)) + fMunge*ITube_do(In+(f1FB*Out1),1+fMunge);
 			In2FB= (1-fMunge)*(In+(f2FB*Out2)) + fMunge*ITube_do(In+(f2FB*Out2),1+fMunge);
 			HPF1 = ((fHPFsamples-1) * HPF1 + In1FB) / fHPFsamples;  
-			HPF2 = ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples;  
+			HPF2 = ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples; 
 			LPF1 = ((fLPFsamples-1) * LPF1 + (In1FB-HPF1)) / fLPFsamples; 
-			LPF2 = ((fLPFsamples-1) * LPF2 + (In2FB-HPF2)) / fLPFsamples; 
-			In1Munged = LPF1;
-			In2Munged = LPF2;
+			LPF2 = ((fLPFsamples-1) * LPF2 + (In2FB-HPF2)) / fLPFsamples;  
+			if(fMungeMode<0.5) {
+				In1Munged = LPF1;
+				In2Munged = LPF2;
+			} else {
+				In1Munged = 2 * (In1FB-HPF1) - LPF1;
+				In2Munged = 2 * (In2FB-HPF2) - LPF2;
+			} 
+
 
 			// add to the delay space
 			if(SpaceLCur+l1DelaySample > SpaceLEnd)
@@ -764,17 +788,17 @@ convertMunge (unsigned int mode, float munge, double sr)
 			if (munge < 0)
 				result = sr/(2*pow(10,(4.34)));  //22kHz
 			else if (munge <= 100.0)
-				result = sr/(2*pow(10,(4.34-(munge*0.0086))));
+				result = sr/(2*pow(10,(4.34-(munge*0.0074))));
 			else
-				result = sr/(2*pow(10,(3.48)));  //3kHz
+				result = sr/(2*pow(10,(3.60)));  //4kHz
 			break;
 		case 1: //HPF
 			if (munge < 0)
 				result = sr/(2*pow(10,(1.30)));  //20Hz
 			else if (munge <= 100.0)
-				result = sr/(2*pow(10,(1.30+(munge*0.0140))));
+				result = sr/(2*pow(10,(1.30+(munge*0.0160))));
 			else
-				result = sr/(2*pow(10,(2.70)));  //500Hz
+				result = sr/(2*pow(10,(2.90)));  //800Hz
 			break;
 		default:
 			result=1;
