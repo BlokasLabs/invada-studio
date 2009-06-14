@@ -1,6 +1,6 @@
 /* 
 
-    This LV2 plugin provides phaser plugins
+    This LV2 plugin provides munged delay plugins
 
     (c) Fraser Stuart 2009
 
@@ -17,28 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-
-    Some Notes:
-    ===========
-    This plugin is not your classic sort of reverb that makes long washy spaces.
-    It simulates a room by calculating the early reflections that occur off the walls/roof etc.
-
-    It's useful for:
-    a) putting dry signals in a 'natural' space so they sit with sounds recorded with 'room' anbience in them.
-    b) thickening strings, vocals etc without softening or washing out.
-    c) as a singal preprocess for reverb that does not have early reflections.
-    d) accurate stereo placement by setting the 'source' LR the same as any panning the dry signle has. This is 
-    because the early reflections from the off-center single reinforce the location of the sound rather than 
-    contradicting it as a normal reverb would do. 
-
-    Parameter description:
-    RoomLength,RoomWidth,RoomHeight - the dimensions (in meters) of the room
-    SourceLR, SourceFB (FB=Front/Back) - where the sound source is in the room (always the back half)
-    DestLR, DestFB (FB=Front/Back) - where the destination (or listener) is in the room (always the front half)
-    HPF - roll off some bottom end
-    Warmth - roll off top end (amount depends on reflection count)
-    Diffusion - makes the relections less perfect to simulate objects in the room.
 
 */
 
@@ -58,14 +36,17 @@ typedef struct {
 
 	/* Ports */
 	float *ControlBypass;
+	float *ControlMode;
 	float *ControlMungeMode;
 	float *ControlMunge;
 	float *Control1Delay;
-	float *Control1Pan;
 	float *Control1FB; 
+	float *Control1Pan;
+	float *Control1Vol;
 	float *Control2Delay;
-	float *Control2Pan;
 	float *Control2FB; 
+	float *Control2Pan;
+	float *Control2Vol;
 
 	float *AudioOutputBufferL;
 	float *AudioOutputBufferR;
@@ -80,35 +61,43 @@ typedef struct {
 
 	/* Stuff to remember to avoid recalculating the delays every run */
 	float LastBypass;
+	float LastMode;
 	float LastMungeMode;
 	float LastMunge;
 	float Last1Delay;
-	float Last1Pan;
 	float Last1FB; 
+	float Last1Pan;
+	float Last1Vol;
 	float Last2Delay;
-	float Last2Pan;
 	float Last2FB; 
+	float Last2Pan;
+	float Last2Vol;
 
 
 	float AudioLPF1; 
 	float AudioLPF2; 
 	float AudioHPF1; 
 	float AudioHPF2; 
+	float AudioDegrain1; 
+	float AudioDegrain2; 
 	float EnvInLLast; 
 	float EnvOutLLast; 
 	float EnvOutRLast;
 
 	float ConvertedBypass; 
+	float ConvertedMode; 
 	float ConvertedMungeMode;
 	float ConvertedMunge;
 	float ConvertedLPFsamples;
 	float ConvertedHPFsamples;
 	float Converted1Delay;
-	float Converted1Pan;
 	float Converted1FB; 
+	float Converted1Pan;
+	float Converted1Vol;
 	float Converted2Delay;
-	float Converted2Pan;
 	float Converted2FB; 
+	float Converted2Pan;
+	float Converted2Vol;
 
 
 	/* Delay Space Data */
@@ -152,6 +141,9 @@ connectPortIDelay(LV2_Handle instance, uint32_t port, void *data)
 		case IDELAY_BYPASS:
 			plugin->ControlBypass = data;
 			break;
+		case IDELAY_MODE:
+			plugin->ControlMode = data;
+			break;
 		case IDELAY_MUNGEMODE:
 			plugin->ControlMungeMode = data;
 			break;
@@ -161,20 +153,26 @@ connectPortIDelay(LV2_Handle instance, uint32_t port, void *data)
 		case IDELAY_1_DELAY:
 			plugin->Control1Delay = data;
 			break;
+		case IDELAY_1_FB:
+			plugin->Control1FB = data;
+			break;
 		case IDELAY_1_PAN:
 			plugin->Control1Pan = data;
 			break;
-		case IDELAY_1_FB:
-			plugin->Control1FB = data;
+		case IDELAY_1_VOL:
+			plugin->Control1Vol = data;
 			break;
 		case IDELAY_2_DELAY:
 			plugin->Control2Delay = data;
 			break;
+		case IDELAY_2_FB:
+			plugin->Control2FB = data;
+			break;
 		case IDELAY_2_PAN:
 			plugin->Control2Pan = data;
 			break;
-		case IDELAY_2_FB:
-			plugin->Control2FB = data;
+		case IDELAY_2_VOL:
+			plugin->Control2Vol = data;
 			break;
 		case IDELAY_AUDIO_INL:
 			plugin->AudioInputBufferL = data;
@@ -226,19 +224,24 @@ activateIDelay(LV2_Handle instance)
   
 	//set defaults
 	plugin->LastBypass    	= 0.0;
+	plugin->LastMode	= 0.0;
 	plugin->LastMungeMode	= 0.0;
 	plugin->LastMunge	= 50.0;
 	plugin->Last1Delay	= 300.0;
-	plugin->Last1Pan	= -0.7;
 	plugin->Last1FB		= 0.0; 
+	plugin->Last1Pan	= -0.7;
+	plugin->Last1Vol	= 100.0;
 	plugin->Last2Delay	= 200.0;
-	plugin->Last2Pan	= 0.7;
 	plugin->Last2FB		= 0.0; 
+	plugin->Last2Pan	= 0.7;
+	plugin->Last2Vol	= 100.0;
 
 	plugin->AudioLPF1 	= 0; 
 	plugin->AudioLPF2 	= 0;  
 	plugin->AudioHPF1 	= 0; 
 	plugin->AudioHPF2 	= 0; 
+	plugin->AudioDegrain1 	= 0; 
+	plugin->AudioDegrain2 	= 0; 
 	plugin->EnvInLLast 	= 0; 
 	plugin->EnvOutLLast 	= 0; 
 	plugin->EnvOutRLast 	= 0; 
@@ -249,11 +252,13 @@ activateIDelay(LV2_Handle instance)
 	plugin->ConvertedLPFsamples = convertMunge(0,                plugin->LastMunge,     plugin->SampleRate); 
 	plugin->ConvertedHPFsamples = convertMunge(1,                plugin->LastMunge,     plugin->SampleRate);  
 	plugin->Converted1Delay     = convertParam(IDELAY_1_DELAY,   plugin->Last1Delay,    plugin->SampleRate);  
-	plugin->Converted1Pan       = convertParam(IDELAY_1_PAN,     plugin->Last1Pan,      plugin->SampleRate);  
 	plugin->Converted1FB        = convertParam(IDELAY_1_FB,      plugin->Last1FB,       plugin->SampleRate);  
+	plugin->Converted1Pan       = convertParam(IDELAY_1_PAN,     plugin->Last1Pan,      plugin->SampleRate);  
+	plugin->Converted1Vol       = convertParam(IDELAY_1_VOL,     plugin->Last1Vol,      plugin->SampleRate);  
 	plugin->Converted2Delay     = convertParam(IDELAY_2_DELAY,   plugin->Last2Delay,    plugin->SampleRate);  
-	plugin->Converted2Pan       = convertParam(IDELAY_2_PAN,     plugin->Last2Pan,      plugin->SampleRate);  
 	plugin->Converted2FB        = convertParam(IDELAY_2_FB,      plugin->Last2FB,       plugin->SampleRate); 
+	plugin->Converted2Pan       = convertParam(IDELAY_2_PAN,     plugin->Last2Pan,      plugin->SampleRate); 
+	plugin->Converted2Vol       = convertParam(IDELAY_2_VOL,     plugin->Last2Vol,      plugin->SampleRate); 
 }
 
 
@@ -265,11 +270,11 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;	
 	float In,Out1,Out2,OutL,OutR;
-	float LPF1,LPF2,HPF1,HPF2;
+	float LPF1,LPF2,HPF1,HPF2,Degrain1,Degrain2;
 	float EnvIn,EnvOutL,EnvOutR;
-	float fBypass,fMunge,fMungeMode,fHPFsamples,fLPFsamples;
-	float f1Delay,f1DelayOffset,f1PanLGain,f1PanRGain,f1FB,In1FB,In1Munged;
-	float f2Delay,f2DelayOffset,f2PanLGain,f2PanRGain,f2FB,In2FB,In2Munged;
+	float fBypass,fMode,fMunge,fMungeMode,fHPFsamples,fLPFsamples;
+	float f1Delay,f1DelayOffset,f1PanLGain,f1PanRGain,f1FB,In1FB,In1FBmix,In1Munged;
+	float f2Delay,f2DelayOffset,f2PanLGain,f2PanRGain,f2FB,In2FB,In2FBmix,In2Munged;
 	unsigned long l1DelaySample;
 	unsigned long l2DelaySample;
 	unsigned long lSampleIndex;
@@ -286,13 +291,16 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 
 	/* check if any other params have changed */
 	checkParamChange(IDELAY_BYPASS,    plugin->ControlBypass,    &(plugin->LastBypass),    &(plugin->ConvertedBypass),    plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_MODE,      plugin->ControlMode,      &(plugin->LastMode),      &(plugin->ConvertedMode),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_MUNGEMODE, plugin->ControlMungeMode, &(plugin->LastMungeMode), &(plugin->ConvertedMungeMode), plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_1_DELAY,   plugin->Control1Delay,    &(plugin->Last1Delay),    &(plugin->Converted1Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_PAN,     plugin->Control1Pan,      &(plugin->Last1Pan),      &(plugin->Converted1Pan),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_1_FB,      plugin->Control1FB,       &(plugin->Last1FB),       &(plugin->Converted1FB),       plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_1_PAN,     plugin->Control1Pan,      &(plugin->Last1Pan),      &(plugin->Converted1Pan),      plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_1_VOL,     plugin->Control1Vol,      &(plugin->Last1Vol),      &(plugin->Converted1Vol),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_2_DELAY,   plugin->Control2Delay,    &(plugin->Last2Delay),    &(plugin->Converted2Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_PAN,     plugin->Control2Pan,      &(plugin->Last2Pan),      &(plugin->Converted2Pan),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_2_FB,      plugin->Control2FB,       &(plugin->Last2FB),       &(plugin->Converted2FB),       plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_2_PAN,     plugin->Control2Pan,      &(plugin->Last2Pan),      &(plugin->Converted2Pan),      plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_2_VOL,     plugin->Control2Vol,      &(plugin->Last2Vol),      &(plugin->Converted2Vol),      plugin->SampleRate, pParamFunc);
 
 	if(*(plugin->ControlMunge) != plugin->LastMunge) {
 		plugin->LastMunge 		= *(plugin->ControlMunge);
@@ -302,6 +310,7 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	}
 
 	fBypass         = plugin->ConvertedBypass;
+	fMode           = plugin->ConvertedMode;
 	fMungeMode	= plugin->ConvertedMungeMode;
 	fMunge		= plugin->ConvertedMunge;
 	fLPFsamples	= plugin->ConvertedLPFsamples;
@@ -310,15 +319,15 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	f1Delay		= plugin->Converted1Delay;
 	l1DelaySample	= (unsigned long)f1Delay;
 	f1DelayOffset	= f1Delay-(float)l1DelaySample;
-	f1PanLGain	= (1-plugin->Converted1Pan)/2;
-	f1PanRGain	= (1+plugin->Converted1Pan)/2;
+	f1PanLGain	= plugin->Converted1Vol * (1-plugin->Converted1Pan)/2;
+	f1PanRGain	= plugin->Converted1Vol * (1+plugin->Converted1Pan)/2;
 
 
 	f2Delay		= plugin->Converted2Delay;
 	l2DelaySample	= (unsigned long)f2Delay;
 	f2DelayOffset	= f2Delay-(float)l2DelaySample;
-	f2PanLGain	= (1-plugin->Converted2Pan)/2;
-	f2PanRGain	= (1+plugin->Converted2Pan)/2;
+	f2PanLGain	= plugin->Converted2Vol * (1-plugin->Converted2Pan)/2;
+	f2PanRGain	= plugin->Converted2Vol * (1+plugin->Converted2Pan)/2;
 
 	if(fMungeMode < 0.5) {
 		f1FB	= plugin->Converted1FB / (1+fMunge);
@@ -346,6 +355,8 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	LPF2     	= plugin->AudioLPF2;
 	HPF1     	= plugin->AudioHPF1;
 	HPF2     	= plugin->AudioHPF2;
+	Degrain1     	= plugin->AudioDegrain1;
+	Degrain2     	= plugin->AudioDegrain2;
 	EnvIn     	= plugin->EnvInLLast;
 	EnvOutL    	= plugin->EnvOutLLast;
 	EnvOutR   	= plugin->EnvOutRLast;
@@ -358,19 +369,27 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 			Out1 = *(SpaceLCur);
 			Out2 = *(SpaceRCur);
 
-			// mix the two delays in
-			OutL = f1PanLGain*Out1 + f2PanLGain*Out2;
-			OutR = f1PanRGain*Out1 + f2PanRGain*Out2;
+			// read the input
+			In = *(pfAudioInputL++);
 
-			// input
-			In=*(pfAudioInputL++);
+			// and mix the feedback in
+			if(fMode<0.5 ) {
+				// normal
+				In1FBmix= In+(f1FB*Out1);
+				In2FBmix= In+(f2FB*Out2);
+			} else {
+ 				//ping pong
+				In1FBmix= In+(f2FB*Out2);
+				In2FBmix= In+(f1FB*Out1);
+			}
+
 			// munge it
-			In1FB= (1-fMunge)*(In+(f1FB*Out1)) + fMunge*ITube_do(In+(f1FB*Out1),1+fMunge);
-			In2FB= (1-fMunge)*(In+(f2FB*Out2)) + fMunge*ITube_do(In+(f2FB*Out2),1+fMunge);
-			HPF1 = ((fHPFsamples-1) * HPF1 + In1FB) / fHPFsamples;  
-			HPF2 = ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples; 
-			LPF1 = ((fLPFsamples-1) * LPF1 + (In1FB-HPF1)) / fLPFsamples; 
-			LPF2 = ((fLPFsamples-1) * LPF2 + (In2FB-HPF2)) / fLPFsamples;  
+			In1FB	= (1-fMunge)*In1FBmix + fMunge*ITube_do(In1FBmix,1+fMunge);
+			In2FB	= (1-fMunge)*In2FBmix + fMunge*ITube_do(In2FBmix,1+fMunge);
+			HPF1 	= ((fHPFsamples-1) * HPF1 + In1FB) / fHPFsamples;  
+			HPF2 	= ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples; 
+			LPF1 	= ((fLPFsamples-1) * LPF1 + (In1FB-HPF1)) / fLPFsamples; 
+			LPF2 	= ((fLPFsamples-1) * LPF2 + (In2FB-HPF2)) / fLPFsamples;  
 			if(fMungeMode<0.5) {
 				In1Munged = LPF1;
 				In2Munged = LPF2;
@@ -378,28 +397,33 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 				In1Munged = 2 * (In1FB-HPF1) - LPF1;
 				In2Munged = 2 * (In2FB-HPF2) - LPF2;
 			} 
+			Degrain1     	= (In1Munged+Degrain1)/2;
+			Degrain2     	= (In2Munged+Degrain2)/2;
 
 			// add to the delay space
 			if(SpaceLCur+l1DelaySample > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize)+=In1Munged*(1-f1DelayOffset);
+				*(SpaceLCur+l1DelaySample-SpaceSize)+=Degrain1*(1-f1DelayOffset);
 			else
-				*(SpaceLCur+l1DelaySample)+=In1Munged*(1-f1DelayOffset);
+				*(SpaceLCur+l1DelaySample)+=Degrain1*(1-f1DelayOffset);
 
 			if(SpaceLCur+l1DelaySample+1 > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize+1)+=In1Munged*f1DelayOffset;
+				*(SpaceLCur+l1DelaySample-SpaceSize+1)+=Degrain1*f1DelayOffset;
 			else
-				*(SpaceLCur+l1DelaySample+1)+=In1Munged*f1DelayOffset;
+				*(SpaceLCur+l1DelaySample+1)+=Degrain1*f1DelayOffset;
 
 			if(SpaceRCur+l2DelaySample > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize)+=In2Munged*(1-f2DelayOffset);
+				*(SpaceRCur+l2DelaySample-SpaceSize)+=Degrain2*(1-f2DelayOffset);
 			else
-				*(SpaceRCur+l2DelaySample)+=In2Munged*(1-f2DelayOffset);
+				*(SpaceRCur+l2DelaySample)+=Degrain2*(1-f2DelayOffset);
 
 			if(SpaceRCur+l2DelaySample+1 > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize+1)+=In2Munged*f2DelayOffset;
+				*(SpaceRCur+l2DelaySample-SpaceSize+1)+=Degrain2*f2DelayOffset;
 			else
-				*(SpaceRCur+l2DelaySample+1)+=In2Munged*f2DelayOffset;
+				*(SpaceRCur+l2DelaySample+1)+=Degrain2*f2DelayOffset;
 
+			// mix the two delays in
+			OutL = f1PanLGain*Out1 + f2PanLGain*Out2;
+			OutR = f1PanRGain*Out1 + f2PanRGain*Out2;
 			// write the output
 			*(pfAudioOutputL++) = OutL;
 			*(pfAudioOutputR++) = OutR;
@@ -409,7 +433,6 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 			// advance the pointer to the next spot
 			SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
 			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
-
 
 			//evelope on in and out for meters
 			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
@@ -434,6 +457,8 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 		LPF2    =0;
 		HPF1    =0;
 		HPF2    =0;
+		Degrain1    =0;
+		Degrain2    =0;
 		//zero envelope on in and out for meters
 		EnvIn   =0;
 		EnvOutL =0;
@@ -448,6 +473,8 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	plugin->AudioLPF2   = (fabs(LPF2)<1.0e-10)     ? 0.f : LPF2; 
 	plugin->AudioHPF1   = (fabs(HPF1)<1.0e-10)     ? 0.f : HPF1; 
 	plugin->AudioHPF2   = (fabs(HPF2)<1.0e-10)     ? 0.f : HPF2; 
+	plugin->AudioDegrain1   = (fabs(Degrain1)<1.0e-10)     ? 0.f : Degrain1; 
+	plugin->AudioDegrain2   = (fabs(Degrain2)<1.0e-10)     ? 0.f : Degrain2; 
 	plugin->EnvInLLast  = (fabs(EnvIn)<1.0e-10)    ? 0.f : EnvIn; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
 	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
@@ -470,11 +497,11 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;	
 	float In,Out1,Out2,OutL,OutR;
-	float LPF1,LPF2,HPF1,HPF2;
+	float LPF1,LPF2,HPF1,HPF2,Degrain1,Degrain2;
 	float EnvIn,EnvOutL,EnvOutR;
-	float fBypass,fMunge,fMungeMode,fHPFsamples,fLPFsamples;
-	float f1Delay,f1DelayOffset,f1PanLGain,f1PanRGain,f1FB,In1FB,In1Munged;
-	float f2Delay,f2DelayOffset,f2PanLGain,f2PanRGain,f2FB,In2FB,In2Munged;
+	float fBypass,fMode,fMunge,fMungeMode,fHPFsamples,fLPFsamples;
+	float f1Delay,f1DelayOffset,f1PanLGain,f1PanRGain,f1FB,In1FB,In1FBmix,In1Munged;
+	float f2Delay,f2DelayOffset,f2PanLGain,f2PanRGain,f2FB,In2FB,In2FBmix,In2Munged;
 	unsigned long l1DelaySample;
 	unsigned long l2DelaySample;
 	unsigned long lSampleIndex;
@@ -491,13 +518,16 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 
 	/* check if any other params have changed */
 	checkParamChange(IDELAY_BYPASS,    plugin->ControlBypass,    &(plugin->LastBypass),    &(plugin->ConvertedBypass),    plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_MODE,      plugin->ControlMode,      &(plugin->LastMode),      &(plugin->ConvertedMode),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_MUNGEMODE, plugin->ControlMungeMode, &(plugin->LastMungeMode), &(plugin->ConvertedMungeMode), plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_1_DELAY,   plugin->Control1Delay,    &(plugin->Last1Delay),    &(plugin->Converted1Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_PAN,     plugin->Control1Pan,      &(plugin->Last1Pan),      &(plugin->Converted1Pan),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_1_FB,      plugin->Control1FB,       &(plugin->Last1FB),       &(plugin->Converted1FB),       plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_1_PAN,     plugin->Control1Pan,      &(plugin->Last1Pan),      &(plugin->Converted1Pan),      plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_1_VOL,     plugin->Control1Vol,      &(plugin->Last1Vol),      &(plugin->Converted1Vol),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_2_DELAY,   plugin->Control2Delay,    &(plugin->Last2Delay),    &(plugin->Converted2Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_PAN,     plugin->Control2Pan,      &(plugin->Last2Pan),      &(plugin->Converted2Pan),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_2_FB,      plugin->Control2FB,       &(plugin->Last2FB),       &(plugin->Converted2FB),       plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_2_PAN,     plugin->Control2Pan,      &(plugin->Last2Pan),      &(plugin->Converted2Pan),      plugin->SampleRate, pParamFunc);
+	checkParamChange(IDELAY_2_VOL,     plugin->Control2Vol,      &(plugin->Last2Vol),      &(plugin->Converted2Vol),      plugin->SampleRate, pParamFunc);
 
 	if(*(plugin->ControlMunge) != plugin->LastMunge) {
 		plugin->LastMunge 		= *(plugin->ControlMunge);
@@ -507,6 +537,7 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	}
 
 	fBypass         = plugin->ConvertedBypass;
+	fMode           = plugin->ConvertedMode;
 	fMungeMode	= plugin->ConvertedMungeMode;
 	fMunge		= plugin->ConvertedMunge;
 	fLPFsamples	= plugin->ConvertedLPFsamples;
@@ -515,14 +546,14 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	f1Delay		= plugin->Converted1Delay;
 	l1DelaySample	= (unsigned long)f1Delay;
 	f1DelayOffset	= f1Delay-(float)l1DelaySample;
-	f1PanLGain	= (1-plugin->Converted1Pan)/2;
-	f1PanRGain	= (1+plugin->Converted1Pan)/2;
+	f1PanLGain	= plugin->Converted1Vol * (1-plugin->Converted1Pan)/2;
+	f1PanRGain	= plugin->Converted1Vol * (1+plugin->Converted1Pan)/2;
 
 	f2Delay		= plugin->Converted2Delay;
 	l2DelaySample	= (unsigned long)f2Delay;
 	f2DelayOffset	= f2Delay-(float)l2DelaySample;
-	f2PanLGain	= (1-plugin->Converted2Pan)/2;
-	f2PanRGain	= (1+plugin->Converted2Pan)/2;
+	f2PanLGain	= plugin->Converted2Vol * (1-plugin->Converted2Pan)/2;
+	f2PanRGain	= plugin->Converted2Vol * (1+plugin->Converted2Pan)/2;
 
 	if(fMungeMode < 0.5) {
 		f1FB	= plugin->Converted1FB / (1+fMunge);
@@ -550,6 +581,8 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	LPF2     	= plugin->AudioLPF2;
 	HPF1     	= plugin->AudioHPF1;
 	HPF2     	= plugin->AudioHPF2;
+	Degrain1     	= plugin->AudioDegrain1;
+	Degrain2     	= plugin->AudioDegrain2;
 	EnvIn     	= plugin->EnvInLLast;
 	EnvOutL    	= plugin->EnvOutLLast;
 	EnvOutR   	= plugin->EnvOutRLast;
@@ -561,16 +594,23 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 			Out1 = *(SpaceLCur);
 			Out2 = *(SpaceRCur);
 
-			// mix the two delays in
-			OutL = f1PanLGain*Out1 + f2PanLGain*Out2;
-			OutR = f1PanRGain*Out1 + f2PanRGain*Out2;
-
-			// now do the input
+			// now read the input
 			In=( *(pfAudioInputL++) + *(pfAudioInputR++) )/2;
 
+			// and mix the feedback in
+			if(fMode<0.5 ) {
+				// normal
+				In1FBmix= In+(f1FB*Out1);
+				In2FBmix= In+(f2FB*Out2);
+			} else {
+ 				//ping pong
+				In1FBmix= In+(f2FB*Out2);
+				In2FBmix= In+(f1FB*Out1);
+			}
+
 			// munge it
-			In1FB= (1-fMunge)*(In+(f1FB*Out1)) + fMunge*ITube_do(In+(f1FB*Out1),1+fMunge);
-			In2FB= (1-fMunge)*(In+(f2FB*Out2)) + fMunge*ITube_do(In+(f2FB*Out2),1+fMunge);
+			In1FB	= (1-fMunge)*In1FBmix + fMunge*ITube_do(In1FBmix,1+fMunge);
+			In2FB	= (1-fMunge)*In2FBmix + fMunge*ITube_do(In2FBmix,1+fMunge);
 			HPF1 = ((fHPFsamples-1) * HPF1 + In1FB) / fHPFsamples;  
 			HPF2 = ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples; 
 			LPF1 = ((fLPFsamples-1) * LPF1 + (In1FB-HPF1)) / fLPFsamples; 
@@ -582,29 +622,34 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 				In1Munged = 2 * (In1FB-HPF1) - LPF1;
 				In2Munged = 2 * (In2FB-HPF2) - LPF2;
 			} 
-
+			Degrain1     	= (In1Munged+Degrain1)/2;
+			Degrain2     	= (In2Munged+Degrain2)/2;
 
 			// add to the delay space
 			if(SpaceLCur+l1DelaySample > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize)+=In1Munged*(1-f1DelayOffset);
+				*(SpaceLCur+l1DelaySample-SpaceSize)+=Degrain1*(1-f1DelayOffset);
 			else
-				*(SpaceLCur+l1DelaySample)+=In1Munged*(1-f1DelayOffset);
+				*(SpaceLCur+l1DelaySample)+=Degrain1*(1-f1DelayOffset);
 
 			if(SpaceLCur+l1DelaySample+1 > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize+1)+=In1Munged*f1DelayOffset;
+				*(SpaceLCur+l1DelaySample-SpaceSize+1)+=Degrain1*f1DelayOffset;
 			else
-				*(SpaceLCur+l1DelaySample+1)+=In1Munged*f1DelayOffset;
+				*(SpaceLCur+l1DelaySample+1)+=Degrain1*f1DelayOffset;
 
 			if(SpaceRCur+l2DelaySample > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize)+=In2Munged*(1-f2DelayOffset);
+				*(SpaceRCur+l2DelaySample-SpaceSize)+=Degrain2*(1-f2DelayOffset);
 			else
-				*(SpaceRCur+l2DelaySample)+=In2Munged*(1-f2DelayOffset);
+				*(SpaceRCur+l2DelaySample)+=Degrain2*(1-f2DelayOffset);
 
 			if(SpaceRCur+l2DelaySample+1 > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize+1)+=In2Munged*f2DelayOffset;
+				*(SpaceRCur+l2DelaySample-SpaceSize+1)+=Degrain2*f2DelayOffset;
 			else
-				*(SpaceRCur+l2DelaySample+1)+=In2Munged*f2DelayOffset;
+				*(SpaceRCur+l2DelaySample+1)+=Degrain2*f2DelayOffset;
 
+
+			// mix the two delays in
+			OutL = f1PanLGain*Out1 + f2PanLGain*Out2;
+			OutR = f1PanRGain*Out1 + f2PanRGain*Out2;
 			// write the output
 			*(pfAudioOutputL++) = OutL;
 			*(pfAudioOutputR++) = OutR;
@@ -614,7 +659,6 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 			// advance the pointer to the next spot
 			SpaceLCur = SpaceLCur < SpaceLEnd ? SpaceLCur + 1 : SpaceLStr;
 			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
-
 
 			//evelope on in and out for meters
 			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
@@ -639,6 +683,8 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 		LPF2    =0;
 		HPF1    =0;
 		HPF2    =0;
+		Degrain1    =0;
+		Degrain2    =0;
 		//zero envelope on in and out for meters
 		EnvIn   =0;
 		EnvOutL =0;
@@ -653,6 +699,8 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	plugin->AudioLPF2   = (fabs(LPF2)<1.0e-10)     ? 0.f : LPF2; 
 	plugin->AudioHPF1   = (fabs(HPF1)<1.0e-10)     ? 0.f : HPF1; 
 	plugin->AudioHPF2   = (fabs(HPF2)<1.0e-10)     ? 0.f : HPF2; 
+	plugin->AudioDegrain1   = (fabs(Degrain1)<1.0e-10)     ? 0.f : Degrain1; 
+	plugin->AudioDegrain2   = (fabs(Degrain2)<1.0e-10)     ? 0.f : Degrain2; 
 	plugin->EnvInLLast  = (fabs(EnvIn)<1.0e-10)    ? 0.f : EnvIn; 
 	plugin->EnvOutLLast = (fabs(EnvOutL)<1.0e-10)  ? 0.f : EnvOutL; 
 	plugin->EnvOutRLast = (fabs(EnvOutR)<1.0e-10)  ? 0.f : EnvOutR; 
@@ -731,6 +779,7 @@ convertParam(unsigned long param, float value, double sr) {
 	switch(param)
 	{
 		case IDELAY_BYPASS:
+		case IDELAY_MODE:
 		case IDELAY_MUNGEMODE:
 			if(value<=0.0)
 				result= 0; 
@@ -754,15 +803,6 @@ convertParam(unsigned long param, float value, double sr) {
 			else
 				result = 2.0 * sr;
 			break;
-		case IDELAY_1_PAN:
-		case IDELAY_2_PAN:
-			if(value<-1)
-				result = -1;
-			else if (value < 1)
-				result = value;
-			else
-				result = 1;
-			break;
 		case IDELAY_1_FB:
 		case IDELAY_2_FB:
 			if(value<0)
@@ -771,6 +811,24 @@ convertParam(unsigned long param, float value, double sr) {
 				result = value/100.0;
 			else
 				result = 1.3333333;
+			break;
+		case IDELAY_1_PAN:
+		case IDELAY_2_PAN:
+			if(value<-1.0)
+				result = -1.0;
+			else if (value < 1.0)
+				result = value;
+			else
+				result = 1.0;
+			break;
+		case IDELAY_1_VOL:
+		case IDELAY_2_VOL:
+			if(value<0.0)
+				result = 0.0;
+			else if (value < 100.0)
+				result = value/100.0;
+			else
+				result = 1.0;
 			break;
 		default:
 			result=0;

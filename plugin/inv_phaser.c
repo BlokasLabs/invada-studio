@@ -18,28 +18,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-
-    Some Notes:
-    ===========
-    This plugin is not your classic sort of reverb that makes long washy spaces.
-    It simulates a room by calculating the early reflections that occur off the walls/roof etc.
-
-    It's useful for:
-    a) putting dry signals in a 'natural' space so they sit with sounds recorded with 'room' anbience in them.
-    b) thickening strings, vocals etc without softening or washing out.
-    c) as a singal preprocess for reverb that does not have early reflections.
-    d) accurate stereo placement by setting the 'source' LR the same as any panning the dry signle has. This is 
-    because the early reflections from the off-center single reinforce the location of the sound rather than 
-    contradicting it as a normal reverb would do. 
-
-    Parameter description:
-    RoomLength,RoomWidth,RoomHeight - the dimensions (in meters) of the room
-    SourceLR, SourceFB (FB=Front/Back) - where the sound source is in the room (always the back half)
-    DestLR, DestFB (FB=Front/Back) - where the destination (or listener) is in the room (always the front half)
-    HPF - roll off some bottom end
-    Warmth - roll off top end (amount depends on reflection count)
-    Diffusion - makes the relections less perfect to simulate objects in the room.
-
 */
 
 #include <stdlib.h> 

@@ -33,6 +33,15 @@
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 1 ;
+	lv2:symbol "mode" ;
+	lv2:name "Mode" ;
+	lv2:portProperty lv2:toggled ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 2 ;
 	lv2:symbol "mungemode" ;
 	lv2:name "Munge Mode" ;
 	lv2:portProperty lv2:toggled ;
@@ -41,30 +50,22 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 2 ;
+	lv2:index 3 ;
 	lv2:symbol "munge" ;
 	lv2:name "Munge" ;
-	lv2:default 50.0 ;
+	lv2:default 75.0 ;
 	lv2:minimum 0.0 ;
 	lv2:maximum 100.0 ;
 	units:unit units:pc ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 3 ;
+	lv2:index 4 ;
 	lv2:symbol "delay1" ;
 	lv2:name "Delay 1" ;
 	lv2:default 0.3 ;
 	lv2:minimum 0.002 ;
 	lv2:maximum 2 ;
 	units:unit units:s ;
-    ] , [
-	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 4 ;
-	lv2:symbol "pan1" ;
-	lv2:name "Pan 1" ;
-	lv2:default -0.7 ;
-	lv2:minimum -1.0 ;
-	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 5 ;
@@ -77,6 +78,23 @@
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 6 ;
+	lv2:symbol "pan1" ;
+	lv2:name "Pan 1" ;
+	lv2:default -0.7 ;
+	lv2:minimum -1.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 7 ;
+	lv2:symbol "vol1" ;
+	lv2:name "Volume 1" ;
+	lv2:default 100.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 100.0 ;
+	units:unit units:pc ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 8 ;
 	lv2:symbol "delay2" ;
 	lv2:name "Delay 2" ;
 	lv2:default 0.2 ;
@@ -85,15 +103,7 @@
 	units:unit units:s ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 7 ;
-	lv2:symbol "pan2" ;
-	lv2:name "Pan 2" ;
-	lv2:default 0.7 ;
-	lv2:minimum -1.0 ;
-	lv2:maximum 1.0 ;
-    ] , [
-	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 8 ;
+	lv2:index 9 ;
 	lv2:symbol "fb2" ;
 	lv2:name "Feedback 2" ;
 	lv2:default 0 ;
@@ -101,8 +111,25 @@
 	lv2:maximum 133.3333333333 ;
 	units:unit units:pc ;
     ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 10 ;
+	lv2:symbol "pan2" ;
+	lv2:name "Pan 2" ;
+	lv2:default 0.7 ;
+	lv2:minimum -1.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 11 ;
+	lv2:symbol "vol2" ;
+	lv2:name "Volume 2" ;
+	lv2:default 100.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 100.0 ;
+	units:unit units:pc ;
+    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 9 ;
+	lv2:index 12 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
 	lv2:default -60.0 ;
@@ -111,7 +138,7 @@
 	units:unit units:db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 10 ;
+	lv2:index 13 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
 	lv2:default -60.0 ;
@@ -120,7 +147,7 @@
 	units:unit units:db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 11 ;
+	lv2:index 14 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
 	lv2:default -60.0 ;
@@ -129,17 +156,17 @@
 	units:unit units:db ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 12 ;
+	lv2:index 15 ;
 	lv2:symbol "in" ;
 	lv2:name "In" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 13 ;
+	lv2:index 16 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 14 ;
+	lv2:index 17 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
     ] .
@@ -173,6 +200,15 @@
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 1 ;
+	lv2:symbol "mode" ;
+	lv2:name "Mode" ;
+	lv2:portProperty lv2:toggled ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 2 ;
 	lv2:symbol "mungemode" ;
 	lv2:name "Munge Mode" ;
 	lv2:portProperty lv2:toggled ;
@@ -181,30 +217,22 @@
 	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 2 ;
+	lv2:index 3 ;
 	lv2:symbol "munge" ;
 	lv2:name "Munge" ;
-	lv2:default 50.0 ;
+	lv2:default 75.0 ;
 	lv2:minimum 0.0 ;
 	lv2:maximum 100.0 ;
 	units:unit units:pc ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 3 ;
+	lv2:index 4 ;
 	lv2:symbol "delay1" ;
 	lv2:name "Delay 1" ;
 	lv2:default 0.3 ;
 	lv2:minimum 0.002 ;
 	lv2:maximum 2 ;
 	units:unit units:s ;
-    ] , [
-	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 4 ;
-	lv2:symbol "pan1" ;
-	lv2:name "Pan 1" ;
-	lv2:default -0.7 ;
-	lv2:minimum -1.0 ;
-	lv2:maximum 1.0 ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 5 ;
@@ -217,6 +245,23 @@
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 6 ;
+	lv2:symbol "pan1" ;
+	lv2:name "Pan 1" ;
+	lv2:default -0.7 ;
+	lv2:minimum -1.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 7 ;
+	lv2:symbol "vol1" ;
+	lv2:name "Volume 1" ;
+	lv2:default 100.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 100.0 ;
+	units:unit units:pc ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 8 ;
 	lv2:symbol "delay2" ;
 	lv2:name "Delay 2" ;
 	lv2:default 0.2 ;
@@ -225,15 +270,7 @@
 	units:unit units:s ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 7 ;
-	lv2:symbol "pan2" ;
-	lv2:name "Pan 2" ;
-	lv2:default 0.7 ;
-	lv2:minimum -1.0 ;
-	lv2:maximum 1.0 ;
-    ] , [
-	a lv2:InputPort, lv2:ControlPort ;
-	lv2:index 8 ;
+	lv2:index 9 ;
 	lv2:symbol "fb2" ;
 	lv2:name "Feedback 2" ;
 	lv2:default 0 ;
@@ -241,8 +278,25 @@
 	lv2:maximum 133.3333333333 ;
 	units:unit units:pc ;
     ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 10 ;
+	lv2:symbol "pan2" ;
+	lv2:name "Pan 2" ;
+	lv2:default 0.7 ;
+	lv2:minimum -1.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 11 ;
+	lv2:symbol "vol2" ;
+	lv2:name "Volume 2" ;
+	lv2:default 100.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 100.0 ;
+	units:unit units:pc ;
+    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 9 ;
+	lv2:index 12 ;
 	lv2:symbol "meterIn" ;
 	lv2:name "In" ;
 	lv2:default -60.0 ;
@@ -251,7 +305,7 @@
 	units:unit units:db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 10 ;
+	lv2:index 13 ;
 	lv2:symbol "meterOutL" ;
 	lv2:name "L Out" ;
 	lv2:default -60.0 ;
@@ -260,7 +314,7 @@
 	units:unit units:db ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 11 ;
+	lv2:index 14 ;
 	lv2:symbol "meterOutR" ;
 	lv2:name "R Out" ;
 	lv2:default -60.0 ;
@@ -269,22 +323,22 @@
 	units:unit units:db ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 12 ;
+	lv2:index 15 ;
 	lv2:symbol "inL" ;
 	lv2:name "In L" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 13 ;
+	lv2:index 16 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 14 ;
+	lv2:index 17 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 15 ;
+	lv2:index 18 ;
 	lv2:symbol "inR" ;
 	lv2:name "In R" ;
     ] .
