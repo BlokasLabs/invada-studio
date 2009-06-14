@@ -228,11 +228,11 @@ activateIDelay(LV2_Handle instance)
 	plugin->LastMungeMode	= 0.0;
 	plugin->LastMunge	= 50.0;
 	plugin->Last1Delay	= 300.0;
-	plugin->Last1FB		= 0.0; 
+	plugin->Last1FB		= 50.0; 
 	plugin->Last1Pan	= -0.7;
 	plugin->Last1Vol	= 100.0;
 	plugin->Last2Delay	= 200.0;
-	plugin->Last2FB		= 0.0; 
+	plugin->Last2FB		= 50.0; 
 	plugin->Last2Pan	= 0.7;
 	plugin->Last2Vol	= 100.0;
 
@@ -796,8 +796,8 @@ convertParam(unsigned long param, float value, double sr) {
 			break;
 		case IDELAY_1_DELAY:
 		case IDELAY_2_DELAY:
-			if (value < 0.002)
-				result = 0.002 * sr;
+			if (value < 0.02)
+				result = 0.02 * sr;
 			else if (value <= 2.0)
 				result = value * sr;
 			else

@@ -18,6 +18,7 @@
 
 
 GLADES		=	inv_compressor_gui.xml \
+			inv_delay_gui.xml \
 			inv_erreverb_gui.xml \
 			inv_filter_gui.xml \
 			inv_input_gui.xml \
@@ -30,6 +31,7 @@ all:	$(GLADES)
 # RULES TO BUILD XML 
 
 inv_compressor_gui.xml:	inv_compressor_gui.glade
+inv_delay_gui.xml:	inv_delay_gui.glade
 inv_erreverb_gui.xml:	inv_erreverb_gui.glade
 inv_filter_gui.xml:	inv_filter_gui.glade
 inv_input_gui.xml:	inv_input_gui.glade

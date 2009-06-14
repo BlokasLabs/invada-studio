@@ -26,6 +26,7 @@ LDFLAGS		=	-shared -Lwidgets -L../plugin/library -lc -lm -linv_widgets -linv_com
 
 
 GUIS		=	inv_compressor_gui.so \
+			inv_delay_gui.so \
 			inv_erreverb_gui.so \
 			inv_filter_gui.so \
 			inv_input_gui.so \
@@ -38,6 +39,7 @@ all:	$(GUIS)
 # RULES TO BUILD GUIS FROM C CODE
 
 inv_compressor_gui.so: inv_compressor_gui.o	../plugin/inv_compressor.h	inv_compressor_gui.h   
+inv_delay_gui.so:      inv_delay_gui.o		../plugin/inv_delay.h		inv_delay_gui.h   
 inv_erreverb_gui.so:   inv_erreverb_gui.o	../plugin/inv_erreverb.h	inv_erreverb_gui.h   
 inv_filter_gui.so:     inv_filter_gui.o		../plugin/inv_filter.h		inv_filter_gui.h   
 inv_input_gui.so:      inv_input_gui.o		../plugin/inv_input.h		inv_input_gui.h   
