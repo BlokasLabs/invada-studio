@@ -9,6 +9,7 @@
     a uiext:GtkUI;
     uiext:binary <inv_delay_gui.so>;
     uiext:requiredFeature uiext:makeResident ;
+    uiext:optionalFeature uiext:noUserResize ;
 
     uiext:portNotification [ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/mono> ;

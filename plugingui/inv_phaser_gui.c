@@ -179,7 +179,7 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<small><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</small>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<span size="8000"><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_phaser_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
@@ -203,7 +203,7 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobCycle),      0.5);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobCycle),      500.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobCycle),    pluginGui->cycle);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobCycle), "<small><b>Description:</b> This knob sets the period of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobCycle), "<span size="8000"><b>Description:</b> This knob sets the period of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobCycle),"motion-notify-event",G_CALLBACK(on_inv_phaser_cycle_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobPhase), INV_PLUGIN_ACTIVE);
@@ -214,16 +214,16 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobPhase), -180);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobPhase), 180);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobPhase), pluginGui->phase);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobPhase), "<small><b>Description:</b> This knob sets the LFO cycle phase difference between the left and right channels.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobPhase), "<span size="8000"><b>Description:</b> This knob sets the LFO cycle phase difference between the left and right channels.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobPhase),"motion-notify-event",G_CALLBACK(on_inv_phaser_phase_knob_motion),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampL),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampL),1.0);
-	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampL), "<small>This shows the resultant LFO on the left channel.</small>");
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampL), "<span size="8000">This shows the resultant LFO on the left channel.</span>");
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampR),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampR),1.0);
-	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampR), "<small>This shows the resultant LFO on the right channel.</small>");
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampR), "<span size="8000">This shows the resultant LFO on the right channel.</span>");
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobWidth), INV_KNOB_SIZE_MEDIUM);
@@ -233,7 +233,7 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobWidth), 1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobWidth), 15.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobWidth), "<small><b>Description:</b> This knob sets the maximum delay the LFO will cause (the miniumum delay is fixed to 0.1ms which will cancel a 10kHz signal) Larger maximum delays gives a lower cancellation frequency.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobWidth), "<span size="8000"><b>Description:</b> This knob sets the maximum delay the LFO will cause (the miniumum delay is fixed to 0.1ms which will cancel a 10kHz signal) Larger maximum delays gives a lower cancellation frequency.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_phaser_width_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobDepth), INV_PLUGIN_ACTIVE);
@@ -244,7 +244,7 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_min(INV_KNOB (pluginGui->knobDepth), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobDepth), 100.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobDepth), pluginGui->depth);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobDepth), "<small><b>Description:</b> This knob controls how much of the phased signal is blended back into the original. At 100% they are the same volume.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobDepth), "<span size="8000"><b>Description:</b> This knob controls how much of the phased signal is blended back into the original. At 100% they are the same volume.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDepth),"motion-notify-event",G_CALLBACK(on_inv_phaser_depth_knob_motion),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
@@ -255,12 +255,12 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), "<small><b>Description:</b> This switch activates soft-clipping on the output. The soft clipping function outputs a value between -3dB and 0dB for input values between -3dB and +infinity.\n<b>Usage:</b> Click to toggle between values.</small>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), "<span size="8000"><b>Description:</b> This switch activates soft-clipping on the output. The soft clipping function outputs a value between -3dB and 0dB for input values between -3dB and +infinity.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_phaser_noclip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),3.0);
-	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<small>This glows when soft clipping is occurring.</small>");
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<span size="8000">This glows when soft clipping is occurring.</span>");
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);

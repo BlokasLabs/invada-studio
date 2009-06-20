@@ -57,8 +57,7 @@ typedef struct {
 	GtkWidget	*knobFB2;
 	GtkWidget	*knobPan2;
 	GtkWidget	*knobVol2;
-
-
+	GtkWidget	*treeviewDelayCalc;
 
 	gint		InChannels;
 	gint		OutChannels;
@@ -114,6 +113,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	/* get pointers to some useful widgets from the design */
 	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "delay_container"));
 	pluginGui->heading = GTK_WIDGET (gtk_builder_get_object (builder, "label_heading"));
+	pluginGui->treeviewDelayCalc = GTK_WIDGET (gtk_builder_get_object (builder, "treeview_delaycalc"));
 
 	/* add custom widgets */
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_bypass_toggle"));
@@ -219,7 +219,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_colour( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(   INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<small><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</small>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<span size="8000"><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_delay_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
@@ -241,7 +241,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_colour( INV_SWITCH_TOGGLE (pluginGui->toggleMode), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(   INV_SWITCH_TOGGLE (pluginGui->toggleMode), INV_SWITCH_TOGGLE_ON,  "Ping-Pong");
 	inv_switch_toggle_set_state(  INV_SWITCH_TOGGLE (pluginGui->toggleMode), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleMode), "<small><b>Description:</b> This switch changes the mode of the delay between discrete channels and ping-ping.\n<b>Usage:</b> Click to toggle between values.</small>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleMode), "<span size="8000"><b>Description:</b> This switch changes the mode of the delay between discrete channels and ping-ping.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleMode),"button-release-event",G_CALLBACK(on_inv_delay_mode_toggle_button_release),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), INV_PLUGIN_ACTIVE);
@@ -252,7 +252,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_colour( INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(   INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), INV_SWITCH_TOGGLE_ON,  "Type 2");
 	inv_switch_toggle_set_state(  INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), "<small><b>Description:</b> This switch changes the munge type used on the signal in the feedback loop.\n<b>Usage:</b> Click to toggle between values.</small>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), "<span size="8000"><b>Description:</b> This switch changes the munge type used on the signal in the feedback loop.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleMungeMode),"button-release-event",G_CALLBACK(on_inv_delay_mungemode_toggle_button_release),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobMunge), INV_PLUGIN_ACTIVE);
@@ -263,7 +263,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobMunge), 0.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobMunge), 100.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobMunge), pluginGui->munge);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobMunge), "<small><b>Description:</b> This knob sets the amount of munge.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobMunge), "<span size="8000"><b>Description:</b> This knob sets the amount of munge.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobMunge),"motion-notify-event",G_CALLBACK(on_inv_delay_munge_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobCycle), INV_PLUGIN_ACTIVE);
@@ -275,7 +275,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobCycle), 2.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobCycle), 200.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobCycle), pluginGui->cycle);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobCycle), "<small><b>Description:</b> This knob sets the period of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobCycle), "<span size="8000"><b>Description:</b> This knob sets the period of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobCycle), "motion-notify-event",G_CALLBACK(on_inv_delay_cycle_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
@@ -286,12 +286,12 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobWidth), 0.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobWidth), 100.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobWidth), pluginGui->width);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobWidth), "<small><b>Description:</b> This knob sets the width of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobWidth), "<span size="8000"><b>Description:</b> This knob sets the width of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_delay_width_knob_motion),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampLFO),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampLFO),1.0);
-	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampLFO), "<small>This shows the LFO cycle.</small>");
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampLFO), "<span size="8000">This shows the LFO cycle.</span>");
 
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobDelay1), INV_PLUGIN_ACTIVE);
@@ -303,7 +303,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobDelay1), 0.02);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobDelay1), 2.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobDelay1), pluginGui->delay1);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobDelay1), "<small><b>Description:</b> This knob sets the delay time for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobDelay1), "<span size="8000"><b>Description:</b> This knob sets the delay time for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDelay1),"motion-notify-event",G_CALLBACK(on_inv_delay_delay1_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobFB1), INV_PLUGIN_ACTIVE);
@@ -314,7 +314,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobFB1), 0.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobFB1), 133.3333);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobFB1), pluginGui->fb1);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobFB1), "<small><b>Description:</b> This knob sets the amount of feedback for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobFB1), "<span size="8000"><b>Description:</b> This knob sets the amount of feedback for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobFB1),"motion-notify-event",G_CALLBACK(on_inv_delay_fb1_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobPan1), INV_PLUGIN_ACTIVE);
@@ -324,7 +324,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobPan1), -1.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobPan1), 1.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobPan1), pluginGui->pan1);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobPan1), "<small><b>Description:</b> This knob sets the position within the output mix for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobPan1), "<span size="8000"><b>Description:</b> This knob sets the position within the output mix for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobPan1),"motion-notify-event",G_CALLBACK(on_inv_delay_pan1_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobVol1), INV_PLUGIN_ACTIVE);
@@ -335,7 +335,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobVol1), 0.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobVol1), 100.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobVol1), pluginGui->vol1);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobVol1), "<small><b>Description:</b> This knob sets the volume in the output mix for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobVol1), "<span size="8000"><b>Description:</b> This knob sets the volume in the output mix for the first delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobVol1),"motion-notify-event",G_CALLBACK(on_inv_delay_vol1_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobDelay2), INV_PLUGIN_ACTIVE);
@@ -347,7 +347,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobDelay2), 0.02);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobDelay2), 2.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobDelay2), pluginGui->delay2);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobDelay2), "<small><b>Description:</b> This knob sets the delay time for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobDelay2), "<span size="8000"><b>Description:</b> This knob sets the delay time for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobDelay2),"motion-notify-event",G_CALLBACK(on_inv_delay_delay2_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobFB2), INV_PLUGIN_ACTIVE);
@@ -358,7 +358,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobFB2), 0.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobFB2), 133.3333);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobFB2), pluginGui->fb2);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobFB2), "<small><b>Description:</b> This knob sets the amount of feedback for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobFB2), "<span size="8000"><b>Description:</b> This knob sets the amount of feedback for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobFB2),"motion-notify-event",G_CALLBACK(on_inv_delay_fb2_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobPan2), INV_PLUGIN_ACTIVE);
@@ -368,7 +368,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobPan2), -1.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobPan2), 1.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobPan2), pluginGui->pan2);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobPan2), "<small><b>Description:</b> This knob sets the position within the output mix for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobPan2), "<span size="8000"><b>Description:</b> This knob sets the position within the output mix for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobPan2),"motion-notify-event",G_CALLBACK(on_inv_delay_pan2_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobVol2), INV_PLUGIN_ACTIVE);
@@ -379,7 +379,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(     INV_KNOB (pluginGui->knobVol2), 0.0);
 	inv_knob_set_max(     INV_KNOB (pluginGui->knobVol2), 100.0);
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobVol2), pluginGui->vol2);
-	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobVol2), "<small><b>Description:</b> This knob sets the volume in the output mix for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobVol2), "<span size="8000"><b>Description:</b> This knob sets the volume in the output mix for the second delay.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobVol2),"motion-notify-event",G_CALLBACK(on_inv_delay_vol2_knob_motion),pluginGui);
 
 
