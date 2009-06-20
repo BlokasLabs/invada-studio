@@ -26,23 +26,26 @@
 #define IDELAY_MODE		1
 #define IDELAY_MUNGEMODE	2
 #define IDELAY_MUNGE 		3
-#define IDELAY_1_DELAY		4
-#define IDELAY_1_FB 		5
-#define IDELAY_1_PAN 		6
-#define IDELAY_1_VOL 		7
-#define IDELAY_2_DELAY		8
-#define IDELAY_2_FB 		9
-#define IDELAY_2_PAN 		10
-#define IDELAY_2_VOL 		11
-#define IDELAY_METER_INL   	12
-#define IDELAY_METER_OUTL 	13
-#define IDELAY_METER_OUTR 	14
-#define IDELAY_AUDIO_INL  	15
-#define IDELAY_AUDIO_OUTL 	16
-#define IDELAY_AUDIO_OUTR 	17 
-#define IDELAY_AUDIO_INR  	18   /* not used in mono in mode */ 
+#define IDELAY_LFO_CYCLE	4
+#define IDELAY_LFO_WIDTH 	5
+#define IDELAY_1_DELAY		6
+#define IDELAY_1_FB 		7
+#define IDELAY_1_PAN 		8
+#define IDELAY_1_VOL 		9
+#define IDELAY_2_DELAY		10
+#define IDELAY_2_FB 		11
+#define IDELAY_2_PAN 		12
+#define IDELAY_2_VOL 		13
+#define IDELAY_METER_INL   	14
+#define IDELAY_METER_OUTL 	15
+#define IDELAY_METER_OUTR 	16
+#define IDELAY_LAMP_LFO		17
+#define IDELAY_AUDIO_INL  	18
+#define IDELAY_AUDIO_OUTL 	19
+#define IDELAY_AUDIO_OUTR 	20 
+#define IDELAY_AUDIO_INR  	21   /* not used in mono in mode */ 
 
-#define IDELAY_SPACE_SIZE 2500   /* size in milli seconds */
+#define IDELAY_SPACE_SIZE 4001   /* size in milli seconds */
 
 /* control conversion function */
 float convertParam(unsigned long param, float value, double sr);

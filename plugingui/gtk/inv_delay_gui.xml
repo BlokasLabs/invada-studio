@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Tue Jun 16 11:21:53 2009 -->
+<!--Generated with glade3 3.4.5 on Sat Jun 20 13:15:41 2009 -->
 <interface>
   <object class="GtkWindow" id="delay_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -83,28 +83,19 @@
                         <property name="n_rows">2</property>
                         <property name="n_columns">2</property>
                         <child>
-                          <object class="GtkLabel" id="label4">
+                          <object class="GtkAlignment" id="alignment_meter_out">
                             <property name="visible">True</property>
-                            <property name="yalign">0.20000000298023224</property>
-                            <property name="label" translatable="yes">Audio In</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
-                            <property name="width_chars">4</property>
-                          </object>
-                          <packing>
-                            <property name="y_options"/>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="label5">
-                            <property name="visible">True</property>
-                            <property name="yalign">0.20000000298023224</property>
-                            <property name="label" translatable="yes">Audio Out</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
-                            <property name="width_chars">5</property>
+                            <property name="xscale">0</property>
+                            <property name="yscale">0</property>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
                             <property name="right_attach">2</property>
+                            <property name="top_attach">1</property>
+                            <property name="bottom_attach">2</property>
                             <property name="y_options"/>
                           </packing>
                         </child>
@@ -124,19 +115,28 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkAlignment" id="alignment_meter_out">
+                          <object class="GtkLabel" id="label5">
                             <property name="visible">True</property>
-                            <property name="xscale">0</property>
-                            <property name="yscale">0</property>
-                            <child>
-                              <placeholder/>
-                            </child>
+                            <property name="yalign">0.20000000298023224</property>
+                            <property name="label" translatable="yes">Audio Out</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="width_chars">5</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
                             <property name="right_attach">2</property>
-                            <property name="top_attach">1</property>
-                            <property name="bottom_attach">2</property>
+                            <property name="y_options"/>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label4">
+                            <property name="visible">True</property>
+                            <property name="yalign">0.20000000298023224</property>
+                            <property name="label" translatable="yes">Audio In</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="width_chars">4</property>
+                          </object>
+                          <packing>
                             <property name="y_options"/>
                           </packing>
                         </child>
@@ -177,203 +177,6 @@
                     <property name="n_rows">2</property>
                     <property name="n_columns">1</property>
                     <property name="row_spacing">2</property>
-                    <child>
-                      <object class="GtkHBox" id="hbox3">
-                        <property name="visible">True</property>
-                        <property name="spacing">4</property>
-                        <child>
-                          <object class="GtkFrame" id="frame-mode">
-                            <property name="visible">True</property>
-                            <property name="label_xalign">0.5</property>
-                            <child>
-                              <object class="GtkAlignment" id="alignment_mode_toggle">
-                                <property name="visible">True</property>
-                                <property name="xscale">0</property>
-                                <property name="yscale">0</property>
-                                <property name="top_padding">4</property>
-                                <property name="bottom_padding">4</property>
-                                <property name="left_padding">4</property>
-                                <property name="right_padding">4</property>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                              </object>
-                            </child>
-                            <child type="label">
-                              <object class="GtkLabel" id="label11">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">Mode</property>
-                                <property name="use_markup">True</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="fill">False</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkFrame" id="frame-mungemode">
-                            <property name="visible">True</property>
-                            <property name="label_xalign">0.5</property>
-                            <child>
-                              <object class="GtkHBox" id="hbox4">
-                                <property name="visible">True</property>
-                                <child>
-                                  <object class="GtkAlignment" id="alignment_mungemode_toggle">
-                                    <property name="visible">True</property>
-                                    <property name="xscale">0</property>
-                                    <property name="yscale">0</property>
-                                    <property name="top_padding">4</property>
-                                    <property name="bottom_padding">4</property>
-                                    <property name="left_padding">4</property>
-                                    <property name="right_padding">4</property>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkAlignment" id="alignment_munge_knob">
-                                    <property name="visible">True</property>
-                                    <property name="xscale">0</property>
-                                    <property name="yscale">0</property>
-                                    <property name="top_padding">4</property>
-                                    <property name="bottom_padding">4</property>
-                                    <property name="left_padding">4</property>
-                                    <property name="right_padding">4</property>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                            </child>
-                            <child type="label">
-                              <object class="GtkLabel" id="label12">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">Munge</property>
-                                <property name="use_markup">True</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="fill">False</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkFrame" id="frame-lfo">
-                            <property name="visible">True</property>
-                            <property name="label_xalign">0.5</property>
-                            <child>
-                              <object class="GtkHBox" id="hbox7">
-                                <property name="visible">True</property>
-                                <child>
-                                  <object class="GtkFrame" id="frame-period">
-                                    <property name="visible">True</property>
-                                    <property name="label_xalign">0.5</property>
-                                    <property name="shadow_type">GTK_SHADOW_NONE</property>
-                                    <child>
-                                      <object class="GtkHBox" id="hbox8">
-                                        <property name="visible">True</property>
-                                        <child>
-                                          <object class="GtkAlignment" id="alignment_period_knob">
-                                            <property name="visible">True</property>
-                                            <property name="xscale">0</property>
-                                            <property name="yscale">0</property>
-                                            <property name="top_padding">4</property>
-                                            <property name="bottom_padding">4</property>
-                                            <property name="left_padding">4</property>
-                                            <property name="right_padding">4</property>
-                                            <child>
-                                              <placeholder/>
-                                            </child>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkAlignment" id="alignment_period_lamp">
-                                            <property name="visible">True</property>
-                                            <property name="xscale">0</property>
-                                            <property name="yscale">0</property>
-                                            <property name="top_padding">4</property>
-                                            <property name="bottom_padding">4</property>
-                                            <property name="left_padding">4</property>
-                                            <property name="right_padding">4</property>
-                                            <child>
-                                              <placeholder/>
-                                            </child>
-                                          </object>
-                                          <packing>
-                                            <property name="position">1</property>
-                                          </packing>
-                                        </child>
-                                      </object>
-                                    </child>
-                                    <child type="label">
-                                      <object class="GtkLabel" id="label19">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">Period</property>
-                                        <property name="use_markup">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkFrame" id="frame-width">
-                                    <property name="visible">True</property>
-                                    <property name="label_xalign">0.5</property>
-                                    <property name="shadow_type">GTK_SHADOW_NONE</property>
-                                    <child>
-                                      <object class="GtkAlignment" id="alignment_width_knob">
-                                        <property name="visible">True</property>
-                                        <property name="xscale">0</property>
-                                        <property name="yscale">0</property>
-                                        <property name="top_padding">4</property>
-                                        <property name="bottom_padding">4</property>
-                                        <property name="left_padding">4</property>
-                                        <property name="right_padding">4</property>
-                                        <child>
-                                          <placeholder/>
-                                        </child>
-                                      </object>
-                                    </child>
-                                    <child type="label">
-                                      <object class="GtkLabel" id="label18">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">Width</property>
-                                        <property name="use_markup">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                            </child>
-                            <child type="label">
-                              <object class="GtkLabel" id="label17">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">LFO</property>
-                                <property name="use_markup">True</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="y_options"/>
-                        <property name="x_padding">4</property>
-                        <property name="y_padding">4</property>
-                      </packing>
-                    </child>
                     <child>
                       <object class="GtkHBox" id="hbox1">
                         <property name="visible">True</property>
@@ -675,6 +478,203 @@
                       <packing>
                         <property name="top_attach">1</property>
                         <property name="bottom_attach">2</property>
+                        <property name="y_options"/>
+                        <property name="x_padding">4</property>
+                        <property name="y_padding">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkHBox" id="hbox3">
+                        <property name="visible">True</property>
+                        <property name="spacing">4</property>
+                        <child>
+                          <object class="GtkFrame" id="frame-mode">
+                            <property name="visible">True</property>
+                            <property name="label_xalign">0.5</property>
+                            <child>
+                              <object class="GtkAlignment" id="alignment_mode_toggle">
+                                <property name="visible">True</property>
+                                <property name="xscale">0</property>
+                                <property name="yscale">0</property>
+                                <property name="top_padding">4</property>
+                                <property name="bottom_padding">4</property>
+                                <property name="left_padding">4</property>
+                                <property name="right_padding">4</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label11">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Mode</property>
+                                <property name="use_markup">True</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="frame-mungemode">
+                            <property name="visible">True</property>
+                            <property name="label_xalign">0.5</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox4">
+                                <property name="visible">True</property>
+                                <child>
+                                  <object class="GtkAlignment" id="alignment_mungemode_toggle">
+                                    <property name="visible">True</property>
+                                    <property name="xscale">0</property>
+                                    <property name="yscale">0</property>
+                                    <property name="top_padding">4</property>
+                                    <property name="bottom_padding">4</property>
+                                    <property name="left_padding">4</property>
+                                    <property name="right_padding">4</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkAlignment" id="alignment_munge_knob">
+                                    <property name="visible">True</property>
+                                    <property name="xscale">0</property>
+                                    <property name="yscale">0</property>
+                                    <property name="top_padding">4</property>
+                                    <property name="bottom_padding">4</property>
+                                    <property name="left_padding">4</property>
+                                    <property name="right_padding">4</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label12">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Munge</property>
+                                <property name="use_markup">True</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="frame-lfo">
+                            <property name="visible">True</property>
+                            <property name="label_xalign">0.5</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox7">
+                                <property name="visible">True</property>
+                                <child>
+                                  <object class="GtkFrame" id="frame-period">
+                                    <property name="visible">True</property>
+                                    <property name="label_xalign">0.5</property>
+                                    <property name="shadow_type">GTK_SHADOW_NONE</property>
+                                    <child>
+                                      <object class="GtkHBox" id="hbox8">
+                                        <property name="visible">True</property>
+                                        <child>
+                                          <object class="GtkAlignment" id="alignment_cycle_knob">
+                                            <property name="visible">True</property>
+                                            <property name="xscale">0</property>
+                                            <property name="yscale">0</property>
+                                            <property name="top_padding">4</property>
+                                            <property name="bottom_padding">4</property>
+                                            <property name="left_padding">4</property>
+                                            <property name="right_padding">4</property>
+                                            <child>
+                                              <placeholder/>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkAlignment" id="alignment_cycle_lamp">
+                                            <property name="visible">True</property>
+                                            <property name="xscale">0</property>
+                                            <property name="yscale">0</property>
+                                            <property name="top_padding">4</property>
+                                            <property name="bottom_padding">4</property>
+                                            <property name="left_padding">4</property>
+                                            <property name="right_padding">4</property>
+                                            <child>
+                                              <placeholder/>
+                                            </child>
+                                          </object>
+                                          <packing>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child type="label">
+                                      <object class="GtkLabel" id="label19">
+                                        <property name="visible">True</property>
+                                        <property name="label" translatable="yes">Period</property>
+                                        <property name="use_markup">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkFrame" id="frame-width">
+                                    <property name="visible">True</property>
+                                    <property name="label_xalign">0.5</property>
+                                    <property name="shadow_type">GTK_SHADOW_NONE</property>
+                                    <child>
+                                      <object class="GtkAlignment" id="alignment_width_knob">
+                                        <property name="visible">True</property>
+                                        <property name="xscale">0</property>
+                                        <property name="yscale">0</property>
+                                        <property name="top_padding">4</property>
+                                        <property name="bottom_padding">4</property>
+                                        <property name="left_padding">4</property>
+                                        <property name="right_padding">4</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child type="label">
+                                      <object class="GtkLabel" id="label18">
+                                        <property name="visible">True</property>
+                                        <property name="label" translatable="yes">Width</property>
+                                        <property name="use_markup">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label17">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">LFO</property>
+                                <property name="use_markup">True</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="fill">False</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
                         <property name="y_options"/>
                         <property name="x_padding">4</property>
                         <property name="y_padding">4</property>

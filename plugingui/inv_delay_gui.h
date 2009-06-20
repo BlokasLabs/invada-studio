@@ -22,6 +22,8 @@ static void on_inv_delay_bypass_toggle_button_release(GtkWidget *widget, GdkEven
 static void on_inv_delay_mode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_mungemode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_munge_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_delay_cycle_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_delay_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_delay1_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_fb1_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_pan1_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);

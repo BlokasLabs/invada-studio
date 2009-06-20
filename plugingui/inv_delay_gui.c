@@ -28,6 +28,7 @@
 #include "lv2_ui.h"
 #include "widgets/widgets.h"
 #include "widgets/knob.h"
+#include "widgets/lamp.h"
 #include "widgets/meter-peak.h"
 #include "widgets/switch-toggle.h"
 #include "../plugin/inv_delay.h"
@@ -44,6 +45,9 @@ typedef struct {
 	GtkWidget	*meterOut;
 	GtkWidget	*toggleMode;
 	GtkWidget	*toggleMungeMode;
+	GtkWidget	*knobCycle;
+	GtkWidget	*knobWidth;
+	GtkWidget	*lampLFO;
 	GtkWidget	*knobMunge;
 	GtkWidget	*knobDelay1;
 	GtkWidget	*knobFB1;
@@ -62,6 +66,8 @@ typedef struct {
 	float 		mode;
 	float 		mungemode;
 	float 		munge;
+	float 		cycle;
+	float 		width;
 	float 		delay1;
 	float		fb1;
 	float		pan1;
@@ -134,6 +140,18 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->knobMunge = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobMunge);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_cycle_knob"));
+	pluginGui->knobCycle = inv_knob_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobCycle);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_width_knob"));
+	pluginGui->knobWidth = inv_knob_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobWidth);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_cycle_lamp"));
+	pluginGui->lampLFO = inv_lamp_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->lampLFO);
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_delay1_knob"));
 	pluginGui->knobDelay1 = inv_knob_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->knobDelay1);
@@ -182,6 +200,8 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->mode		= 0.0;
 	pluginGui->mungemode	= 0.0;
 	pluginGui->munge	= 50.0;
+	pluginGui->cycle	= 20.0;
+	pluginGui->width	= 0.0;
 	pluginGui->delay1	= 300.0;
 	pluginGui->fb1		= 50.0;
 	pluginGui->pan1		= -0.7;
@@ -245,6 +265,34 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_value(   INV_KNOB (pluginGui->knobMunge), pluginGui->munge);
 	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobMunge), "<small><b>Description:</b> This knob sets the amount of munge.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobMunge),"motion-notify-event",G_CALLBACK(on_inv_delay_munge_knob_motion),pluginGui);
+
+	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobCycle), INV_PLUGIN_ACTIVE);
+	inv_knob_set_size(    INV_KNOB (pluginGui->knobCycle), INV_KNOB_SIZE_MEDIUM);
+	inv_knob_set_curve(   INV_KNOB (pluginGui->knobCycle), INV_KNOB_CURVE_LOG);
+	inv_knob_set_markings(INV_KNOB (pluginGui->knobCycle), INV_KNOB_MARKINGS_3); 
+	inv_knob_set_human(   INV_KNOB (pluginGui->knobCycle)); 
+	inv_knob_set_units(   INV_KNOB (pluginGui->knobCycle), "s");
+	inv_knob_set_min(     INV_KNOB (pluginGui->knobCycle), 2.0);
+	inv_knob_set_max(     INV_KNOB (pluginGui->knobCycle), 200.0);
+	inv_knob_set_value(   INV_KNOB (pluginGui->knobCycle), pluginGui->cycle);
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobCycle), "<small><b>Description:</b> This knob sets the period of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	g_signal_connect_after(G_OBJECT(pluginGui->knobCycle), "motion-notify-event",G_CALLBACK(on_inv_delay_cycle_knob_motion),pluginGui);
+
+	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
+	inv_knob_set_size(    INV_KNOB (pluginGui->knobWidth), INV_KNOB_SIZE_MEDIUM);
+	inv_knob_set_curve(   INV_KNOB (pluginGui->knobWidth), INV_KNOB_CURVE_LINEAR);
+	inv_knob_set_markings(INV_KNOB (pluginGui->knobWidth), INV_KNOB_MARKINGS_5); 
+	inv_knob_set_units(   INV_KNOB (pluginGui->knobWidth), "%");
+	inv_knob_set_min(     INV_KNOB (pluginGui->knobWidth), 0.0);
+	inv_knob_set_max(     INV_KNOB (pluginGui->knobWidth), 100.0);
+	inv_knob_set_value(   INV_KNOB (pluginGui->knobWidth), pluginGui->width);
+	inv_knob_set_tooltip( INV_KNOB (pluginGui->knobWidth), "<small><b>Description:</b> This knob sets the width of the LFO.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</small>");
+	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_delay_width_knob_motion),pluginGui);
+
+	inv_lamp_set_value(INV_LAMP (pluginGui->lampLFO),0.0);
+	inv_lamp_set_scale(INV_LAMP (pluginGui->lampLFO),1.0);
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampLFO), "<small>This shows the LFO cycle.</small>");
+
 
 	inv_knob_set_bypass(  INV_KNOB (pluginGui->knobDelay1), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(    INV_KNOB (pluginGui->knobDelay1), INV_KNOB_SIZE_SMALL);
@@ -421,6 +469,17 @@ port_eventIDelayGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 				pluginGui->munge=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobMunge), pluginGui->munge);
 				break;
+			case IDELAY_LFO_CYCLE:
+				pluginGui->cycle=value;
+				inv_knob_set_value(INV_KNOB (pluginGui->knobCycle), pluginGui->cycle);
+				break;
+			case IDELAY_LFO_WIDTH:
+				pluginGui->width=value;
+				inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
+				break;
+			case IDELAY_LAMP_LFO:
+				inv_lamp_set_value(INV_LAMP (pluginGui->lampLFO),value);
+				break;
 			case IDELAY_1_DELAY:
 				pluginGui->delay1=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobDelay1), pluginGui->delay1);
@@ -537,6 +596,26 @@ on_inv_delay_munge_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data
 
 	pluginGui->munge=inv_knob_get_value(INV_KNOB (widget));
 	(*pluginGui->write_function)(pluginGui->controller, IDELAY_MUNGE, 4, 0, &pluginGui->munge);
+	return;
+}
+
+static void 
+on_inv_delay_cycle_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	IDelayGui *pluginGui = (IDelayGui *) data;
+
+	pluginGui->cycle=inv_knob_get_value(INV_KNOB (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IDELAY_LFO_CYCLE, 4, 0, &pluginGui->cycle);
+	return;
+}
+
+static void 
+on_inv_delay_width_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	IDelayGui *pluginGui = (IDelayGui *) data;
+
+	pluginGui->width=inv_knob_get_value(INV_KNOB (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IDELAY_LFO_WIDTH, 4, 0, &pluginGui->width);
 	return;
 }
 
