@@ -189,7 +189,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<span size="8000"><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</span>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<span size=\"8000\"><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_comp_bypass_toggle_button_release),pluginGui);
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
@@ -228,7 +228,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_min(INV_KNOB (pluginGui->knobRms), 0.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobRms), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobRms), pluginGui->rms);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobRms), "<span size="8000"><b>Description:</b> This knob controls the smoothing on the input signal the compressor performs.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobRms), "<span size=\"8000\"><b>Description:</b> This knob controls the smoothing on the input signal the compressor performs.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobRms),"motion-notify-event",G_CALLBACK(on_inv_comp_rms_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobAttack),   INV_PLUGIN_ACTIVE);
@@ -240,7 +240,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_min(INV_KNOB (pluginGui->knobAttack), 0.00001);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobAttack), 0.750);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobAttack), pluginGui->attack);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobAttack), "<span size="8000"><b>Description:</b> This knob sets the attack of the envelope which controls how well the compressor follows rising signals.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobAttack), "<span size=\"8000\"><b>Description:</b> This knob sets the attack of the envelope which controls how well the compressor follows rising signals.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobAttack),"motion-notify-event",G_CALLBACK(on_inv_comp_attack_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobRelease),   INV_PLUGIN_ACTIVE);
@@ -252,7 +252,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_min(INV_KNOB (pluginGui->knobRelease), 0.001);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobRelease), 5.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobRelease), pluginGui->release);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobRelease), "<span size="8000"><b>Description:</b> This knob sets the release of the envelope which controls how well the compressor follows falling signals.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobRelease), "<span size=\"8000\"><b>Description:</b> This knob sets the release of the envelope which controls how well the compressor follows falling signals.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobRelease),"motion-notify-event",G_CALLBACK(on_inv_comp_release_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobThreshold),   INV_PLUGIN_ACTIVE);
@@ -264,7 +264,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_min(INV_KNOB (pluginGui->knobThreshold), -36.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobThreshold), 0.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobThreshold), pluginGui->threshold);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobThreshold), "<span size="8000"><b>Description:</b> This knob sets the threshold at which the compressor starts affecting the signal.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobThreshold), "<span size=\"8000\"><b>Description:</b> This knob sets the threshold at which the compressor starts affecting the signal.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobThreshold),"motion-notify-event",G_CALLBACK(on_inv_comp_threshold_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobRatio),   INV_PLUGIN_ACTIVE);
@@ -276,7 +276,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_min(INV_KNOB (pluginGui->knobRatio), 1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobRatio), 20.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobRatio), pluginGui->ratio);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobRatio), "<span size="8000"><b>Description:</b> This knob sets the compression ratio for signals that have exceeded the threshold.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobRatio), "<span size=\"8000\"><b>Description:</b> This knob sets the compression ratio for signals that have exceeded the threshold.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobRatio),"motion-notify-event",G_CALLBACK(on_inv_comp_ratio_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain),   INV_PLUGIN_ACTIVE);
@@ -288,7 +288,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_knob_set_min(INV_KNOB (pluginGui->knobGain), -6.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 36.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobGain), "<span size="8000"><b>Description:</b> This knob sets the output or markup gain of the compressor.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobGain), "<span size=\"8000\"><b>Description:</b> This knob sets the output or markup gain of the compressor.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_comp_gain_knob_motion),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
@@ -299,12 +299,12 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), "<span size="8000"><b>Description:</b> This switch activates soft-clipping on the output. The soft clipping function outputs a value between -3dB and 0dB for input values between -3dB and +infinity.\n<b>Usage:</b> Click to toggle between values.</span>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), "<span size=\"8000\"><b>Description:</b> This switch activates soft-clipping on the output. The soft clipping function outputs a value between -3dB and 0dB for input values between -3dB and +infinity.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_comp_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),3.0);
-	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<span size="8000">This glows when soft clipping is occurring.</span>");
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<span size=\"8000\">This glows when soft clipping is occurring.</span>");
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);

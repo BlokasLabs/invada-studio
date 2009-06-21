@@ -180,7 +180,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON,  "Bypassed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<span size="8000"><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</span>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), "<span size=\"8000\"><b>Description:</b> This switch bypasses the plugin.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleBypass),"button-release-event",G_CALLBACK(on_inv_input_bypass_toggle_button_release),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_PLUGIN_ACTIVE);
@@ -192,7 +192,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_ON,  "Reversed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), "<span size="8000"><b>Description:</b> This switch inverts the phase of the left channel.\n<b>Usage:</b> Click to toggle between values.</span>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->togglePhaseL), "<span size=\"8000\"><b>Description:</b> This switch inverts the phase of the left channel.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseL),"button-release-event",G_CALLBACK(on_inv_input_phaseL_toggle_button_release),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_PLUGIN_ACTIVE);
@@ -204,7 +204,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_ON,  "Reversed");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), "<span size="8000"><b>Description:</b> This switch inverts the phase of the right channel.\n<b>Usage:</b> Click to toggle between values.</span>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->togglePhaseR), "<span size=\"8000\"><b>Description:</b> This switch inverts the phase of the right channel.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->togglePhaseR),"button-release-event",G_CALLBACK(on_inv_input_phaseR_toggle_button_release),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_ACTIVE);
@@ -216,7 +216,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(INV_KNOB (pluginGui->knobGain), -24.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobGain), 24.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobGain), pluginGui->gain);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobGain), "<span size="8000"><b>Description:</b> This knob sets the input gain.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobGain), "<span size=\"8000\"><b>Description:</b> This knob sets the input gain.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobGain),"motion-notify-event",G_CALLBACK(on_inv_input_gain_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobPan), INV_PLUGIN_ACTIVE);
@@ -228,7 +228,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(INV_KNOB (pluginGui->knobPan), -1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobPan), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobPan), pluginGui->pan);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobPan), "<span size="8000"><b>Description:</b> This knob controls the balance between the left and right channels.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobPan), "<span size=\"8000\"><b>Description:</b> This knob controls the balance between the left and right channels.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobPan),"motion-notify-event",G_CALLBACK(on_inv_input_pan_knob_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobWidth), INV_PLUGIN_ACTIVE);
@@ -243,7 +243,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_knob_set_min(INV_KNOB (pluginGui->knobWidth), -1.0);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobWidth), 1.0);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobWidth), pluginGui->width);
-	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobWidth), "<span size="8000"><b>Description:</b> This knob controls the relative mix of mono and stereo information within the signal.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
+	inv_knob_set_tooltip(INV_KNOB (pluginGui->knobWidth), "<span size=\"8000\"><b>Description:</b> This knob controls the relative mix of mono and stereo information within the signal.\n<b>Usage:</b> Click and drag vertically to change value, hortizontally to change the sensitvity.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->knobWidth),"motion-notify-event",G_CALLBACK(on_inv_input_width_knob_motion),pluginGui);
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
@@ -254,12 +254,12 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  0.0, 1.0, 0.0);
 	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_ON,  "Active");
 	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_SWITCH_TOGGLE_OFF);
-	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), "<span size="8000"><b>Description:</b> This switch activates soft-clipping on the output. The soft clipping function outputs a value between -3dB and 0dB for input values between -3dB and +infinity.\n<b>Usage:</b> Click to toggle between values.</span>");
+	inv_switch_toggle_set_tooltip(INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), "<span size=\"8000\"><b>Description:</b> This switch activates soft-clipping on the output. The soft clipping function outputs a value between -3dB and 0dB for input values between -3dB and +infinity.\n<b>Usage:</b> Click to toggle between values.</span>");
 	g_signal_connect_after(G_OBJECT(pluginGui->toggleNoClip),"button-release-event",G_CALLBACK(on_inv_input_noClip_toggle_button_release),pluginGui);
 
 	inv_lamp_set_value(INV_LAMP (pluginGui->lampNoClip),0.0);
 	inv_lamp_set_scale(INV_LAMP (pluginGui->lampNoClip),3.0);
-	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<span size="8000">This glows when soft clipping is occurring.</span>");
+	inv_lamp_set_tooltip(INV_LAMP (pluginGui->lampNoClip), "<span size=\"8000\">This glows when soft clipping is occurring.</span>");
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
