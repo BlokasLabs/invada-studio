@@ -57,6 +57,7 @@ typedef struct {
 	GtkWidget	*knobFB2;
 	GtkWidget	*knobPan2;
 	GtkWidget	*knobVol2;
+	GtkWidget	*spinTempo;
 	GtkWidget	*treeviewDelayCalc;
 
 	gint		InChannels;
@@ -75,6 +76,7 @@ typedef struct {
 	float		fb2;
 	float		pan2;
 	float		vol2;
+	float		tempo;
 
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
@@ -113,6 +115,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	/* get pointers to some useful widgets from the design */
 	pluginGui->windowContainer = GTK_WIDGET (gtk_builder_get_object (builder, "delay_container"));
 	pluginGui->heading = GTK_WIDGET (gtk_builder_get_object (builder, "label_heading"));
+	pluginGui->spinTempo = GTK_WIDGET (gtk_builder_get_object (builder, "spinbutton_tempo"));
 	pluginGui->treeviewDelayCalc = GTK_WIDGET (gtk_builder_get_object (builder, "treeview_delaycalc"));
 
 	/* add custom widgets */
@@ -210,6 +213,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->fb2		= 50.0;
 	pluginGui->pan2		= 0.7;
 	pluginGui->vol2		= 100.0;
+	pluginGui->tempo	= 120.0;
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value(  INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0);
@@ -383,6 +387,12 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	g_signal_connect_after(G_OBJECT(pluginGui->knobVol2),"motion-notify-event",G_CALLBACK(on_inv_delay_vol2_knob_motion),pluginGui);
 
 
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON (pluginGui->spinTempo),pluginGui->tempo);
+	g_signal_connect_after(G_OBJECT(pluginGui->spinTempo),"value-changed",G_CALLBACK(on_inv_delay_tempo_value_changed),pluginGui);
+
+	inv_delay_init_delaycalc(pluginGui->treeviewDelayCalc);
+	inv_delay_update_delaycalc(pluginGui->treeviewDelayCalc, pluginGui->tempo);
+
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
 	gtk_container_remove(GTK_CONTAINER(window), pluginGui->windowContainer);
@@ -555,6 +565,216 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 
 
 /*****************************************************************************/
+static void
+inv_delay_cell_data_function (  GtkTreeViewColumn *col,
+				GtkCellRenderer   *renderer,
+				GtkTreeModel      *model,
+				GtkTreeIter       *iter,
+				gint              pos) {
+	gfloat  value;
+	gchar   buf[20];
+
+	gtk_tree_model_get(model, iter, pos, &value, -1);
+	if(value >= 1.0) {
+		g_snprintf(buf, sizeof(buf), "%.2fs ", value);
+	} else if(value >= 0.1) {
+		g_snprintf(buf, sizeof(buf), "%.0fms", value*1000);
+	} else if(value >= 0.01) {
+		g_snprintf(buf, sizeof(buf), "%.1fms", value*1000);
+	} else if(value >= 0.001) {
+		g_snprintf(buf, sizeof(buf), "%.2fms", value*1000);
+	} else {
+		g_snprintf(buf, sizeof(buf), "%.3fms", value*1000);
+	}
+	g_object_set(renderer, "text", buf, NULL);
+}
+
+static void
+inv_delay_length_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data) {
+
+	inv_delay_cell_data_function (col,renderer,model,iter,COLUMN_LENGTH);
+}
+static void
+inv_delay_dotted_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data) {
+
+	inv_delay_cell_data_function (col,renderer,model,iter,COLUMN_DOTTED);
+}
+static void
+inv_delay_tuplet32_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data) {
+
+	inv_delay_cell_data_function (col,renderer,model,iter,COLUMN_TUPLET32);
+}
+static void
+inv_delay_tuplet54_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data) {
+
+	inv_delay_cell_data_function (col,renderer,model,iter,COLUMN_TUPLET54);
+}
+static void
+inv_delay_tuplet74_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data) {
+
+	inv_delay_cell_data_function (col,renderer,model,iter,COLUMN_TUPLET74);
+}
+static void
+inv_delay_tuplet94_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data) {
+
+	inv_delay_cell_data_function (col,renderer,model,iter,COLUMN_TUPLET94);
+}
+static void
+inv_delay_tuplet114_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data) {
+
+	inv_delay_cell_data_function (col,renderer,model,iter,COLUMN_TUPLET114);
+}
+
+static void 
+inv_delay_init_delaycalc(GtkWidget *tree)
+{
+
+	GtkTreeViewColumn	*col;
+	GtkCellRenderer		*renderer;
+
+
+	// define columns 
+	/* NOTE */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, "Note");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",0.5,NULL);
+	g_object_set (renderer,"weight",800,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", COLUMN_NOTE);
+
+	/* LENGTH */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, "     Length");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",1.0,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_length_cell_data_function, NULL, NULL);
+
+	/* DOTTED */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, "     Dotted");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",1.0,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_dotted_cell_data_function, NULL, NULL);
+
+	/* 3:2 Tuplet */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, " 3:2 Tuplet");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",1.0,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_tuplet32_cell_data_function, NULL, NULL);
+
+	/* 5:4 Tuplet */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, " 5:4 Tuplet");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",1.0,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_tuplet54_cell_data_function, NULL, NULL);
+
+	/* 7:4 Tuplet */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, " 7:4 Tuplet");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",1.0,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_tuplet74_cell_data_function, NULL, NULL);
+
+	/* 9:4 Tuplet */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, " 9:4 Tuplet");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",1.0,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_tuplet94_cell_data_function, NULL, NULL);
+
+	/* 11:4 Tuplet */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, "11:4 Tuplet");
+	gtk_tree_view_column_set_spacing(col,2);
+	gtk_tree_view_column_set_alignment(col,0.5);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set (renderer,"xalign",1.0,NULL);
+	g_object_set (renderer,"size",8000,NULL);
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_tuplet114_cell_data_function, NULL, NULL);
+
+	return;
+}
+
+static void 
+inv_delay_update_delaycalc(GtkWidget *tree, float tempo)
+{
+
+	GtkListStore 	*liststore;
+	GtkTreeIter   	iter;
+	gfloat 		length;
+	gint		i;
+	char		notelabel[8];
+	
+	length=240.0/tempo; //assumes beat length in time signature is a crotchet
+
+	// create empty store
+	liststore = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT);
+	for(i=0;i<7;i++) {
+		gtk_list_store_append(liststore, &iter);
+		if(i==0) {
+			sprintf(notelabel,"1");
+		} else {
+			sprintf(notelabel,"1/%i",(int)pow(2,i));
+		}
+		gtk_list_store_set (liststore, &iter, 
+			COLUMN_NOTE,      notelabel, 
+			COLUMN_LENGTH,    length,
+			COLUMN_DOTTED,    length*1.5,
+			COLUMN_TUPLET32,  length*2/3,
+			COLUMN_TUPLET54,  length*4/5,
+			COLUMN_TUPLET74,  length*4/7,
+			COLUMN_TUPLET94,  length*4/9,
+			COLUMN_TUPLET114, length*4/11,
+			-1);
+		length=length/2;
+	}
+
+	// add the model to the treeview
+	gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(liststore));
+
+	return;
+}
+
+/*****************************************************************************/
 
 static void 
 on_inv_delay_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
@@ -699,3 +919,13 @@ on_inv_delay_vol2_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
 	return;
 }
 
+static void 
+on_inv_delay_tempo_value_changed(GtkWidget *widget, gpointer data)
+{
+	IDelayGui *pluginGui = (IDelayGui *) data;
+
+	pluginGui->tempo=gtk_spin_button_get_value(GTK_SPIN_BUTTON (pluginGui->spinTempo));
+	inv_delay_update_delaycalc(pluginGui->treeviewDelayCalc, pluginGui->tempo);
+	printf("tempo now %f\n",pluginGui->tempo);
+	return;
+}

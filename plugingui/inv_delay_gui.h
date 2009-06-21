@@ -17,7 +17,33 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
+/* enum for delay calc tree */
+enum {
+	COLUMN_NOTE = 0,
+	COLUMN_LENGTH,
+	COLUMN_DOTTED,
+	COLUMN_TUPLET32,
+	COLUMN_TUPLET54,
+	COLUMN_TUPLET74,
+	COLUMN_TUPLET94,
+	COLUMN_TUPLET114,
+	NUM_COLS
+};
 
+
+/* helper functions */
+static void inv_delay_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gint pos);
+static void inv_delay_length_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
+static void inv_delay_dotted_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
+static void inv_delay_tuplet32_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
+static void inv_delay_tuplet54_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
+static void inv_delay_tuplet74_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
+static void inv_delay_tuplet94_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
+static void inv_delay_tuplet114_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
+static void inv_delay_init_delaycalc(GtkWidget *tree);
+static void inv_delay_update_delaycalc(GtkWidget *tree, float tempo);
+
+/* call backs */
 static void on_inv_delay_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_mode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_mungemode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
@@ -32,6 +58,7 @@ static void on_inv_delay_delay2_knob_motion(GtkWidget *widget, GdkEvent *event, 
 static void on_inv_delay_fb2_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_pan2_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_vol2_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
+static void on_inv_delay_tempo_value_changed(GtkWidget *widget, gpointer data);
 
 
 
