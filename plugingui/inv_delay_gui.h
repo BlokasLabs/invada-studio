@@ -27,11 +27,13 @@ enum {
 	COLUMN_TUPLET74,
 	COLUMN_TUPLET94,
 	COLUMN_TUPLET114,
+	COLUMN_TOOLTIP,
 	NUM_COLS
 };
 
 
 /* helper functions */
+static gint inv_delay_get_col_number_from_tree_view_column (GtkTreeViewColumn *col);
 static void inv_delay_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gint pos);
 static void inv_delay_length_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
 static void inv_delay_dotted_cell_data_function (GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data);
@@ -59,6 +61,7 @@ static void on_inv_delay_fb2_knob_motion(GtkWidget *widget, GdkEvent *event, gpo
 static void on_inv_delay_pan2_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_vol2_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data);
 static void on_inv_delay_tempo_value_changed(GtkWidget *widget, gpointer data);
+static void on_inv_delay_calc_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 
 
 

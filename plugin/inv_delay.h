@@ -45,7 +45,7 @@
 #define IDELAY_AUDIO_OUTR 	20 
 #define IDELAY_AUDIO_INR  	21   /* not used in mono in mode */ 
 
-#define IDELAY_SPACE_SIZE 4001   /* size in milli seconds */
+#define IDELAY_SPACE_SIZE 2501   /* size in milli seconds */
 
 /* control conversion function */
 float convertParam(unsigned long param, float value, double sr);

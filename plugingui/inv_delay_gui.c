@@ -392,6 +392,7 @@ instantiateIDelayGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 
 	inv_delay_init_delaycalc(pluginGui->treeviewDelayCalc);
 	inv_delay_update_delaycalc(pluginGui->treeviewDelayCalc, pluginGui->tempo);
+	g_signal_connect_after(G_OBJECT(pluginGui->treeviewDelayCalc),"button-release-event",G_CALLBACK(on_inv_delay_calc_button_release),pluginGui);
 
 	/* strip the parent window from the design so the host can attach its own */
 	gtk_widget_ref(pluginGui->windowContainer);
@@ -565,6 +566,22 @@ const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 
 
 /*****************************************************************************/
+static  gint
+inv_delay_get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
+{
+	GList *cols;
+	gint   num;
+
+	g_return_val_if_fail ( col != NULL, -1 );
+	g_return_val_if_fail ( col->tree_view != NULL, -1 );
+	cols = gtk_tree_view_get_columns(GTK_TREE_VIEW(col->tree_view));
+	num = g_list_index(cols, (gpointer) col);
+	g_list_free(cols);
+
+	return num;
+}
+
+
 static void
 inv_delay_cell_data_function (  GtkTreeViewColumn *col,
 				GtkCellRenderer   *renderer,
@@ -576,15 +593,15 @@ inv_delay_cell_data_function (  GtkTreeViewColumn *col,
 
 	gtk_tree_model_get(model, iter, pos, &value, -1);
 	if(value >= 1.0) {
-		g_snprintf(buf, sizeof(buf), "%.2fs ", value);
+		g_snprintf(buf, sizeof(buf), "%.2fs ", floor(value*100)/100);
 	} else if(value >= 0.1) {
-		g_snprintf(buf, sizeof(buf), "%.0fms", value*1000);
+		g_snprintf(buf, sizeof(buf), "%.0fms", floor(value*1000));
 	} else if(value >= 0.01) {
-		g_snprintf(buf, sizeof(buf), "%.1fms", value*1000);
+		g_snprintf(buf, sizeof(buf), "%.1fms", floor(value*10000)/10);
 	} else if(value >= 0.001) {
-		g_snprintf(buf, sizeof(buf), "%.2fms", value*1000);
+		g_snprintf(buf, sizeof(buf), "%.2fms", floor(value*100000)/100);
 	} else {
-		g_snprintf(buf, sizeof(buf), "%.3fms", value*1000);
+		g_snprintf(buf, sizeof(buf), "%.3fms", floor(value*1000000)/1000);
 	}
 	g_object_set(renderer, "text", buf, NULL);
 }
@@ -649,7 +666,7 @@ inv_delay_init_delaycalc(GtkWidget *tree)
 
 	/* LENGTH */
 	col = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(col, "     Length");
+	gtk_tree_view_column_set_title(col, " Length");
 	gtk_tree_view_column_set_spacing(col,2);
 	gtk_tree_view_column_set_alignment(col,0.5);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
@@ -661,7 +678,7 @@ inv_delay_init_delaycalc(GtkWidget *tree)
 
 	/* DOTTED */
 	col = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(col, "     Dotted");
+	gtk_tree_view_column_set_title(col, " Dotted");
 	gtk_tree_view_column_set_spacing(col,2);
 	gtk_tree_view_column_set_alignment(col,0.5);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
@@ -721,7 +738,7 @@ inv_delay_init_delaycalc(GtkWidget *tree)
 
 	/* 11:4 Tuplet */
 	col = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(col, "11:4 Tuplet");
+	gtk_tree_view_column_set_title(col, " 11:4 Tuplet");
 	gtk_tree_view_column_set_spacing(col,2);
 	gtk_tree_view_column_set_alignment(col,0.5);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
@@ -731,6 +748,12 @@ inv_delay_init_delaycalc(GtkWidget *tree)
 	gtk_tree_view_column_pack_start(col, renderer, TRUE);
 	gtk_tree_view_column_set_cell_data_func(col, renderer, inv_delay_tuplet114_cell_data_function, NULL, NULL);
 
+	/* tooltips */
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, "tooltips");
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
+	gtk_tree_view_column_set_visible (col,FALSE);
+	gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(tree),COLUMN_TOOLTIP);
 	return;
 }
 
@@ -747,7 +770,16 @@ inv_delay_update_delaycalc(GtkWidget *tree, float tempo)
 	length=240.0/tempo; //assumes beat length in time signature is a crotchet
 
 	// create empty store
-	liststore = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT, G_TYPE_FLOAT);
+	liststore = gtk_list_store_new( NUM_COLS, 
+					G_TYPE_STRING, 
+					G_TYPE_FLOAT, 
+					G_TYPE_FLOAT, 
+					G_TYPE_FLOAT, 
+					G_TYPE_FLOAT, 
+					G_TYPE_FLOAT, 
+					G_TYPE_FLOAT, 
+					G_TYPE_FLOAT, 
+					G_TYPE_STRING);
 	for(i=0;i<7;i++) {
 		gtk_list_store_append(liststore, &iter);
 		if(i==0) {
@@ -764,6 +796,7 @@ inv_delay_update_delaycalc(GtkWidget *tree, float tempo)
 			COLUMN_TUPLET74,  length*4/7,
 			COLUMN_TUPLET94,  length*4/9,
 			COLUMN_TUPLET114, length*4/11,
+			COLUMN_TOOLTIP,   "<span size=\"8000\"><b>Description:</b> Calculated delay times for the current tempo across different length notes.\n<b>Usage:</b> Left-Click on a cell to send the value to Delay 1, Right-Click to send to Delay 2.</span>",
 			-1);
 		length=length/2;
 	}
@@ -926,6 +959,47 @@ on_inv_delay_tempo_value_changed(GtkWidget *widget, gpointer data)
 
 	pluginGui->tempo=gtk_spin_button_get_value(GTK_SPIN_BUTTON (pluginGui->spinTempo));
 	inv_delay_update_delaycalc(pluginGui->treeviewDelayCalc, pluginGui->tempo);
-	printf("tempo now %f\n",pluginGui->tempo);
+	return;
+}
+static void 
+on_inv_delay_calc_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	GtkTreePath 		*path;
+	GtkTreeViewColumn 	*column;
+	GtkTreeModel 		*model;
+    	GtkTreeIter   		iter;
+
+	gfloat			value;
+	gint			col;
+
+	IDelayGui *pluginGui = (IDelayGui *) data;
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW (pluginGui->treeviewDelayCalc));
+
+	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW (pluginGui->treeviewDelayCalc), 
+					(gint) ((GdkEventButton*)event)->x,
+					(gint) ((GdkEventButton*)event)->y, 
+					&path, &column, NULL, NULL);
+
+	col=inv_delay_get_col_number_from_tree_view_column(column);
+
+	if (col > 0 && gtk_tree_model_get_iter(model, &iter, path))
+	{
+		gtk_tree_model_get(model, &iter, col, &value, -1);
+		if(value => 0.02 && value <= 2.0) {
+			if(((GdkEventButton*)event)->button ==1) {
+				pluginGui->delay1=value;
+				inv_knob_set_value(INV_KNOB (pluginGui->knobDelay1), pluginGui->delay1);
+				(*pluginGui->write_function)(pluginGui->controller, IDELAY_1_DELAY, 4, 0, &pluginGui->delay1);
+			}
+			if(((GdkEventButton*)event)->button ==3) {
+				pluginGui->delay2=value;
+				inv_knob_set_value(INV_KNOB (pluginGui->knobDelay2), pluginGui->delay2);
+				(*pluginGui->write_function)(pluginGui->controller, IDELAY_2_DELAY, 4, 0, &pluginGui->delay2);
+			}
+		}
+	}
+
+	gtk_tree_path_free(path);
 	return;
 }

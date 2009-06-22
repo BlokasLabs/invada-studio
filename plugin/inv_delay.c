@@ -923,9 +923,9 @@ convertParam(unsigned long param, float value, double sr) {
 			if(value<0.0)
 				result = 0.0;
 			else if (value < 100.0)
-				result = value/1000.0;
+				result = value/400.0;
 			else
-				result = 0.1;
+				result = 0.25;
 			break;
 		case IDELAY_1_VOL:
 		case IDELAY_2_VOL:
