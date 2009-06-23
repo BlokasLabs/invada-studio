@@ -207,6 +207,8 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float OutL,EnvInL,EnvOutL,EnvDrive;
 	float fAudioL,fEnvelope,fRms,fRmsSize;
 	float fBypass,fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
+	double fRmsDelta,fAttackDelta,fReleaseDelta,fThreshDelta,fRatioDelta,fGainDelta;
+	int   HasDelta;
 	float drive=0;
 	unsigned long lSampleIndex;
 			   
@@ -215,22 +217,44 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 
 	/* see if any params have changed */
 	checkParamChange(ICOMP_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_RMS,    plugin->ControlRms,    &(plugin->LastRms),    &(plugin->ConvertedRms),    plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_ATTACK, plugin->ControlAttack, &(plugin->LastAttack), &(plugin->ConvertedAttack), plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_RELEASE,plugin->ControlRelease,&(plugin->LastRelease),&(plugin->ConvertedRelease),plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_THRESH, plugin->ControlThresh, &(plugin->LastThresh), &(plugin->ConvertedThresh), plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_RATIO,  plugin->ControlRatio,  &(plugin->LastRatio),  &(plugin->ConvertedRatio),  plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
+	fRmsDelta     = getParamChange(ICOMP_RMS,    plugin->ControlRms,    &(plugin->LastRms),    &(plugin->ConvertedRms),    plugin->SampleRate, pParamFunc);
+	fAttackDelta  = getParamChange(ICOMP_ATTACK, plugin->ControlAttack, &(plugin->LastAttack), &(plugin->ConvertedAttack), plugin->SampleRate, pParamFunc);
+	fReleaseDelta = getParamChange(ICOMP_RELEASE,plugin->ControlRelease,&(plugin->LastRelease),&(plugin->ConvertedRelease),plugin->SampleRate, pParamFunc);
+	fThreshDelta  = getParamChange(ICOMP_THRESH, plugin->ControlThresh, &(plugin->LastThresh), &(plugin->ConvertedThresh), plugin->SampleRate, pParamFunc);
+	fRatioDelta   = getParamChange(ICOMP_RATIO,  plugin->ControlRatio,  &(plugin->LastRatio),  &(plugin->ConvertedRatio),  plugin->SampleRate, pParamFunc);
+	fGainDelta    = getParamChange(ICOMP_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
+
 	fBypass   = plugin->ConvertedBypass;
-	fRmsSize  = plugin->ConvertedRms;
-	fAttack   = plugin->ConvertedAttack;
-	fRelease  = plugin->ConvertedRelease;
-	fThresh   = plugin->ConvertedThresh;
-	fRatio    = plugin->ConvertedRatio;
-	fGain     = plugin->ConvertedGain;
 	fNoClip   = plugin->ConvertedNoClip;
+
+	if(fRmsDelta == 0 && fAttackDelta==0 && fReleaseDelta==0 && fThreshDelta==0 && fRatioDelta==0 && fGainDelta==0 ) {
+		HasDelta=0;
+		fRmsSize  = plugin->ConvertedRms;
+		fAttack   = plugin->ConvertedAttack;
+		fRelease  = plugin->ConvertedRelease;
+		fThresh   = plugin->ConvertedThresh;
+		fRatio    = plugin->ConvertedRatio;
+		fGain     = plugin->ConvertedGain;
+	} else {
+		HasDelta=1;
+		fRmsSize  = plugin->ConvertedRms     - fRmsDelta;
+		fAttack   = plugin->ConvertedAttack  - fAttackDelta;
+		fRelease  = plugin->ConvertedRelease - fReleaseDelta;
+		fThresh   = plugin->ConvertedThresh  - fThreshDelta;
+		fRatio    = plugin->ConvertedRatio   - fRatioDelta;
+		fGain     = plugin->ConvertedGain    - fGainDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fRmsDelta     = fRmsDelta/(float)SampleCount;
+			fAttackDelta  = fAttackDelta/(float)SampleCount;
+			fReleaseDelta = fReleaseDelta/(float)SampleCount;
+			fThreshDelta  = fThreshDelta/(float)SampleCount;
+			fRatioDelta   = fRatioDelta/(float)SampleCount;
+			fGainDelta    = fGainDelta/(float)SampleCount;
+		}
+	}
 
 	fEnvelope = plugin->Envelope;   
 	fRms      = plugin->Rms;
@@ -261,6 +285,15 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 
+			//update any changing parameters
+			if(HasDelta==1) {
+				fRmsSize  += fRmsDelta;
+				fAttack   += fAttackDelta;
+				fRelease  += fReleaseDelta;
+				fThresh   += fThreshDelta;
+				fRatio    += fRatioDelta;
+				fGain     += fGainDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -300,6 +333,8 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputR;
 	float fAudioL,fAudioR,fMaxAudio,fEnvelope,fRms,fRmsSize;
 	float fBypass,fAttack,fRelease,fThresh,fRatio,fGain,fCompGain,fNoClip;
+	double fRmsDelta,fAttackDelta,fReleaseDelta,fThreshDelta,fRatioDelta,fGainDelta;
+	int   HasDelta;
 	float OutL,EnvInL,EnvOutL;
 	float OutR,EnvInR,EnvOutR;
 	float drive,EnvDrive;
@@ -312,22 +347,44 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 			   
 	/* see if any params have changed */
 	checkParamChange(ICOMP_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_RMS,    plugin->ControlRms,    &(plugin->LastRms),    &(plugin->ConvertedRms),    plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_ATTACK, plugin->ControlAttack, &(plugin->LastAttack), &(plugin->ConvertedAttack), plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_RELEASE,plugin->ControlRelease,&(plugin->LastRelease),&(plugin->ConvertedRelease),plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_THRESH, plugin->ControlThresh, &(plugin->LastThresh), &(plugin->ConvertedThresh), plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_RATIO,  plugin->ControlRatio,  &(plugin->LastRatio),  &(plugin->ConvertedRatio),  plugin->SampleRate, pParamFunc);
-	checkParamChange(ICOMP_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(ICOMP_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
 
+	fRmsDelta     = getParamChange(ICOMP_RMS,    plugin->ControlRms,    &(plugin->LastRms),    &(plugin->ConvertedRms),    plugin->SampleRate, pParamFunc);
+	fAttackDelta  = getParamChange(ICOMP_ATTACK, plugin->ControlAttack, &(plugin->LastAttack), &(plugin->ConvertedAttack), plugin->SampleRate, pParamFunc);
+	fReleaseDelta = getParamChange(ICOMP_RELEASE,plugin->ControlRelease,&(plugin->LastRelease),&(plugin->ConvertedRelease),plugin->SampleRate, pParamFunc);
+	fThreshDelta  = getParamChange(ICOMP_THRESH, plugin->ControlThresh, &(plugin->LastThresh), &(plugin->ConvertedThresh), plugin->SampleRate, pParamFunc);
+	fRatioDelta   = getParamChange(ICOMP_RATIO,  plugin->ControlRatio,  &(plugin->LastRatio),  &(plugin->ConvertedRatio),  plugin->SampleRate, pParamFunc);
+	fGainDelta    = getParamChange(ICOMP_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
+
 	fBypass   = plugin->ConvertedBypass;
-	fRmsSize  = plugin->ConvertedRms;
-	fAttack   = plugin->ConvertedAttack;
-	fRelease  = plugin->ConvertedRelease;
-	fThresh   = plugin->ConvertedThresh;
-	fRatio    = plugin->ConvertedRatio;
-	fGain     = plugin->ConvertedGain;
 	fNoClip   = plugin->ConvertedNoClip;
+
+	if(fRmsDelta == 0 && fAttackDelta==0 && fReleaseDelta==0 && fThreshDelta==0 && fRatioDelta==0 && fGainDelta==0 ) {
+		HasDelta=0;
+		fRmsSize  = plugin->ConvertedRms;
+		fAttack   = plugin->ConvertedAttack;
+		fRelease  = plugin->ConvertedRelease;
+		fThresh   = plugin->ConvertedThresh;
+		fRatio    = plugin->ConvertedRatio;
+		fGain     = plugin->ConvertedGain;
+	} else {
+		HasDelta=1;
+		fRmsSize  = plugin->ConvertedRms     - fRmsDelta;
+		fAttack   = plugin->ConvertedAttack  - fAttackDelta;
+		fRelease  = plugin->ConvertedRelease - fReleaseDelta;
+		fThresh   = plugin->ConvertedThresh  - fThreshDelta;
+		fRatio    = plugin->ConvertedRatio   - fRatioDelta;
+		fGain     = plugin->ConvertedGain    - fGainDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fRmsDelta     = fRmsDelta/(float)SampleCount;
+			fAttackDelta  = fAttackDelta/(float)SampleCount;
+			fReleaseDelta = fReleaseDelta/(float)SampleCount;
+			fThreshDelta  = fThreshDelta/(float)SampleCount;
+			fRatioDelta   = fRatioDelta/(float)SampleCount;
+			fGainDelta    = fGainDelta/(float)SampleCount;
+		}
+	}
 
 	fEnvelope = plugin->Envelope;   
 	fRms      = plugin->Rms;
@@ -370,6 +427,16 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fRmsSize  += fRmsDelta;
+				fAttack   += fAttackDelta;
+				fRelease  += fReleaseDelta;
+				fThresh   += fThreshDelta;
+				fRatio    += fRatioDelta;
+				fGain     += fGainDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {

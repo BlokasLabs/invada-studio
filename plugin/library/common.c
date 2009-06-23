@@ -43,6 +43,30 @@ checkParamChange(
 	}
 }
 
+float 
+getParamChange(
+	unsigned long param, 
+	float * control, 
+	float * last, 
+	float * converted, 
+	double sr,
+	float (*ConvertFunction)(unsigned long, float, double)
+	) 
+{
+	float delta;
+	float old;
+
+	if(*control != *last) {
+		old = *converted;
+		*last=*control;
+		*converted=(*ConvertFunction)(param, *control, sr);
+		delta=*converted-old;
+	} else {
+		delta=0.0;
+	}
+
+	return delta;
+}
 
 /* a function which maps an envelope to a sound */
 float 

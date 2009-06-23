@@ -986,7 +986,7 @@ on_inv_delay_calc_button_release(GtkWidget *widget, GdkEvent *event, gpointer da
 	if (col > 0 && gtk_tree_model_get_iter(model, &iter, path))
 	{
 		gtk_tree_model_get(model, &iter, col, &value, -1);
-		if(value => 0.02 && value <= 2.0) {
+		if(value >= 0.02 && value <= 2.0) {
 			if(((GdkEventButton*)event)->button ==1) {
 				pluginGui->delay1=value;
 				inv_knob_set_value(INV_KNOB (pluginGui->knobDelay1), pluginGui->delay1);

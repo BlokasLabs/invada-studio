@@ -59,8 +59,9 @@ struct ERunit {
 	float GainR;
 };
 
-/* param change detect function */
+/* param change detect functions, second one calculates deltas for interpolation in run loops */
 void checkParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
+float  getParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
 
 /* audio envelope */
 float IEnvelope(float value, float envelope, int mode, double sr);

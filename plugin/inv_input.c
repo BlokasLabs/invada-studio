@@ -199,6 +199,8 @@ runIInput(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float * pfAudioOutputR;
 	float fBypass,fPhaseL,fPhaseR,fGain,fPan,fLPan,fRPan,fWidth,fMono,fStereoL,fStereoR,fNoClip;
+	double fGainDelta,fPanDelta,fWidthDelta;
+	int   HasDelta;
 	float fAudioL,fAudioR;
 	float drive;
 	float driveL=0;
@@ -215,18 +217,35 @@ runIInput(LV2_Handle instance, uint32_t SampleCount)
 	checkParamChange(IINPUT_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
 	checkParamChange(IINPUT_PHASEL, plugin->ControlPhaseL, &(plugin->LastPhaseL), &(plugin->ConvertedPhaseL), plugin->SampleRate, pParamFunc);
 	checkParamChange(IINPUT_PHASER, plugin->ControlPhaseR, &(plugin->LastPhaseR), &(plugin->ConvertedPhaseR), plugin->SampleRate, pParamFunc);
-	checkParamChange(IINPUT_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
-	checkParamChange(IINPUT_PAN,    plugin->ControlPan,    &(plugin->LastPan),    &(plugin->ConvertedPan),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IINPUT_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
 	checkParamChange(IINPUT_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fGainDelta  = getParamChange(IINPUT_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
+	fPanDelta   = getParamChange(IINPUT_PAN,    plugin->ControlPan,    &(plugin->LastPan),    &(plugin->ConvertedPan),    plugin->SampleRate, pParamFunc);
+	fWidthDelta = getParamChange(IINPUT_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
 
+
+ 
 	fBypass    = plugin->ConvertedBypass;
 	fPhaseL    = plugin->ConvertedPhaseL;
 	fPhaseR    = plugin->ConvertedPhaseR;
-	fGain      = plugin->ConvertedGain;
-	fPan       = plugin->ConvertedPan;
-	fWidth     = plugin->ConvertedWidth;
 	fNoClip    = plugin->ConvertedNoClip;
+
+	if(fGainDelta == 0 && fPanDelta==0 && fWidthDelta==0) {
+		HasDelta=0;
+		fGain      = plugin->ConvertedGain;
+		fPan       = plugin->ConvertedPan;
+		fWidth     = plugin->ConvertedWidth;
+	} else {
+		HasDelta=1;
+		fGain      = plugin->ConvertedGain  - fGainDelta;
+		fPan       = plugin->ConvertedPan   - fPanDelta;
+		fWidth     = plugin->ConvertedWidth - fWidthDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fGainDelta  = fGainDelta/(float)SampleCount;
+			fPanDelta   = fPanDelta/(float)SampleCount;
+			fWidthDelta = fWidthDelta/(float)SampleCount;
+		}
+	}
 
 	fLPan=1-fPan;
 	fRPan=1+fPan;
@@ -287,6 +306,16 @@ runIInput(LV2_Handle instance, uint32_t SampleCount)
 
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fGain  += fGainDelta;
+				fPan   += fPanDelta;
+				fWidth += fWidthDelta;
+				fLPan=1-fPan;
+				fRPan=1+fPan;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
