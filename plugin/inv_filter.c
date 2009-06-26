@@ -168,6 +168,8 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float InL,OutL,EnvInL,EnvOutL,EnvDrive;
 	float fBypass,fSamples,fGain,fNoClip;
+	double fFreqDelta,fGainDelta;
+	int   HasDelta;
 	float fAudioL,fAudioLSum;
 	float drive=0;
 	unsigned long lSampleIndex;
@@ -176,14 +178,28 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	pParamFunc = &convertParam;
 
 	checkParamChange(IFILTER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(IFILTER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fFreqDelta = getParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
+	fGainDelta = getParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
+
 
 	fBypass  = plugin->ConvertedBypass;
-	fSamples = plugin->ConvertedFreq;
-	fGain    = plugin->ConvertedGain;
 	fNoClip  = plugin->ConvertedNoClip;
+
+	if(fFreqDelta == 0 && fGainDelta==0 ) {
+		HasDelta=0;
+		fSamples = plugin->ConvertedFreq;
+		fGain    = plugin->ConvertedGain;
+	} else {
+		HasDelta=1;
+		fSamples = plugin->ConvertedFreq - fFreqDelta;
+		fGain    = plugin->ConvertedGain - fGainDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fFreqDelta  = fFreqDelta/(float)SampleCount;
+			fGainDelta  = fGainDelta/(float)SampleCount;
+		}
+	}
 
 	pfAudioInputL = plugin->AudioInputBufferL;
 	pfAudioOutputL = plugin->AudioOutputBufferL;
@@ -208,6 +224,11 @@ static void runMonoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 
+			//update any changing parameters
+			if(HasDelta==1) {
+				fSamples  += fFreqDelta;
+				fGain     += fGainDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -244,6 +265,8 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float InL,OutL,EnvInL,EnvOutL;
 	float InR,OutR,EnvInR,EnvOutR;
 	float fBypass,fSamples,fGain,fNoClip;
+	double fFreqDelta,fGainDelta;
+	int   HasDelta;
 	float fAudioL,fAudioR,fAudioLSum,fAudioRSum;
 	float drive,EnvDrive;
 	float driveL=0;
@@ -254,14 +277,27 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	pParamFunc = &convertParam;
 
 	checkParamChange(IFILTER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(IFILTER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fFreqDelta = getParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
+	fGainDelta = getParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 
 	fBypass  = plugin->ConvertedBypass;
-	fSamples = plugin->ConvertedFreq;
-	fGain    = plugin->ConvertedGain;
 	fNoClip  = plugin->ConvertedNoClip;
+
+	if(fFreqDelta == 0 && fGainDelta==0 ) {
+		HasDelta=0;
+		fSamples = plugin->ConvertedFreq;
+		fGain    = plugin->ConvertedGain;
+	} else {
+		HasDelta=1;
+		fSamples = plugin->ConvertedFreq - fFreqDelta;
+		fGain    = plugin->ConvertedGain - fGainDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fFreqDelta  = fFreqDelta/(float)SampleCount;
+			fGainDelta  = fGainDelta/(float)SampleCount;
+		}
+	}
 
 	pfAudioInputL = plugin->AudioInputBufferL;
 	pfAudioInputR = plugin->AudioInputBufferR;
@@ -299,6 +335,12 @@ static void runStereoLPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fSamples  += fFreqDelta;
+				fGain     += fGainDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -342,6 +384,8 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float * pfAudioOutputL;
 	float InL,OutL,EnvInL,EnvOutL,EnvDrive;
 	float fBypass,fSamples,fGain,fNoClip;
+	double fFreqDelta,fGainDelta;
+	int   HasDelta;
 	float fAudioL,fAudioLSum;
 	float drive=0;
 	unsigned long lSampleIndex;
@@ -350,14 +394,27 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	pParamFunc = &convertParam;
 
 	checkParamChange(IFILTER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(IFILTER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fFreqDelta = getParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
+	fGainDelta = getParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 
 	fBypass  = plugin->ConvertedBypass;
-	fSamples = plugin->ConvertedFreq;
-	fGain    = plugin->ConvertedGain;
 	fNoClip  = plugin->ConvertedNoClip;
+
+	if(fFreqDelta == 0 && fGainDelta==0 ) {
+		HasDelta=0;
+		fSamples = plugin->ConvertedFreq;
+		fGain    = plugin->ConvertedGain;
+	} else {
+		HasDelta=1;
+		fSamples = plugin->ConvertedFreq - fFreqDelta;
+		fGain    = plugin->ConvertedGain - fGainDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fFreqDelta  = fFreqDelta/(float)SampleCount;
+			fGainDelta  = fGainDelta/(float)SampleCount;
+		}
+	}
 
 	pfAudioInputL = plugin->AudioInputBufferL;
 	pfAudioOutputL = plugin->AudioOutputBufferL;
@@ -382,6 +439,12 @@ static void runMonoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 			EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fSamples  += fFreqDelta;
+				fGain     += fGainDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -418,6 +481,8 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	float InL,OutL,EnvInL,EnvOutL;
 	float InR,OutR,EnvInR,EnvOutR;
 	float fBypass,fSamples,fGain,fNoClip;
+	double fFreqDelta,fGainDelta;
+	int   HasDelta;
 	float fAudioL,fAudioR,fAudioLSum,fAudioRSum;
 	float drive,EnvDrive;
 	float driveL=0;
@@ -428,14 +493,27 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 	pParamFunc = &convertParam;
 
 	checkParamChange(IFILTER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
-	checkParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 	checkParamChange(IFILTER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fFreqDelta = getParamChange(IFILTER_FREQ,   plugin->ControlFreq,   &(plugin->LastFreq),   &(plugin->ConvertedFreq),   plugin->SampleRate, pParamFunc);
+	fGainDelta = getParamChange(IFILTER_GAIN,   plugin->ControlGain,   &(plugin->LastGain),   &(plugin->ConvertedGain),   plugin->SampleRate, pParamFunc);
 
 	fBypass  = plugin->ConvertedBypass;
-	fSamples = plugin->ConvertedFreq;
-	fGain    = plugin->ConvertedGain;
 	fNoClip  = plugin->ConvertedNoClip;
+
+	if(fFreqDelta == 0 && fGainDelta==0 ) {
+		HasDelta=0;
+		fSamples = plugin->ConvertedFreq;
+		fGain    = plugin->ConvertedGain;
+	} else {
+		HasDelta=1;
+		fSamples = plugin->ConvertedFreq - fFreqDelta;
+		fGain    = plugin->ConvertedGain - fGainDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fFreqDelta  = fFreqDelta/(float)SampleCount;
+			fGainDelta  = fGainDelta/(float)SampleCount;
+		}
+	}
 
 	pfAudioInputL = plugin->AudioInputBufferL;
 	pfAudioInputR = plugin->AudioInputBufferR;
@@ -473,6 +551,12 @@ static void runStereoHPFIFilter(LV2_Handle instance, uint32_t SampleCount)
 
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fSamples  += fFreqDelta;
+				fGain     += fGainDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
