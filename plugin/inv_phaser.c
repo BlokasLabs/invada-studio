@@ -239,6 +239,8 @@ runMonoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 	float driveL=0;
 	float driveR=0;
 	float fBypass,fAngleDelta,fRPhase,fMaxDelay2,fDepth,fNoClip;
+	double fCycleDelta,fPhaseDelta,fWidthDelta,fDepthDelta;
+	int   HasDelta;
 	float fDelayL,fDelayOffsetL;
 	float fDelayR,fDelayOffsetR;
 	unsigned long lDelaySampleL;
@@ -257,20 +259,37 @@ runMonoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 
 	/* check if any other params have changed */
 	checkParamChange(IPHASER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
 	checkParamChange(IPHASER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fCycleDelta = getParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	fPhaseDelta = getParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
+	fWidthDelta = getParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	fDepthDelta = getParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
 
 
 	fBypass         = plugin->ConvertedBypass;
-	fAngleDelta	= plugin->ConvertedCycle;
-	fRPhase   	= plugin->ConvertedPhase;
-	fMaxDelay2	= plugin->ConvertedWidth;
-	fDepth		= plugin->ConvertedDepth;
 	fNoClip		= plugin->ConvertedNoClip;
-	
+
+	if(fCycleDelta == 0 && fPhaseDelta==0 && fWidthDelta==0 && fDepthDelta==0) {
+		HasDelta=0;
+		fAngleDelta	= plugin->ConvertedCycle;
+		fRPhase   	= plugin->ConvertedPhase;
+		fMaxDelay2	= plugin->ConvertedWidth;
+		fDepth		= plugin->ConvertedDepth;
+	} else {
+		HasDelta=1;
+		fAngleDelta	= plugin->ConvertedCycle - fCycleDelta;
+		fRPhase   	= plugin->ConvertedPhase - fPhaseDelta;
+		fMaxDelay2	= plugin->ConvertedWidth - fWidthDelta;
+		fDepth		= plugin->ConvertedDepth - fDepthDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fCycleDelta  = fCycleDelta/(float)SampleCount;
+			fPhaseDelta  = fPhaseDelta/(float)SampleCount;
+			fWidthDelta  = fWidthDelta/(float)SampleCount;
+			fDepthDelta  = fDepthDelta/(float)SampleCount;
+		}
+	}
+
 	SpaceSize 	= plugin->SpaceSize;
 
 	SpaceLStr	= plugin->SpaceL;
@@ -349,6 +368,14 @@ runMonoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fAngleDelta += fCycleDelta;
+				fRPhase     += fPhaseDelta;
+				fMaxDelay2  += fWidthDelta;
+				fDepth	    += fDepthDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -409,6 +436,8 @@ runStereoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 	float driveL=0;
 	float driveR=0;
 	float fBypass,fAngleDelta,fRPhase,fMaxDelay2,fDepth,fNoClip;
+	double fCycleDelta,fPhaseDelta,fWidthDelta,fDepthDelta;
+	int   HasDelta;
 	float fDelayL,fDelayOffsetL;
 	float fDelayR,fDelayOffsetR;
 	unsigned long lDelaySampleL;
@@ -427,19 +456,36 @@ runStereoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 
 	/* check if any other params have changed */
 	checkParamChange(IPHASER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
 	checkParamChange(IPHASER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fCycleDelta = getParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	fPhaseDelta = getParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
+	fWidthDelta = getParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	fDepthDelta = getParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
 
 
 	fBypass         = plugin->ConvertedBypass;
-	fAngleDelta	= plugin->ConvertedCycle;
-	fRPhase   	= plugin->ConvertedPhase;
-	fMaxDelay2	= plugin->ConvertedWidth;
-	fDepth		= plugin->ConvertedDepth;
 	fNoClip		= plugin->ConvertedNoClip;
+
+	if(fCycleDelta == 0 && fPhaseDelta==0 && fWidthDelta==0 && fDepthDelta==0) {
+		HasDelta=0;
+		fAngleDelta	= plugin->ConvertedCycle;
+		fRPhase   	= plugin->ConvertedPhase;
+		fMaxDelay2	= plugin->ConvertedWidth;
+		fDepth		= plugin->ConvertedDepth;
+	} else {
+		HasDelta=1;
+		fAngleDelta	= plugin->ConvertedCycle - fCycleDelta;
+		fRPhase   	= plugin->ConvertedPhase - fPhaseDelta;
+		fMaxDelay2	= plugin->ConvertedWidth - fWidthDelta;
+		fDepth		= plugin->ConvertedDepth - fDepthDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fCycleDelta  = fCycleDelta/(float)SampleCount;
+			fPhaseDelta  = fPhaseDelta/(float)SampleCount;
+			fWidthDelta  = fWidthDelta/(float)SampleCount;
+			fDepthDelta  = fDepthDelta/(float)SampleCount;
+		}
+	}
 	
 	SpaceSize 	= plugin->SpaceSize;
 
@@ -524,6 +570,14 @@ runStereoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fAngleDelta += fCycleDelta;
+				fRPhase     += fPhaseDelta;
+				fMaxDelay2  += fWidthDelta;
+				fDepth	    += fDepthDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -588,6 +642,8 @@ runSumIPhaser(LV2_Handle instance, uint32_t SampleCount)
 	float driveL=0;
 	float driveR=0;
 	float fBypass,fAngleDelta,fRPhase,fMaxDelay2,fDepth,fNoClip;
+	double fCycleDelta,fPhaseDelta,fWidthDelta,fDepthDelta;
+	int   HasDelta;
 	float fDelayL,fDelayOffsetL;
 	float fDelayR,fDelayOffsetR;
 	unsigned long lDelaySampleL;
@@ -606,19 +662,36 @@ runSumIPhaser(LV2_Handle instance, uint32_t SampleCount)
 
 	/* check if any other params have changed */
 	checkParamChange(IPHASER_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
-	checkParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
 	checkParamChange(IPHASER_NOCLIP, plugin->ControlNoClip, &(plugin->LastNoClip), &(plugin->ConvertedNoClip), plugin->SampleRate, pParamFunc);
+	fCycleDelta = getParamChange(IPHASER_CYCLE,  plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	fPhaseDelta = getParamChange(IPHASER_PHASE,  plugin->ControlPhase,  &(plugin->LastPhase),  &(plugin->ConvertedPhase),  plugin->SampleRate, pParamFunc);
+	fWidthDelta = getParamChange(IPHASER_WIDTH,  plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	fDepthDelta = getParamChange(IPHASER_DEPTH,  plugin->ControlDepth,  &(plugin->LastDepth),  &(plugin->ConvertedDepth),  plugin->SampleRate, pParamFunc);
 
 
 	fBypass         = plugin->ConvertedBypass;
-	fAngleDelta	= plugin->ConvertedCycle;
-	fRPhase   	= plugin->ConvertedPhase;
-	fMaxDelay2	= plugin->ConvertedWidth;
-	fDepth		= plugin->ConvertedDepth;
 	fNoClip		= plugin->ConvertedNoClip;
+
+	if(fCycleDelta == 0 && fPhaseDelta==0 && fWidthDelta==0 && fDepthDelta==0) {
+		HasDelta=0;
+		fAngleDelta	= plugin->ConvertedCycle;
+		fRPhase   	= plugin->ConvertedPhase;
+		fMaxDelay2	= plugin->ConvertedWidth;
+		fDepth		= plugin->ConvertedDepth;
+	} else {
+		HasDelta=1;
+		fAngleDelta	= plugin->ConvertedCycle - fCycleDelta;
+		fRPhase   	= plugin->ConvertedPhase - fPhaseDelta;
+		fMaxDelay2	= plugin->ConvertedWidth - fWidthDelta;
+		fDepth		= plugin->ConvertedDepth - fDepthDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fCycleDelta  = fCycleDelta/(float)SampleCount;
+			fPhaseDelta  = fPhaseDelta/(float)SampleCount;
+			fWidthDelta  = fWidthDelta/(float)SampleCount;
+			fDepthDelta  = fDepthDelta/(float)SampleCount;
+		}
+	}
 	
 	SpaceSize 	= plugin->SpaceSize;
 
@@ -699,6 +772,14 @@ runSumIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fAngleDelta += fCycleDelta;
+				fRPhase     += fPhaseDelta;
+				fMaxDelay2  += fWidthDelta;
+				fDepth	    += fDepthDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
