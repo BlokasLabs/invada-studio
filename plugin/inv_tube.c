@@ -177,6 +177,8 @@ runMonoITube(LV2_Handle instance, uint32_t SampleCount)
 	float OutL,EnvInL,EnvOutL;
 	float TubeOut,drive,EnvDrive;
 	float fBypass,fAudioL, fDrive, fDCOffset, DCOffsetADJ, fPhase, fMix;
+	double fDriveDelta,fDCDelta,fMixDelta;
+	int   HasDelta,HasTubeDelta;
 	uint32_t lSampleIndex;
 			   
 	ITube *plugin = (ITube *)instance;
@@ -184,16 +186,37 @@ runMonoITube(LV2_Handle instance, uint32_t SampleCount)
 
 	/* check for any params changes */
 	checkParamChange(ITUBE_BYPASS,   plugin->ControlBypass,   &(plugin->LastBypass),   &(plugin->ConvertedBypass),   plugin->SampleRate, pParamFunc);
-	checkParamChange(ITUBE_DRIVE,    plugin->ControlDrive,    &(plugin->LastDrive),    &(plugin->ConvertedDrive),    plugin->SampleRate, pParamFunc);
-	checkParamChange(ITUBE_DCOFFSET, plugin->ControlDcoffset, &(plugin->LastDcoffset), &(plugin->ConvertedDcoffset), plugin->SampleRate, pParamFunc);
 	checkParamChange(ITUBE_PHASE,    plugin->ControlPhase,    &(plugin->LastPhase),    &(plugin->ConvertedPhase),    plugin->SampleRate, pParamFunc);
-	checkParamChange(ITUBE_MIX,      plugin->ControlMix,      &(plugin->LastMix),      &(plugin->ConvertedMix),      plugin->SampleRate, pParamFunc);
+	fDriveDelta = getParamChange(ITUBE_DRIVE,    plugin->ControlDrive,    &(plugin->LastDrive),    &(plugin->ConvertedDrive),    plugin->SampleRate, pParamFunc);
+	fDCDelta    = getParamChange(ITUBE_DCOFFSET, plugin->ControlDcoffset, &(plugin->LastDcoffset), &(plugin->ConvertedDcoffset), plugin->SampleRate, pParamFunc);
+	fMixDelta   = getParamChange(ITUBE_MIX,      plugin->ControlMix,      &(plugin->LastMix),      &(plugin->ConvertedMix),      plugin->SampleRate, pParamFunc);
 
 	fBypass   = plugin->ConvertedBypass;
-	fDrive    = plugin->ConvertedDrive;
-	fDCOffset = plugin->ConvertedDcoffset;
 	fPhase    = plugin->ConvertedPhase;
-	fMix      = plugin->ConvertedMix;
+
+	if(fDriveDelta == 0 && fDCDelta==0 && fMixDelta ==0) {
+		HasDelta=0;
+		HasTubeDelta=0;
+		fDrive    = plugin->ConvertedDrive;
+		fDCOffset = plugin->ConvertedDcoffset;
+		fMix      = plugin->ConvertedMix;
+	} else {
+		HasDelta=1;
+		fDrive    = plugin->ConvertedDrive    - fDriveDelta;
+		fDCOffset = plugin->ConvertedDcoffset - fDCDelta;
+		fMix      = plugin->ConvertedMix      - fMixDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fDriveDelta  = fDriveDelta/(float)SampleCount;
+			fDCDelta     = fDCDelta/(float)SampleCount;
+			fMixDelta    = fMixDelta/(float)SampleCount;
+		}
+		if(fDriveDelta == 0 && fDCDelta==0) {
+			HasTubeDelta=0;
+		} else {
+			HasTubeDelta=1;
+		}
+	}
 
 	DCOffsetADJ=ITube_do(fDCOffset,fDrive);	
 			   
@@ -217,6 +240,17 @@ runMonoITube(LV2_Handle instance, uint32_t SampleCount)
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			drive = fabs(fabs(fabs((fAudioL+fDCOffset)*fDrive) - fabs(fDCOffset*fDrive)) - fabs(TubeOut));
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				fMix      += fMixDelta;
+				if(HasTubeDelta==1) {
+					fDrive    += fDriveDelta;
+					fDCOffset += fDCDelta;
+					DCOffsetADJ=ITube_do(fDCOffset,fDrive);	
+				}
+			}
+
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -253,6 +287,8 @@ runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 	float driveL=0;
 	float driveR=0;
 	float fBypass,fAudioL, fAudioR, fDrive, fDCOffset, DCOffsetADJ, fPhase, fMix;
+	double fDriveDelta,fDCDelta,fMixDelta;
+	int   HasDelta,HasTubeDelta;
 	uint32_t lSampleIndex;
 			   
 	ITube *plugin = (ITube *)instance;
@@ -260,18 +296,39 @@ runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 			   
 	/* check for any params changes */
 	checkParamChange(ITUBE_BYPASS,   plugin->ControlBypass,   &(plugin->LastBypass),   &(plugin->ConvertedBypass),   plugin->SampleRate, pParamFunc);
-	checkParamChange(ITUBE_DRIVE,    plugin->ControlDrive,    &(plugin->LastDrive),    &(plugin->ConvertedDrive),    plugin->SampleRate, pParamFunc);
-	checkParamChange(ITUBE_DCOFFSET, plugin->ControlDcoffset, &(plugin->LastDcoffset), &(plugin->ConvertedDcoffset), plugin->SampleRate, pParamFunc);
 	checkParamChange(ITUBE_PHASE,    plugin->ControlPhase,    &(plugin->LastPhase),    &(plugin->ConvertedPhase),    plugin->SampleRate, pParamFunc);
-	checkParamChange(ITUBE_MIX,      plugin->ControlMix,      &(plugin->LastMix),      &(plugin->ConvertedMix),      plugin->SampleRate, pParamFunc);
+	fDriveDelta = getParamChange(ITUBE_DRIVE,    plugin->ControlDrive,    &(plugin->LastDrive),    &(plugin->ConvertedDrive),    plugin->SampleRate, pParamFunc);
+	fDCDelta    = getParamChange(ITUBE_DCOFFSET, plugin->ControlDcoffset, &(plugin->LastDcoffset), &(plugin->ConvertedDcoffset), plugin->SampleRate, pParamFunc);
+	fMixDelta   = getParamChange(ITUBE_MIX,      plugin->ControlMix,      &(plugin->LastMix),      &(plugin->ConvertedMix),      plugin->SampleRate, pParamFunc);
 
 	fBypass   = plugin->ConvertedBypass;
-	fDrive    = plugin->ConvertedDrive;
-	fDCOffset = plugin->ConvertedDcoffset;
 	fPhase    = plugin->ConvertedPhase;
-	fMix      = plugin->ConvertedMix;
 
-	DCOffsetADJ=ITube_do(fDCOffset,fDrive);
+	if(fDriveDelta == 0 && fDCDelta==0 && fMixDelta ==0) {
+		HasDelta=0;
+		HasTubeDelta=0;
+		fDrive    = plugin->ConvertedDrive;
+		fDCOffset = plugin->ConvertedDcoffset;
+		fMix      = plugin->ConvertedMix;
+	} else {
+		HasDelta=1;
+		fDrive    = plugin->ConvertedDrive    - fDriveDelta;
+		fDCOffset = plugin->ConvertedDcoffset - fDCDelta;
+		fMix      = plugin->ConvertedMix      - fMixDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fDriveDelta  = fDriveDelta/(float)SampleCount;
+			fDCDelta     = fDCDelta/(float)SampleCount;
+			fMixDelta    = fMixDelta/(float)SampleCount;
+		}
+		if(fDriveDelta == 0 && fDCDelta==0) {
+			HasTubeDelta=0;
+		} else {
+			HasTubeDelta=1;
+		}
+	}
+
+	DCOffsetADJ=ITube_do(fDCOffset,fDrive);	
   
 	pfAudioInputL = plugin->AudioInputBufferL;
 	pfAudioInputR = plugin->AudioInputBufferR;
@@ -311,6 +368,15 @@ runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 			drive = driveL > driveR ? driveL : driveR;
 			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
 
+			//update any changing parameters
+			if(HasDelta==1) {
+				fMix      += fMixDelta;
+				if(HasTubeDelta==1) {
+					fDrive    += fDriveDelta;
+					fDCOffset += fDCDelta;
+					DCOffsetADJ=ITube_do(fDCOffset,fDrive);	
+				}
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
