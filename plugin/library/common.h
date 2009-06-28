@@ -66,6 +66,10 @@ float  getParamChange(unsigned long param, float * control, float * last, float 
 /* audio envelope */
 float IEnvelope(float value, float envelope, int mode, double sr);
 
+/* add or subtract to delay space */
+void SpaceAdd(float *SpacePos, float *SpaceEnd, unsigned long SpaceSize, unsigned long Delay, float Offset, float Value);
+void SpaceSub(float *SpacePos, float *SpaceEnd, unsigned long SpaceSize, unsigned long Delay, float Offset, float Value);
+
 /* soft clipping function */
 float InoClip(float in, float *drive);
 

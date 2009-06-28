@@ -247,11 +247,11 @@ activateIDelay(LV2_Handle instance)
 	plugin->LastMunge	= 50.0;
 	plugin->LastCycle	= 20.0;
 	plugin->LastWidth	= 0.0;
-	plugin->Last1Delay	= 300.0;
+	plugin->Last1Delay	= 0.3;
 	plugin->Last1FB		= 50.0; 
 	plugin->Last1Pan	= -0.7;
 	plugin->Last1Vol	= 100.0;
-	plugin->Last2Delay	= 200.0;
+	plugin->Last2Delay	= 0.2;
 	plugin->Last2FB		= 50.0; 
 	plugin->Last2Pan	= 0.7;
 	plugin->Last2Vol	= 100.0;
@@ -296,10 +296,17 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	float LPF1,LPF2,HPF1,HPF2,Degrain1,Degrain2;
 	float EnvIn,EnvOutL,EnvOutR;
 	float fBypass,fMode,fMunge,fMungeMode,fHPFsamples,fLPFsamples,fAngle,fAngleDelta,fLFO;
-	float f1Delay,f1DelayOffset,f1PanLGain,f1PanRGain,f1FB,In1FB,In1FBmix,In1Munged,fLFOsamp1,fActualDelay1;
-	float f2Delay,f2DelayOffset,f2PanLGain,f2PanRGain,f2FB,In2FB,In2FBmix,In2Munged,fLFOsamp2,fActualDelay2;
-	unsigned long l1DelaySample;
-	unsigned long l2DelaySample;
+	float f1Delay,f1DelayOffset,fLFOsamp1,fActualDelay1;
+	float f2Delay,f2DelayOffset,fLFOsamp2,fActualDelay2;
+	float f1DelayDelta,f1DelayOld,f1DelayOffsetOld,fLFOsamp1Old,fActualDelay1Old;
+	float f2DelayDelta,f2DelayOld,f2DelayOffsetOld,fLFOsamp2Old,fActualDelay2Old;
+	float oldVol,newVol;
+	float f1Vol,f1Pan,f1PanLGain,f1PanRGain,f1FBraw,f1FB,In1FB,In1FBmix,In1Munged;
+	float f2Vol,f2Pan,f2PanLGain,f2PanRGain,f2FBraw,f2FB,In2FB,In2FBmix,In2Munged;
+	double fMungeDelta,fLPFDelta,fHPFDelta,fCycleDelta,fWidthDelta,fFB1Delta,fPan1Delta,fVol1Delta,fFB2Delta,fPan2Delta,fVol2Delta;
+	int   HasDelta,HasDelay1Old,HasDelay2Old;
+	unsigned long l1DelaySample, l2DelaySample;
+	unsigned long l1DelaySampleOld, l2DelaySampleOld;
 	unsigned long lSampleIndex;
 	unsigned long SpaceSize;
 	float * SpaceLStr;
@@ -316,61 +323,137 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	checkParamChange(IDELAY_BYPASS,    plugin->ControlBypass,    &(plugin->LastBypass),    &(plugin->ConvertedBypass),    plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_MODE,      plugin->ControlMode,      &(plugin->LastMode),      &(plugin->ConvertedMode),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_MUNGEMODE, plugin->ControlMungeMode, &(plugin->LastMungeMode), &(plugin->ConvertedMungeMode), plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_LFO_CYCLE, plugin->ControlCycle,     &(plugin->LastCycle),     &(plugin->ConvertedCycle),     plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_LFO_WIDTH, plugin->ControlWidth,     &(plugin->LastWidth),     &(plugin->ConvertedWidth),     plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_DELAY,   plugin->Control1Delay,    &(plugin->Last1Delay),    &(plugin->Converted1Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_FB,      plugin->Control1FB,       &(plugin->Last1FB),       &(plugin->Converted1FB),       plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_PAN,     plugin->Control1Pan,      &(plugin->Last1Pan),      &(plugin->Converted1Pan),      plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_VOL,     plugin->Control1Vol,      &(plugin->Last1Vol),      &(plugin->Converted1Vol),      plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_DELAY,   plugin->Control2Delay,    &(plugin->Last2Delay),    &(plugin->Converted2Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_FB,      plugin->Control2FB,       &(plugin->Last2FB),       &(plugin->Converted2FB),       plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_PAN,     plugin->Control2Pan,      &(plugin->Last2Pan),      &(plugin->Converted2Pan),      plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_VOL,     plugin->Control2Vol,      &(plugin->Last2Vol),      &(plugin->Converted2Vol),      plugin->SampleRate, pParamFunc);
 
-	//this control causes a few parameters to change
-	if(*(plugin->ControlMunge) != plugin->LastMunge) {
-		plugin->LastMunge 		= *(plugin->ControlMunge);
-		plugin->ConvertedMunge		= convertParam(IDELAY_MUNGE, plugin->LastMunge, plugin->SampleRate); 
-		plugin->ConvertedLPFsamples	= convertMunge(0,            plugin->LastMunge, plugin->SampleRate); 
-		plugin->ConvertedHPFsamples	= convertMunge(1,            plugin->LastMunge, plugin->SampleRate); 
-	}
+	fMungeDelta  = getParamChange(IDELAY_MUNGE,     plugin->ControlMunge,  &(plugin->LastMunge),  &(plugin->ConvertedMunge),  plugin->SampleRate, pParamFunc);
+	fCycleDelta  = getParamChange(IDELAY_LFO_CYCLE, plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	fWidthDelta  = getParamChange(IDELAY_LFO_WIDTH, plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	f1DelayDelta = getParamChange(IDELAY_1_DELAY,   plugin->Control1Delay, &(plugin->Last1Delay), &(plugin->Converted1Delay), plugin->SampleRate, pParamFunc);
+	fFB1Delta    = getParamChange(IDELAY_1_FB,      plugin->Control1FB,    &(plugin->Last1FB),    &(plugin->Converted1FB),    plugin->SampleRate, pParamFunc);
+	fPan1Delta   = getParamChange(IDELAY_1_PAN,     plugin->Control1Pan,   &(plugin->Last1Pan),   &(plugin->Converted1Pan),   plugin->SampleRate, pParamFunc);
+	fVol1Delta   = getParamChange(IDELAY_1_VOL,     plugin->Control1Vol,   &(plugin->Last1Vol),   &(plugin->Converted1Vol),   plugin->SampleRate, pParamFunc);
+	f2DelayDelta = getParamChange(IDELAY_2_DELAY,   plugin->Control2Delay, &(plugin->Last2Delay), &(plugin->Converted2Delay), plugin->SampleRate, pParamFunc);
+	fFB2Delta    = getParamChange(IDELAY_2_FB,      plugin->Control2FB,    &(plugin->Last2FB),    &(plugin->Converted2FB),    plugin->SampleRate, pParamFunc);
+	fPan2Delta   = getParamChange(IDELAY_2_PAN,     plugin->Control2Pan,   &(plugin->Last2Pan),   &(plugin->Converted2Pan),   plugin->SampleRate, pParamFunc);
+	fVol2Delta   = getParamChange(IDELAY_2_VOL,     plugin->Control2Vol,   &(plugin->Last2Vol),   &(plugin->Converted2Vol),   plugin->SampleRate, pParamFunc);
 
 	fBypass         = plugin->ConvertedBypass;
 	fMode           = plugin->ConvertedMode;
 	fMungeMode	= plugin->ConvertedMungeMode;
-	fMunge		= plugin->ConvertedMunge;
-	fLPFsamples	= plugin->ConvertedLPFsamples;
-	fHPFsamples	= plugin->ConvertedHPFsamples;
-	fLFO		= plugin->ConvertedWidth;
-	fAngleDelta	= plugin->ConvertedCycle;
 
-	f1Delay		= plugin->Converted1Delay;
-	f1PanLGain	= plugin->Converted1Vol * (1-plugin->Converted1Pan)/2;
-	f1PanRGain	= plugin->Converted1Vol * (1+plugin->Converted1Pan)/2;
-	fLFOsamp1	= fLFO * f1Delay;
-	//these will get recalculated in the run loop if LFO is on
-	l1DelaySample	= (unsigned long)f1Delay;
-	f1DelayOffset	= f1Delay-(float)l1DelaySample;
-
-
-
-	f2Delay		= plugin->Converted2Delay;
-	f2PanLGain	= plugin->Converted2Vol * (1-plugin->Converted2Pan)/2;
-	f2PanRGain	= plugin->Converted2Vol * (1+plugin->Converted2Pan)/2;
-	fLFOsamp2	= fLFO * f2Delay;
-	//these will get recalculated in the run loop if LFO is on
-	l2DelaySample	= (unsigned long)f2Delay;
-	f2DelayOffset	= f2Delay-(float)l2DelaySample;
-
-	if(fMungeMode < 0.5) {
-		f1FB	= plugin->Converted1FB / (1+fMunge);
-		f2FB	= plugin->Converted2FB / (1+fMunge);
+	if(fMungeDelta==0 && fCycleDelta == 0 && fWidthDelta==0 && fFB1Delta==0 && fFB2Delta==0 && fPan1Delta==0 && fPan2Delta==0 && fVol1Delta==0 && fVol2Delta==0) {
+		HasDelta=0;
+		fMunge		= plugin->ConvertedMunge;
+		fLPFDelta	= 0.0;
+		fHPFDelta	= 0.0;
+		fLPFsamples	= plugin->ConvertedLPFsamples;
+		fHPFsamples	= plugin->ConvertedHPFsamples;
+		fAngleDelta	= plugin->ConvertedCycle;
+		fLFO		= plugin->ConvertedWidth;
+		f1FBraw		= plugin->Converted1FB;
+		f1Pan		= plugin->Converted1Pan;
+		f1Vol		= plugin->Converted1Vol;
+		f2FBraw		= plugin->Converted2FB;
+		f2Pan		= plugin->Converted2Pan;
+		f2Vol		= plugin->Converted2Vol;
 	} else {
-		f1FB	= plugin->Converted1FB * pow(2.0,-2.0*fMunge);
-		f2FB	= plugin->Converted2FB * pow(2.0,-2.0*fMunge);
+		HasDelta	= 1;
+		fMunge		= plugin->ConvertedMunge - fMungeDelta;
+		if(fMungeDelta == 0) {
+			fLPFDelta			= 0.0;
+			fHPFDelta			= 0.0;
+		} else {
+			// this is a bit wonky i know but creating varibles for the old values and then calculating the delta with new-old doesn't save any cpu
+			fLPFDelta			= -plugin->ConvertedLPFsamples;
+			fHPFDelta			= -plugin->ConvertedHPFsamples;
+			plugin->ConvertedLPFsamples	= convertMunge(0, plugin->LastMunge, plugin->SampleRate); 
+			plugin->ConvertedHPFsamples	= convertMunge(1, plugin->LastMunge, plugin->SampleRate); 
+			fLPFDelta			+= plugin->ConvertedLPFsamples;
+			fHPFDelta			+= plugin->ConvertedHPFsamples;
+		}
+		fLPFsamples	= plugin->ConvertedLPFsamples	- fLPFDelta;
+		fHPFsamples	= plugin->ConvertedHPFsamples 	- fHPFDelta;
+		fAngleDelta	= plugin->ConvertedCycle 	- fCycleDelta;
+		fLFO		= plugin->ConvertedWidth 	- fWidthDelta;
+		f1FBraw		= plugin->Converted1FB   	- fFB1Delta;
+		f1Pan		= plugin->Converted1Pan  	- fPan1Delta;
+		f1Vol		= plugin->Converted1Vol  	- fVol1Delta;
+		f2FBraw		= plugin->Converted2FB   	- fFB2Delta;
+		f2Pan		= plugin->Converted2Pan  	- fPan2Delta;
+		f2Vol		= plugin->Converted2Vol  	- fVol2Delta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fLPFDelta    = fLPFDelta/(float)SampleCount;
+			fHPFDelta    = fHPFDelta/(float)SampleCount;
+			fMungeDelta  = fMungeDelta/(float)SampleCount;
+			fCycleDelta  = fCycleDelta/(float)SampleCount;
+			fWidthDelta  = fWidthDelta/(float)SampleCount;
+			fFB1Delta    = fFB1Delta/(float)SampleCount;
+			fPan1Delta   = fPan1Delta/(float)SampleCount;
+			fVol1Delta   = fVol1Delta/(float)SampleCount;
+			fFB2Delta    = fFB2Delta/(float)SampleCount;
+			fPan2Delta   = fPan2Delta/(float)SampleCount;
+			fVol2Delta   = fVol2Delta/(float)SampleCount;
+		}
 	}
 
-	
+	if(f1DelayDelta==0.0) {
+		HasDelay1Old	= 0;
+		f1Delay		= plugin->Converted1Delay;
+		l1DelaySample	= (unsigned long)f1Delay;
+		f1DelayOffset	= f1Delay-(float)l1DelaySample;
+		fLFOsamp1	= fLFO * f1Delay;
+		f1DelayOld	= 0.0;
+		l1DelaySampleOld= 0;
+		f1DelayOffsetOld= 0.0;
+		fLFOsamp1Old	= 0.0;
+	} else {
+		HasDelay1Old	= 1;
+		f1Delay		= plugin->Converted1Delay;
+		l1DelaySample	= (unsigned long)f1Delay;
+		f1DelayOffset	= f1Delay-(float)l1DelaySample;
+		fLFOsamp1	= fLFO * f1Delay;
+		f1DelayOld	= plugin->Converted1Delay-f1DelayDelta;
+		l1DelaySampleOld= (unsigned long)f1DelayOld;
+		f1DelayOffsetOld= f1DelayOld-(float)l1DelaySampleOld;
+		fLFOsamp1Old	= fLFO * f1DelayOld;
+	}
+
+	if(f2DelayDelta==0.0) {
+		HasDelay2Old	= 0;
+		f2Delay		= plugin->Converted2Delay;
+		l2DelaySample	= (unsigned long)f2Delay;
+		f2DelayOffset	= f2Delay-(float)l2DelaySample;
+		fLFOsamp2	= fLFO * f2Delay;
+		f2DelayOld	= 0.0;
+		l2DelaySampleOld= 0;
+		f2DelayOffsetOld= 0.0;
+		fLFOsamp2Old	= 0.0;
+	} else {
+		HasDelay2Old	= 1;
+		f2Delay		= plugin->Converted2Delay;
+		l2DelaySample	= (unsigned long)f2Delay;
+		f2DelayOffset	= f2Delay-(float)l2DelaySample;
+		fLFOsamp2	= fLFO * f2Delay;
+		f2DelayOld	= plugin->Converted2Delay-f2DelayDelta;
+		l2DelaySampleOld= (unsigned long)f2DelayOld;
+		f2DelayOffsetOld= f2DelayOld-(float)l2DelaySampleOld;
+		fLFOsamp2Old	= fLFO * f2DelayOld;
+	}
+	oldVol=0.0;
+	newVol=1.0;
+
+	f1PanLGain	= f1Vol * (1-f1Pan)/2;
+	f1PanRGain	= f1Vol * (1+f1Pan)/2;
+	f2PanLGain	= f2Vol * (1-f2Pan)/2;
+	f2PanRGain	= f2Vol * (1+f2Pan)/2;
+	if(fMungeMode < 0.5) {
+		f1FB	= f1FBraw / (1+fMunge);
+		f2FB	= f2FBraw / (1+fMunge);
+	} else {
+		f1FB	= f1FBraw * pow(2.0,-2.0*fMunge);
+		f2FB	= f2FBraw * pow(2.0,-2.0*fMunge);
+	}
+
 	SpaceSize 	= plugin->SpaceSize;
 
 	SpaceLStr	= plugin->SpaceL;
@@ -398,6 +481,10 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 	if(fBypass==0) { 
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
+			if(HasDelay1Old==1 || HasDelay2Old==1) {
+				newVol = (float)lSampleIndex/(float)SampleCount;               // 0 -> 1
+				oldVol = (float)(SampleCount-lSampleIndex)/(float)SampleCount; // 1 -> 0
+			}
 
 			// read the audio out of the delay space
 			Out1 = *(SpaceLCur);
@@ -444,29 +531,36 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 				l2DelaySample	= (unsigned long)fActualDelay2;
 				f2DelayOffset	= fActualDelay2-(float)l2DelaySample;
 
+				if(HasDelay1Old==1) {
+					fActualDelay1Old	= f1DelayOld + (fLFOsamp1Old * cos(fAngle));
+					l1DelaySampleOld	= (unsigned long)fActualDelay1Old;
+					f1DelayOffsetOld	= fActualDelay1Old-(float)l1DelaySampleOld;
+				}
+				if(HasDelay2Old==1) {
+					fActualDelay2Old	= f2DelayOld + (fLFOsamp2Old * cos(fAngle));
+					l2DelaySampleOld	= (unsigned long)fActualDelay2Old;
+					f2DelayOffsetOld	= fActualDelay2Old-(float)l2DelaySampleOld;
+				}
+
 				fAngle += fAngleDelta;
 			}
 
 			// add to the delay space
-			if(SpaceLCur+l1DelaySample > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize)+=Degrain1*(1-f1DelayOffset);
-			else
-				*(SpaceLCur+l1DelaySample)+=Degrain1*(1-f1DelayOffset);
+			if(HasDelay1Old==0) {
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l1DelaySample,    f1DelayOffset,    Degrain1);
+			} else {
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l1DelaySample,    f1DelayOffset,    newVol*Degrain1);
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l1DelaySampleOld, f1DelayOffsetOld, oldVol*Degrain1);
 
-			if(SpaceLCur+l1DelaySample+1 > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize+1)+=Degrain1*f1DelayOffset;
-			else
-				*(SpaceLCur+l1DelaySample+1)+=Degrain1*f1DelayOffset;
+			}
 
-			if(SpaceRCur+l2DelaySample > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize)+=Degrain2*(1-f2DelayOffset);
-			else
-				*(SpaceRCur+l2DelaySample)+=Degrain2*(1-f2DelayOffset);
+			if(HasDelay2Old==0) {
+				SpaceAdd(SpaceRCur, SpaceREnd, SpaceSize, l2DelaySample,    f2DelayOffset,    Degrain2);
+			} else {
+				SpaceAdd(SpaceRCur, SpaceREnd, SpaceSize, l2DelaySample,    f2DelayOffset,    newVol*Degrain2);
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l2DelaySampleOld, f2DelayOffsetOld, oldVol*Degrain2);
 
-			if(SpaceRCur+l2DelaySample+1 > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize+1)+=Degrain2*f2DelayOffset;
-			else
-				*(SpaceRCur+l2DelaySample+1)+=Degrain2*f2DelayOffset;
+			}
 
 			// mix the two delays in
 			OutL = f1PanLGain*Out1 + f2PanLGain*Out2;
@@ -486,6 +580,43 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 
+			//update any changing parameters
+			if(HasDelta==1) {
+				fMunge	    += fMungeDelta;
+				fLPFsamples += fLPFDelta;
+				fHPFsamples += fHPFDelta;
+				fAngleDelta += fCycleDelta;
+				fLFO	    += fWidthDelta;
+				f1FBraw	    += fFB1Delta;
+				f1Pan	    += fPan1Delta;
+				f1Vol	    += fVol1Delta;
+				f2FBraw	    += fFB2Delta;
+				f2Pan	    += fPan2Delta;
+				f2Vol	    += fVol2Delta;
+
+				fLFOsamp1	= fLFO * f1Delay;
+				fLFOsamp2	= fLFO * f2Delay;
+				f1PanLGain	= f1Vol * (1-f1Pan)/2;
+				f1PanRGain	= f1Vol * (1+f1Pan)/2;
+				f2PanLGain	= f2Vol * (1-f2Pan)/2;
+				f2PanRGain	= f2Vol * (1+f2Pan)/2;
+
+				if(fMungeMode < 0.5) {
+					f1FB	= f1FBraw / (1+fMunge);
+					f2FB	= f2FBraw / (1+fMunge);
+				} else {
+					f1FB	= f1FBraw * pow(2.0,-2.0*fMunge);
+					f2FB	= f2FBraw * pow(2.0,-2.0*fMunge);
+				}
+
+				if(HasDelay1Old==1) {
+					fLFOsamp1Old	= fLFO * f1DelayOld;
+				}
+
+				if(HasDelay2Old==1) {
+					fLFOsamp2Old	= fLFO * f2DelayOld;
+				}
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -556,12 +687,20 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	float LPF1,LPF2,HPF1,HPF2,Degrain1,Degrain2;
 	float EnvIn,EnvOutL,EnvOutR;
 	float fBypass,fMode,fMunge,fMungeMode,fHPFsamples,fLPFsamples,fAngle,fAngleDelta,fLFO;
-	float f1Delay,f1DelayOffset,f1PanLGain,f1PanRGain,f1FB,In1FB,In1FBmix,In1Munged,fLFOsamp1,fActualDelay1;
-	float f2Delay,f2DelayOffset,f2PanLGain,f2PanRGain,f2FB,In2FB,In2FBmix,In2Munged,fLFOsamp2,fActualDelay2;
-	unsigned long l1DelaySample;
-	unsigned long l2DelaySample;
+	float f1Delay,f1DelayOffset,fLFOsamp1,fActualDelay1;
+	float f2Delay,f2DelayOffset,fLFOsamp2,fActualDelay2;
+	float f1DelayDelta,f1DelayOld,f1DelayOffsetOld,fLFOsamp1Old,fActualDelay1Old;
+	float f2DelayDelta,f2DelayOld,f2DelayOffsetOld,fLFOsamp2Old,fActualDelay2Old;
+	float oldVol,newVol;
+	float f1Vol,f1Pan,f1PanLGain,f1PanRGain,f1FBraw,f1FB,In1FB,In1FBmix,In1Munged;
+	float f2Vol,f2Pan,f2PanLGain,f2PanRGain,f2FBraw,f2FB,In2FB,In2FBmix,In2Munged;
+	double fMungeDelta,fLPFDelta,fHPFDelta,fCycleDelta,fWidthDelta,fFB1Delta,fPan1Delta,fVol1Delta,fFB2Delta,fPan2Delta,fVol2Delta;
+	int   HasDelta,HasDelay1Old,HasDelay2Old;
+	unsigned long l1DelaySample, l2DelaySample;
+	unsigned long l1DelaySampleOld, l2DelaySampleOld;
 	unsigned long lSampleIndex;
 	unsigned long SpaceSize;
+
 	float * SpaceLStr;
 	float * SpaceRStr;
 	float * SpaceLCur;
@@ -576,58 +715,135 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	checkParamChange(IDELAY_BYPASS,    plugin->ControlBypass,    &(plugin->LastBypass),    &(plugin->ConvertedBypass),    plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_MODE,      plugin->ControlMode,      &(plugin->LastMode),      &(plugin->ConvertedMode),      plugin->SampleRate, pParamFunc);
 	checkParamChange(IDELAY_MUNGEMODE, plugin->ControlMungeMode, &(plugin->LastMungeMode), &(plugin->ConvertedMungeMode), plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_LFO_CYCLE, plugin->ControlCycle,     &(plugin->LastCycle),     &(plugin->ConvertedCycle),     plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_LFO_WIDTH, plugin->ControlWidth,     &(plugin->LastWidth),     &(plugin->ConvertedWidth),     plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_DELAY,   plugin->Control1Delay,    &(plugin->Last1Delay),    &(plugin->Converted1Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_FB,      plugin->Control1FB,       &(plugin->Last1FB),       &(plugin->Converted1FB),       plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_PAN,     plugin->Control1Pan,      &(plugin->Last1Pan),      &(plugin->Converted1Pan),      plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_1_VOL,     plugin->Control1Vol,      &(plugin->Last1Vol),      &(plugin->Converted1Vol),      plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_DELAY,   plugin->Control2Delay,    &(plugin->Last2Delay),    &(plugin->Converted2Delay),    plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_FB,      plugin->Control2FB,       &(plugin->Last2FB),       &(plugin->Converted2FB),       plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_PAN,     plugin->Control2Pan,      &(plugin->Last2Pan),      &(plugin->Converted2Pan),      plugin->SampleRate, pParamFunc);
-	checkParamChange(IDELAY_2_VOL,     plugin->Control2Vol,      &(plugin->Last2Vol),      &(plugin->Converted2Vol),      plugin->SampleRate, pParamFunc);
 
-	//this control causes a few parameters to change
-	if(*(plugin->ControlMunge) != plugin->LastMunge) {
-		plugin->LastMunge 		= *(plugin->ControlMunge);
-		plugin->ConvertedMunge		= convertParam(IDELAY_MUNGE, plugin->LastMunge, plugin->SampleRate); 
-		plugin->ConvertedLPFsamples	= convertMunge(0,            plugin->LastMunge, plugin->SampleRate); 
-		plugin->ConvertedHPFsamples	= convertMunge(1,            plugin->LastMunge, plugin->SampleRate); 
-	}
+	fMungeDelta  = getParamChange(IDELAY_MUNGE,     plugin->ControlMunge,  &(plugin->LastMunge),  &(plugin->ConvertedMunge),  plugin->SampleRate, pParamFunc);
+	fCycleDelta  = getParamChange(IDELAY_LFO_CYCLE, plugin->ControlCycle,  &(plugin->LastCycle),  &(plugin->ConvertedCycle),  plugin->SampleRate, pParamFunc);
+	fWidthDelta  = getParamChange(IDELAY_LFO_WIDTH, plugin->ControlWidth,  &(plugin->LastWidth),  &(plugin->ConvertedWidth),  plugin->SampleRate, pParamFunc);
+	f1DelayDelta = getParamChange(IDELAY_1_DELAY,   plugin->Control1Delay, &(plugin->Last1Delay), &(plugin->Converted1Delay), plugin->SampleRate, pParamFunc);
+	fFB1Delta    = getParamChange(IDELAY_1_FB,      plugin->Control1FB,    &(plugin->Last1FB),    &(plugin->Converted1FB),    plugin->SampleRate, pParamFunc);
+	fPan1Delta   = getParamChange(IDELAY_1_PAN,     plugin->Control1Pan,   &(plugin->Last1Pan),   &(plugin->Converted1Pan),   plugin->SampleRate, pParamFunc);
+	fVol1Delta   = getParamChange(IDELAY_1_VOL,     plugin->Control1Vol,   &(plugin->Last1Vol),   &(plugin->Converted1Vol),   plugin->SampleRate, pParamFunc);
+	f2DelayDelta = getParamChange(IDELAY_2_DELAY,   plugin->Control2Delay, &(plugin->Last2Delay), &(plugin->Converted2Delay), plugin->SampleRate, pParamFunc);
+	fFB2Delta    = getParamChange(IDELAY_2_FB,      plugin->Control2FB,    &(plugin->Last2FB),    &(plugin->Converted2FB),    plugin->SampleRate, pParamFunc);
+	fPan2Delta   = getParamChange(IDELAY_2_PAN,     plugin->Control2Pan,   &(plugin->Last2Pan),   &(plugin->Converted2Pan),   plugin->SampleRate, pParamFunc);
+	fVol2Delta   = getParamChange(IDELAY_2_VOL,     plugin->Control2Vol,   &(plugin->Last2Vol),   &(plugin->Converted2Vol),   plugin->SampleRate, pParamFunc);
 
 	fBypass         = plugin->ConvertedBypass;
 	fMode           = plugin->ConvertedMode;
 	fMungeMode	= plugin->ConvertedMungeMode;
-	fMunge		= plugin->ConvertedMunge;
-	fLPFsamples	= plugin->ConvertedLPFsamples;
-	fHPFsamples	= plugin->ConvertedHPFsamples;
-	fLFO		= plugin->ConvertedWidth;
-	fAngleDelta	= plugin->ConvertedCycle;
 
-	f1Delay		= plugin->Converted1Delay;
-	f1PanLGain	= plugin->Converted1Vol * (1-plugin->Converted1Pan)/2;
-	f1PanRGain	= plugin->Converted1Vol * (1+plugin->Converted1Pan)/2;
-	fLFOsamp1	= fLFO * f1Delay;
-	//these will get recalculated in the run loop if LFO is on
-	l1DelaySample	= (unsigned long)f1Delay;
-	f1DelayOffset	= f1Delay-(float)l1DelaySample;
-
-
-
-	f2Delay		= plugin->Converted2Delay;
-	f2PanLGain	= plugin->Converted2Vol * (1-plugin->Converted2Pan)/2;
-	f2PanRGain	= plugin->Converted2Vol * (1+plugin->Converted2Pan)/2;
-	fLFOsamp2	= fLFO * f2Delay;
-	//these will get recalculated in the run loop if LFO is on
-	l2DelaySample	= (unsigned long)f2Delay;
-	f2DelayOffset	= f2Delay-(float)l2DelaySample;
-
-	if(fMungeMode < 0.5) {
-		f1FB	= plugin->Converted1FB / (1+fMunge);
-		f2FB	= plugin->Converted2FB / (1+fMunge);
+	if(fMungeDelta==0 && fCycleDelta == 0 && fWidthDelta==0 && fFB1Delta==0 && fFB2Delta==0 && fPan1Delta==0 && fPan2Delta==0 && fVol1Delta==0 && fVol2Delta==0) {
+		HasDelta=0;
+		fMunge		= plugin->ConvertedMunge;
+		fLPFDelta	= 0.0;
+		fHPFDelta	= 0.0;
+		fLPFsamples	= plugin->ConvertedLPFsamples;
+		fHPFsamples	= plugin->ConvertedHPFsamples;
+		fAngleDelta	= plugin->ConvertedCycle;
+		fLFO		= plugin->ConvertedWidth;
+		f1FBraw		= plugin->Converted1FB;
+		f1Pan		= plugin->Converted1Pan;
+		f1Vol		= plugin->Converted1Vol;
+		f2FBraw		= plugin->Converted2FB;
+		f2Pan		= plugin->Converted2Pan;
+		f2Vol		= plugin->Converted2Vol;
 	} else {
-		f1FB	= plugin->Converted1FB * pow(2.0,-2.0*fMunge);
-		f2FB	= plugin->Converted2FB * pow(2.0,-2.0*fMunge);
+		HasDelta	= 1;
+		fMunge		= plugin->ConvertedMunge - fMungeDelta;
+		if(fMungeDelta == 0) {
+			fLPFDelta			= 0.0;
+			fHPFDelta			= 0.0;
+		} else {
+			// this is a bit wonky i know but creating varibles for the old values and then calculating the delta with new-old doesn't save any cpu
+			fLPFDelta			= -plugin->ConvertedLPFsamples;
+			fHPFDelta			= -plugin->ConvertedHPFsamples;
+			plugin->ConvertedLPFsamples	= convertMunge(0, plugin->LastMunge, plugin->SampleRate); 
+			plugin->ConvertedHPFsamples	= convertMunge(1, plugin->LastMunge, plugin->SampleRate); 
+			fLPFDelta			+= plugin->ConvertedLPFsamples;
+			fHPFDelta			+= plugin->ConvertedHPFsamples;
+		}
+		fLPFsamples	= plugin->ConvertedLPFsamples	- fLPFDelta;
+		fHPFsamples	= plugin->ConvertedHPFsamples 	- fHPFDelta;
+		fAngleDelta	= plugin->ConvertedCycle 	- fCycleDelta;
+		fLFO		= plugin->ConvertedWidth 	- fWidthDelta;
+		f1FBraw		= plugin->Converted1FB   	- fFB1Delta;
+		f1Pan		= plugin->Converted1Pan  	- fPan1Delta;
+		f1Vol		= plugin->Converted1Vol  	- fVol1Delta;
+		f2FBraw		= plugin->Converted2FB   	- fFB2Delta;
+		f2Pan		= plugin->Converted2Pan  	- fPan2Delta;
+		f2Vol		= plugin->Converted2Vol  	- fVol2Delta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fLPFDelta    = fLPFDelta/(float)SampleCount;
+			fHPFDelta    = fHPFDelta/(float)SampleCount;
+			fMungeDelta  = fMungeDelta/(float)SampleCount;
+			fCycleDelta  = fCycleDelta/(float)SampleCount;
+			fWidthDelta  = fWidthDelta/(float)SampleCount;
+			fFB1Delta    = fFB1Delta/(float)SampleCount;
+			fPan1Delta   = fPan1Delta/(float)SampleCount;
+			fVol1Delta   = fVol1Delta/(float)SampleCount;
+			fFB2Delta    = fFB2Delta/(float)SampleCount;
+			fPan2Delta   = fPan2Delta/(float)SampleCount;
+			fVol2Delta   = fVol2Delta/(float)SampleCount;
+		}
+	}
+
+	if(f1DelayDelta==0.0) {
+		HasDelay1Old	= 0;
+		f1Delay		= plugin->Converted1Delay;
+		l1DelaySample	= (unsigned long)f1Delay;
+		f1DelayOffset	= f1Delay-(float)l1DelaySample;
+		fLFOsamp1	= fLFO * f1Delay;
+		f1DelayOld	= 0.0;
+		l1DelaySampleOld= 0;
+		f1DelayOffsetOld= 0.0;
+		fLFOsamp1Old	= 0.0;
+	} else {
+		HasDelay1Old	= 1;
+		f1Delay		= plugin->Converted1Delay;
+		l1DelaySample	= (unsigned long)f1Delay;
+		f1DelayOffset	= f1Delay-(float)l1DelaySample;
+		fLFOsamp1	= fLFO * f1Delay;
+		f1DelayOld	= plugin->Converted1Delay-f1DelayDelta;
+		l1DelaySampleOld= (unsigned long)f1DelayOld;
+		f1DelayOffsetOld= f1DelayOld-(float)l1DelaySampleOld;
+		fLFOsamp1Old	= fLFO * f1DelayOld;
+	}
+
+	if(f2DelayDelta==0.0) {
+		HasDelay2Old	= 0;
+		f2Delay		= plugin->Converted2Delay;
+		l2DelaySample	= (unsigned long)f2Delay;
+		f2DelayOffset	= f2Delay-(float)l2DelaySample;
+		fLFOsamp2	= fLFO * f2Delay;
+		f2DelayOld	= 0.0;
+		l2DelaySampleOld= 0;
+		f2DelayOffsetOld= 0.0;
+		fLFOsamp2Old	= 0.0;
+	} else {
+		HasDelay2Old	= 1;
+		f2Delay		= plugin->Converted2Delay;
+		l2DelaySample	= (unsigned long)f2Delay;
+		f2DelayOffset	= f2Delay-(float)l2DelaySample;
+		fLFOsamp2	= fLFO * f2Delay;
+		f2DelayOld	= plugin->Converted2Delay-f2DelayDelta;
+		l2DelaySampleOld= (unsigned long)f2DelayOld;
+		f2DelayOffsetOld= f2DelayOld-(float)l2DelaySampleOld;
+		fLFOsamp2Old	= fLFO * f2DelayOld;
+	}
+	oldVol=0.0;
+	newVol=1.0;
+
+	f1PanLGain	= f1Vol * (1-f1Pan)/2;
+	f1PanRGain	= f1Vol * (1+f1Pan)/2;
+	f2PanLGain	= f2Vol * (1-f2Pan)/2;
+	f2PanRGain	= f2Vol * (1+f2Pan)/2;
+	if(fMungeMode < 0.5) {
+		f1FB	= f1FBraw / (1+fMunge);
+		f2FB	= f2FBraw / (1+fMunge);
+	} else {
+		f1FB	= f1FBraw * pow(2.0,-2.0*fMunge);
+		f2FB	= f2FBraw * pow(2.0,-2.0*fMunge);
 	}
 
 	SpaceSize 	= plugin->SpaceSize;
@@ -658,6 +874,10 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 	if(fBypass==0) { 
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
+			if(HasDelay1Old==1 || HasDelay2Old==1) {
+				newVol = (float)lSampleIndex/(float)SampleCount;               // 0 -> 1
+				oldVol = (float)(SampleCount-lSampleIndex)/(float)SampleCount; // 1 -> 0
+			}
 			// read the audio out of the delay space
 			Out1 = *(SpaceLCur);
 			Out2 = *(SpaceRCur);
@@ -690,8 +910,8 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 				In1Munged = 2 * (In1FB-HPF1) - LPF1;
 				In2Munged = 2 * (In2FB-HPF2) - LPF2;
 			} 
-			Degrain1     	= (In1Munged+(2*Degrain1))/3;
-			Degrain2     	= (In2Munged+(2*Degrain2))/3;
+			Degrain1     	= (In1Munged+(1.1*Degrain1))/2.1;
+			Degrain2     	= (In2Munged+(1.1*Degrain2))/2.1;
 
 			//LFO
 			if(fLFO > 0) {
@@ -703,30 +923,36 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 				l2DelaySample	= (unsigned long)fActualDelay2;
 				f2DelayOffset	= fActualDelay2-(float)l2DelaySample;
 
+				if(HasDelay1Old==1) {
+					fActualDelay1Old	= f1DelayOld + (fLFOsamp1Old * cos(fAngle));
+					l1DelaySampleOld	= (unsigned long)fActualDelay1Old;
+					f1DelayOffsetOld	= fActualDelay1Old-(float)l1DelaySampleOld;
+				}
+				if(HasDelay2Old==1) {
+					fActualDelay2Old	= f2DelayOld + (fLFOsamp2Old * cos(fAngle));
+					l2DelaySampleOld	= (unsigned long)fActualDelay2Old;
+					f2DelayOffsetOld	= fActualDelay2Old-(float)l2DelaySampleOld;
+				}
+
 				fAngle += fAngleDelta;
 			}
 
 			// add to the delay space
-			if(SpaceLCur+l1DelaySample > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize)+=Degrain1*(1-f1DelayOffset);
-			else
-				*(SpaceLCur+l1DelaySample)+=Degrain1*(1-f1DelayOffset);
+			if(HasDelay1Old==0) {
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l1DelaySample,    f1DelayOffset,    Degrain1);
+			} else {
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l1DelaySample,    f1DelayOffset,    newVol*Degrain1);
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l1DelaySampleOld, f1DelayOffsetOld, oldVol*Degrain1);
 
-			if(SpaceLCur+l1DelaySample+1 > SpaceLEnd)
-				*(SpaceLCur+l1DelaySample-SpaceSize+1)+=Degrain1*f1DelayOffset;
-			else
-				*(SpaceLCur+l1DelaySample+1)+=Degrain1*f1DelayOffset;
+			}
 
-			if(SpaceRCur+l2DelaySample > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize)+=Degrain2*(1-f2DelayOffset);
-			else
-				*(SpaceRCur+l2DelaySample)+=Degrain2*(1-f2DelayOffset);
+			if(HasDelay2Old==0) {
+				SpaceAdd(SpaceRCur, SpaceREnd, SpaceSize, l2DelaySample,    f2DelayOffset,    Degrain2);
+			} else {
+				SpaceAdd(SpaceRCur, SpaceREnd, SpaceSize, l2DelaySample,    f2DelayOffset,    newVol*Degrain2);
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, l2DelaySampleOld, f2DelayOffsetOld, oldVol*Degrain2);
 
-			if(SpaceRCur+l2DelaySample+1 > SpaceREnd)
-				*(SpaceRCur+l2DelaySample-SpaceSize+1)+=Degrain2*f2DelayOffset;
-			else
-				*(SpaceRCur+l2DelaySample+1)+=Degrain2*f2DelayOffset;
-
+			}
 
 			// mix the two delays in
 			OutL = f1PanLGain*Out1 + f2PanLGain*Out2;
@@ -746,6 +972,43 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
 
+			//update any changing parameters
+			if(HasDelta==1) {
+				fMunge	    += fMungeDelta;
+				fLPFsamples += fLPFDelta;
+				fHPFsamples += fHPFDelta;
+				fAngleDelta += fCycleDelta;
+				fLFO	    += fWidthDelta;
+				f1FBraw	    += fFB1Delta;
+				f1Pan	    += fPan1Delta;
+				f1Vol	    += fVol1Delta;
+				f2FBraw	    += fFB2Delta;
+				f2Pan	    += fPan2Delta;
+				f2Vol	    += fVol2Delta;
+
+				fLFOsamp1	= fLFO * f1Delay;
+				fLFOsamp2	= fLFO * f2Delay;
+				f1PanLGain	= f1Vol * (1-f1Pan)/2;
+				f1PanRGain	= f1Vol * (1+f1Pan)/2;
+				f2PanLGain	= f2Vol * (1-f2Pan)/2;
+				f2PanRGain	= f2Vol * (1+f2Pan)/2;
+
+				if(fMungeMode < 0.5) {
+					f1FB	= f1FBraw / (1+fMunge);
+					f2FB	= f2FBraw / (1+fMunge);
+				} else {
+					f1FB	= f1FBraw * pow(2.0,-2.0*fMunge);
+					f2FB	= f2FBraw * pow(2.0,-2.0*fMunge);
+				}
+
+				if(HasDelay1Old==1) {
+					fLFOsamp1Old	= fLFO * f1DelayOld;
+				}
+
+				if(HasDelay2Old==1) {
+					fLFOsamp2Old	= fLFO * f2DelayOld;
+				}
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {

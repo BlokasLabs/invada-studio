@@ -381,26 +381,10 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 						AudioProc=AudioIn4;
 						break;
 				}
-				// add the reflection into the delay space
-				if(SpaceLCur+er->Delay > SpaceLEnd)
-					*(SpaceLCur+er->Delay-SpaceSize)+=AudioProc*er->GainL*(1-er->DelayOffset);
-				else
-					*(SpaceLCur+er->Delay)+=AudioProc*er->GainL*(1-er->DelayOffset);
 
-				if(SpaceLCur+er->Delay+1 > SpaceLEnd)
-					*(SpaceLCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainL*er->DelayOffset;
-				else
-					*(SpaceLCur+er->Delay+1)+=AudioProc*er->GainL*er->DelayOffset;
-
-				if(SpaceRCur+er->Delay > SpaceREnd)
-					*(SpaceRCur+er->Delay-SpaceSize)+=AudioProc*er->GainR*(1-er->DelayOffset);
-				else
-					*(SpaceRCur+er->Delay)+=AudioProc*er->GainR*(1-er->DelayOffset);
-
-				if(SpaceRCur+er->Delay+1 > SpaceREnd)
-					*(SpaceRCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainR*er->DelayOffset;
-				else
-					*(SpaceRCur+er->Delay+1)+=AudioProc*er->GainR*er->DelayOffset;
+				// add to the delay space
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, er->Delay, er->DelayOffset, AudioProc*er->GainL);
+				SpaceAdd(SpaceRCur, SpaceREnd, SpaceSize, er->Delay, er->DelayOffset, AudioProc*er->GainR);
 	 
 				er++;
 			}
@@ -587,26 +571,9 @@ runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 						AudioProc=AudioIn4;
 						break;
 				}
-				// add the reflection into the delay space
-				if(SpaceLCur+er->Delay > SpaceLEnd)
-					*(SpaceLCur+er->Delay-SpaceSize)+=AudioProc*er->GainL*(1-er->DelayOffset);
-				else
-					*(SpaceLCur+er->Delay)+=AudioProc*er->GainL*(1-er->DelayOffset);
-
-				if(SpaceLCur+er->Delay+1 > SpaceLEnd)
-					*(SpaceLCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainL*er->DelayOffset;
-				else
-					*(SpaceLCur+er->Delay+1)+=AudioProc*er->GainL*er->DelayOffset;
-
-				if(SpaceRCur+er->Delay > SpaceREnd)
-					*(SpaceRCur+er->Delay-SpaceSize)+=AudioProc*er->GainR*(1-er->DelayOffset);
-				else
-					*(SpaceRCur+er->Delay)+=AudioProc*er->GainR*(1-er->DelayOffset);
-
-				if(SpaceRCur+er->Delay+1 > SpaceREnd)
-					*(SpaceRCur+er->Delay-SpaceSize+1)+=AudioProc*er->GainR*er->DelayOffset;
-				else
-					*(SpaceRCur+er->Delay+1)+=AudioProc*er->GainR*er->DelayOffset;
+				// add to the delay space
+				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, er->Delay, er->DelayOffset, AudioProc*er->GainL);
+				SpaceAdd(SpaceRCur, SpaceREnd, SpaceSize, er->Delay, er->DelayOffset, AudioProc*er->GainR);
 			  
 				er++;
 			}

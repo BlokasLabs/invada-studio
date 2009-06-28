@@ -102,6 +102,34 @@ IEnvelope(float value, float envelope, int mode, double sr)
 	return EnvelopeDelta;
 }
 
+void 
+SpaceAdd(float *SpacePos, float *SpaceEnd, unsigned long SpaceSize, unsigned long Delay, float Offset, float Value)
+{
+	if(SpacePos+Delay > SpaceEnd)
+		*(SpacePos+Delay-SpaceSize)	+=Value*(1-Offset);
+	else
+		*(SpacePos+Delay)		+=Value*(1-Offset);
+
+	if(SpacePos+Delay+1 > SpaceEnd)
+		*(SpacePos+Delay-SpaceSize+1)	+=Value*Offset;
+	else
+		*(SpacePos+Delay+1)		+=Value*Offset;
+}
+
+void 
+SpaceSub(float *SpacePos, float *SpaceEnd, unsigned long SpaceSize, unsigned long Delay, float Offset, float Value)
+{
+	if(SpacePos+Delay > SpaceEnd)
+		*(SpacePos+Delay-SpaceSize)	-=Value*(1-Offset);
+	else
+		*(SpacePos+Delay)		-=Value*(1-Offset);
+
+	if(SpacePos+Delay+1 > SpaceEnd)
+		*(SpacePos+Delay-SpaceSize+1)	-=Value*Offset;
+	else
+		*(SpacePos+Delay+1)		-=Value*Offset;
+}
+
 
 /* this function is linear between -0.7 & 0.7 (approx -3db) and returns a value bewteen 0.7 and 1 for an input from 0.7 to infinity */
 float 

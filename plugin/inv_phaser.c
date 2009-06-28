@@ -326,27 +326,9 @@ runMonoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			fDelayOffsetL=fDelayL-(float)lDelaySampleL;
 			fDelayOffsetR=fDelayR-(float)lDelaySampleR;
 
-			// add to the delay space
-			if(SpaceLCur+lDelaySampleL > SpaceLEnd)
-				*(SpaceLCur+lDelaySampleL-SpaceSize)-=fDepth*In*(1-fDelayOffsetL);
-			else
-				*(SpaceLCur+lDelaySampleL)-=fDepth*In*(1-fDelayOffsetL);
-
-			if(SpaceLCur+lDelaySampleL+1 > SpaceLEnd)
-				*(SpaceLCur+lDelaySampleL-SpaceSize+1)-=fDepth*In*fDelayOffsetL;
-			else
-				*(SpaceLCur+lDelaySampleL+1)-=fDepth*In*fDelayOffsetL;
-
-			if(SpaceRCur+lDelaySampleR > SpaceREnd)
-				*(SpaceRCur+lDelaySampleR-SpaceSize)-=fDepth*In*(1-fDelayOffsetR);
-			else
-				*(SpaceRCur+lDelaySampleR)-=fDepth*In*(1-fDelayOffsetR);
-
-			if(SpaceRCur+lDelaySampleR+1 > SpaceREnd)
-				*(SpaceRCur+lDelaySampleR-SpaceSize+1)-=fDepth*In*fDelayOffsetR;
-			else
-				*(SpaceRCur+lDelaySampleR+1)-=fDepth*In*fDelayOffsetR;
-
+			// subtract from the delay space
+			SpaceSub(SpaceLCur, SpaceLEnd, SpaceSize, lDelaySampleL, fDelayOffsetL, fDepth*In);
+			SpaceSub(SpaceRCur, SpaceREnd, SpaceSize, lDelaySampleR, fDelayOffsetR, fDepth*In);
 
 			// read the audio out of the delay space
 			OutL = In + *(SpaceLCur);
@@ -526,27 +508,10 @@ runStereoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			fDelayOffsetL=fDelayL-(float)lDelaySampleL;
 			fDelayOffsetR=fDelayR-(float)lDelaySampleR;
 
-			// add to the delay space
-			if(SpaceLCur+lDelaySampleL > SpaceLEnd)
-				*(SpaceLCur+lDelaySampleL-SpaceSize)-=fDepth*InL*(1-fDelayOffsetL);
-			else
-				*(SpaceLCur+lDelaySampleL)-=fDepth*InL*(1-fDelayOffsetL);
 
-			if(SpaceLCur+lDelaySampleL+1 > SpaceLEnd)
-				*(SpaceLCur+lDelaySampleL-SpaceSize+1)-=fDepth*InL*fDelayOffsetL;
-			else
-				*(SpaceLCur+lDelaySampleL+1)-=fDepth*InL*fDelayOffsetL;
-
-			if(SpaceRCur+lDelaySampleR > SpaceREnd)
-				*(SpaceRCur+lDelaySampleR-SpaceSize)-=fDepth*InR*(1-fDelayOffsetR);
-			else
-				*(SpaceRCur+lDelaySampleR)-=fDepth*InR*(1-fDelayOffsetR);
-
-			if(SpaceRCur+lDelaySampleR+1 > SpaceREnd)
-				*(SpaceRCur+lDelaySampleR-SpaceSize+1)-=fDepth*InR*fDelayOffsetR;
-			else
-				*(SpaceRCur+lDelaySampleR+1)-=fDepth*InR*fDelayOffsetR;
-
+			// subtract from the delay space
+			SpaceSub(SpaceLCur, SpaceLEnd, SpaceSize, lDelaySampleL, fDelayOffsetL, fDepth*InL);
+			SpaceSub(SpaceRCur, SpaceREnd, SpaceSize, lDelaySampleR, fDelayOffsetR, fDepth*InR);
 
 			// read the audio out of the delay space
 			OutL = InL + *(SpaceLCur);
@@ -730,27 +695,9 @@ runSumIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			fDelayOffsetL=fDelayL-(float)lDelaySampleL;
 			fDelayOffsetR=fDelayR-(float)lDelaySampleR;
 
-			// add to the delay space
-			if(SpaceLCur+lDelaySampleL > SpaceLEnd)
-				*(SpaceLCur+lDelaySampleL-SpaceSize)-=fDepth*In*(1-fDelayOffsetL);
-			else
-				*(SpaceLCur+lDelaySampleL)-=fDepth*In*(1-fDelayOffsetL);
-
-			if(SpaceLCur+lDelaySampleL+1 > SpaceLEnd)
-				*(SpaceLCur+lDelaySampleL-SpaceSize+1)-=fDepth*In*fDelayOffsetL;
-			else
-				*(SpaceLCur+lDelaySampleL+1)-=fDepth*In*fDelayOffsetL;
-
-			if(SpaceRCur+lDelaySampleR > SpaceREnd)
-				*(SpaceRCur+lDelaySampleR-SpaceSize)-=fDepth*In*(1-fDelayOffsetR);
-			else
-				*(SpaceRCur+lDelaySampleR)-=fDepth*In*(1-fDelayOffsetR);
-
-			if(SpaceRCur+lDelaySampleR+1 > SpaceREnd)
-				*(SpaceRCur+lDelaySampleR-SpaceSize+1)-=fDepth*In*fDelayOffsetR;
-			else
-				*(SpaceRCur+lDelaySampleR+1)-=fDepth*In*fDelayOffsetR;
-
+			// subtract from the delay space
+			SpaceSub(SpaceLCur, SpaceLEnd, SpaceSize, lDelaySampleL, fDelayOffsetL, fDepth*In);
+			SpaceSub(SpaceRCur, SpaceREnd, SpaceSize, lDelaySampleR, fDelayOffsetR, fDepth*In);
 
 			// read the audio out of the delay space
 			OutL = In + *(SpaceLCur);
