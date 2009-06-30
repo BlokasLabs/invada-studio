@@ -40,7 +40,7 @@
     ] .
 
 <http://invadarecords.com/plugins/lv2/delay/mono> 
-    a lv2:Plugin, lv2:PhaserPlugin ;
+    a lv2:Plugin, lv2:DelayPlugin ;
     doap:name "Invada Delay Munge (mono in)" ;
     doap:developer [
 	foaf:name "Fraser Stuart";
@@ -234,7 +234,7 @@
 
 
 <http://invadarecords.com/plugins/lv2/delay/sum> 
-    a lv2:Plugin, lv2:PhaserPlugin ;
+    a lv2:Plugin, lv2:DelayPlugin ;
     doap:name "Invada Delay Munge (sum L+R in)" ;
     doap:developer [
 	foaf:name "Fraser Stuart";

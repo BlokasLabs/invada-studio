@@ -57,6 +57,10 @@
                                         lv2:binary <inv_phaser.so> ;
                                         rdfs:seeAlso <inv_phaser.ttl> .
 
+<http://invadarecords.com/plugins/lv2/testtone> a lv2:Plugin ;
+                                        lv2:binary <inv_testtone.so> ;
+                                        rdfs:seeAlso <inv_testtone.ttl> .
+
 <http://invadarecords.com/plugins/lv2/tube/mono> a lv2:Plugin ;
                                         lv2:binary <inv_tube.so> ;
                                         rdfs:seeAlso <inv_tube.ttl> .

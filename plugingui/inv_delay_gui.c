@@ -435,6 +435,8 @@ port_eventIDelayGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMode),      INV_PLUGIN_ACTIVE);
 					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobMunge),       INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobCycle),       INV_PLUGIN_ACTIVE);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),       INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobDelay1),      INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobFB1),         INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan1),        INV_PLUGIN_ACTIVE);
@@ -443,6 +445,7 @@ port_eventIDelayGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobFB2),         INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan2),        INV_PLUGIN_ACTIVE);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobVol2),        INV_PLUGIN_ACTIVE);
+					gtk_widget_set_sensitive(     GTK_WIDGET        (pluginGui->treeviewDelayCalc),TRUE);
 				} else {
 					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass),      INV_SWITCH_TOGGLE_ON);
 					inv_meter_set_bypass(         INV_METER         (pluginGui->meterIn),         INV_PLUGIN_BYPASS);
@@ -450,6 +453,8 @@ port_eventIDelayGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMode),      INV_PLUGIN_BYPASS);
 					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMungeMode), INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobMunge),       INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobCycle),       INV_PLUGIN_BYPASS);
+					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobWidth),       INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobDelay1),      INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobFB1),         INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan1),        INV_PLUGIN_BYPASS);
@@ -458,6 +463,7 @@ port_eventIDelayGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobFB2),         INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobPan2),        INV_PLUGIN_BYPASS);
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobVol2),        INV_PLUGIN_BYPASS);
+					gtk_widget_set_sensitive(     GTK_WIDGET        (pluginGui->treeviewDelayCalc),FALSE);
 				}
 				break;
 			case IDELAY_MODE:
@@ -796,7 +802,7 @@ inv_delay_update_delaycalc(GtkWidget *tree, float tempo)
 			COLUMN_TUPLET74,  length*4/7,
 			COLUMN_TUPLET94,  length*4/9,
 			COLUMN_TUPLET114, length*4/11,
-			COLUMN_TOOLTIP,   "<span size=\"8000\"><b>Description:</b> Calculated delay times for the current tempo across different length notes.\n<b>Usage:</b> Left-Click on a cell to send the value to Delay 1, Right-Click to send to Delay 2.</span>",
+			COLUMN_TOOLTIP,   "<span size=\"8000\"><b>Description:</b> Calculated delay times for the current tempo across different length notes.\n<b>Usage:</b> Left-Click on a cell to assign the value to Delay 1, Right-Click to assign the value to Delay 2.</span>",
 			-1);
 		length=length/2;
 	}
