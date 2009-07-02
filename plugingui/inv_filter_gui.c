@@ -193,6 +193,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_PLUGIN_ACTIVE);
 	inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), pluginGui->freq);
 	inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), pluginGui->gain);
+	g_signal_connect_after(G_OBJECT(pluginGui->display),"motion-notify-event",G_CALLBACK(on_inv_filter_display_motion),pluginGui);
 
 	inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_PLUGIN_ACTIVE);
 	inv_knob_set_size(INV_KNOB (pluginGui->knobFreq), INV_KNOB_SIZE_LARGE);
@@ -413,6 +414,19 @@ on_inv_filter_noClip_toggle_button_release(GtkWidget *widget, GdkEvent *event, g
 
 	pluginGui->noClip=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
 	(*pluginGui->write_function)(pluginGui->controller, IFILTER_NOCLIP, 4, 0, &pluginGui->noClip);
+	return;
+}
+
+
+static void 
+on_inv_filter_display_motion(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	IFilterGui *pluginGui = (IFilterGui *) data;
+
+	pluginGui->freq=inv_display_fg_get_freq(INV_DISPLAY_FG (widget));
+	pluginGui->gain=inv_display_fg_get_gain(INV_DISPLAY_FG (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IFILTER_FREQ, 4, 0, &pluginGui->freq);
+	(*pluginGui->write_function)(pluginGui->controller, IFILTER_GAIN, 4, 0, &pluginGui->gain);
 	return;
 }
 

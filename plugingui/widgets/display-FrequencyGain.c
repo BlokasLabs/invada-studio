@@ -36,8 +36,17 @@ static void 	inv_display_fg_realize(GtkWidget *widget);
 static gboolean inv_display_fg_expose(GtkWidget *widget,GdkEventExpose *event);
 static void 	inv_display_fg_paint(GtkWidget *widget, gint mode);
 static void	inv_display_fg_destroy(GtkObject *object);
-float 		get_point(float min, float max, float num, float range);
+static gboolean inv_display_fg_button_press_event(GtkWidget *widget, GdkEventButton *event);
+static gboolean	inv_display_fg_motion_notify_event(GtkWidget *widget, GdkEventMotion *event);
+static gboolean inv_display_fg_button_release_event(GtkWidget *widget, GdkEventButton *event);
 
+float 		get_x_from_freq(float min, float max, float freq, float range);
+float 		get_y_from_gain(float gain); 
+float 		get_fg_freq_from_x(float min, float max, float x, float range);
+float 		get_fg_gain_from_y(float y); 
+
+gint		check_fg_click_on_control(float freq, float gain, float ex, float ey);
+void		get_fg_value_from_motion(float ex, float ey, float *freq, float *gain);
 
 GtkType
 inv_display_fg_get_type(void)
@@ -118,6 +127,18 @@ inv_display_fg_set_gain(InvDisplayFG *displayFG, float num)
 	}
 }
 
+float 
+inv_display_fg_get_freq(InvDisplayFG *displayFG)
+{
+	return displayFG->freq;
+}
+
+float 
+inv_display_fg_get_gain(InvDisplayFG *displayFG)
+{
+	return displayFG->gain;
+}
+
 
 GtkWidget * inv_display_fg_new()
 {
@@ -140,6 +161,10 @@ inv_display_fg_class_init(InvDisplayFGClass *klass)
 	widget_class->size_allocate = inv_display_fg_size_allocate;
 	widget_class->expose_event = inv_display_fg_expose;
 
+    	widget_class->button_press_event = inv_display_fg_button_press_event;
+    	widget_class->motion_notify_event = inv_display_fg_motion_notify_event;
+    	widget_class->button_release_event = inv_display_fg_button_release_event;
+
 	object_class->destroy = inv_display_fg_destroy;
 }
 
@@ -153,6 +178,10 @@ inv_display_fg_init(InvDisplayFG *displayFG)
 	displayFG->gain = 0.0;
 	displayFG->Lastfreq = 1000.0;
 	displayFG->Lastgain = 0.0;
+	displayFG->Laststate = GTK_STATE_NORMAL;
+
+    	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(displayFG), GTK_CAN_FOCUS);
+
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayFG),"<small>This shows the effect of the filter across the autio spectrum.</small>");
 }
 
@@ -208,7 +237,11 @@ inv_display_fg_realize(GtkWidget *widget)
 	attributes.height = 108;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
-	attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
+	attributes.event_mask = gtk_widget_get_events(widget) |
+				GDK_EXPOSURE_MASK | 
+				GDK_BUTTON_PRESS_MASK | 
+				GDK_BUTTON_RELEASE_MASK | 
+				GDK_BUTTON_MOTION_MASK;
 
 	attributes_mask = GDK_WA_X | GDK_WA_Y;
 
@@ -245,13 +278,16 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 	float 		freq,gain;
 
 	gint 		i,j,k;
-	float 		p,x,y;
+	float 		p,x,y,cx,cy;
 	char 		string[10];
 
 	cairo_t 	*cr;
 	GtkStyle	*style;
+	GtkStateType	state;
 
+	state = GTK_WIDGET_STATE(widget);
 	style = gtk_widget_get_style(widget);
+
 	bypass=INV_DISPLAY_FG(widget)->bypass;
 	type=INV_DISPLAY_FG(widget)->mode;
 	freq=INV_DISPLAY_FG(widget)->freq;
@@ -330,8 +366,8 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 								sprintf(string,"%i0kHz",j);
 								break;
 						}
-						k= (gint) get_point(20.0, 20000.0, p, 358);
-						cairo_move_to(cr,6+k,104);
+						k= (gint) get_x_from_freq(20.0, 20000.0, p, 358);
+						cairo_move_to(cr,k-4,104);
 						cairo_show_text(cr,string);
 					}
 				}
@@ -364,11 +400,12 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 	}
 
-	
-	/* display */
-	if(mode == INV_DISPLAYFG_DRAW_ALL 
-	|| freq != INV_DISPLAY_FG(widget)->Lastfreq 
-	|| gain != INV_DISPLAY_FG(widget)->Lastgain ) {
+
+	if(freq!=INV_DISPLAY_FG(widget)->Lastfreq 
+	|| gain!=INV_DISPLAY_FG(widget)->Lastgain 
+	|| state!=INV_DISPLAY_FG(widget)->Laststate 
+	|| mode==INV_DISPLAYFG_DRAW_ALL)
+	{
 
 
 		/*graph area */
@@ -379,6 +416,16 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		}
 		cairo_rectangle(cr, 4, 4, 373, 90 );
 		cairo_fill(cr);
+
+		if(state==GTK_STATE_ACTIVE) {
+			if(bypass==INV_PLUGIN_BYPASS) {
+				cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.2);
+			} else {
+				cairo_set_source_rgba(cr, 1.0, 0.1, 0.0, 0.2);
+			}
+			cairo_rectangle(cr, 10, 8.5, 358, 16 );
+			cairo_fill(cr);
+		}
 
 		/* horizontal axis except for labeled lines */
 		if(bypass==INV_PLUGIN_BYPASS) {
@@ -395,8 +442,8 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 					p=(float)j*pow(10,(float)i);
 					if(p>=20 && p <= 20000) 
 					{
-						k= (gint) get_point(20.0, 20000.0, p, 358);
-						cairo_rectangle(cr, 10+k, 4, 1, 90);
+						k= (gint) get_x_from_freq(20.0, 20000.0, p, 358);
+						cairo_rectangle(cr, k, 4, 1, 90);
 						cairo_fill(cr);
 					}
 				}
@@ -456,8 +503,8 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 					if(p>=20 && p <= 20000) 
 
 					{
-						k= (gint) get_point(20.0, 20000.0, p, 358);
-						cairo_rectangle(cr, 10+k, 4, 1, 90);
+						k= (gint) get_x_from_freq(20.0, 20000.0, p, 358);
+						cairo_rectangle(cr, k, 4, 1, 90);
 						cairo_fill(cr);
 					}
 				}
@@ -473,100 +520,122 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		cairo_rectangle(cr, 4, 24, 373, 1);
 		cairo_fill(cr);
 
-		/* filter */
+		/* filter area */
 		cairo_rectangle(cr, 4, 4, 373, 90 );
 		cairo_clip(cr);
 
+		/* control circle */
+		cx=get_x_from_freq(20.0, 20000.0, freq, 358);
+		cy=get_y_from_gain(gain);
 
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgba(cr, 0.4, 0.4, 0.4, 0.5);
+			cairo_set_line_width(cr,1.0);
+		} else if (state==GTK_STATE_ACTIVE) {
+			cairo_set_source_rgba(cr, 1.0, 0.5, 0.4, 0.75);
+			cairo_set_line_width(cr,1.0);
+		} else {
+			cairo_set_source_rgba(cr, 1.0, 0.1, 0.0, 0.5);
+			cairo_set_line_width(cr,1.0);
+		}
+
+		cairo_move_to(cr,cx,cy);
+		cairo_arc(cr,cx,cy,4,0,2*INV_PI);
+		cairo_fill(cr);
+
+		/* now the line */
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
 			cairo_set_line_width(cr,1.5);
+		} else if (state==GTK_STATE_ACTIVE) {
+			cairo_set_source_rgb(cr, 0.4, 0.5, 1);
+			cairo_set_line_width(cr,2);
 		} else {
 			cairo_set_source_rgb(cr, 0.0, 0.1, 1);
 			cairo_set_line_width(cr,3);
 		}
-	
+
+		INV_DISPLAY_FG(widget)->Lastfreq = freq;
+		INV_DISPLAY_FG(widget)->Lastgain = gain;
+		INV_DISPLAY_FG(widget)->Laststate = state;
 
 		switch(type)
 		{
 			case INV_DISPLAYFG_MODE_LPF:
-				x=get_point(20.0, 20000.0, freq*0.3, 358);
-				y=(12-gain)/6;
-				if(10+x > 4) 
+				x=get_x_from_freq(20.0, 20000.0, freq*0.3, 358);
+				y=get_y_from_gain(gain);
+				if(x > 4) 
 				{
-					cairo_move_to(cr, 4, 8.5+(y*8));
-					cairo_line_to(cr, 10+x, 8.5+(y*8));
+					cairo_move_to(cr, 4, y);
+					cairo_line_to(cr, x, y);
 				} else {
-					cairo_move_to(cr, 10+x, 8.5+(y*8));
+					cairo_move_to(cr, x, y);
 				}
 				gain=gain -1;
-				x=get_point(20.0, 20000.0, freq*0.7, 358);
-				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 8.5+(y*8));
+				x=get_x_from_freq(20.0, 20000.0, freq*0.7, 358);
+				y=get_y_from_gain(gain);
+				cairo_line_to(cr, x, y);
 
 				gain=gain -1;
-				x=get_point(20.0, 20000.0, freq*0.9, 358);
-				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 8.5+(y*8));
+				x=get_x_from_freq(20.0, 20000.0, freq*0.9, 358);
+				y=get_y_from_gain(gain);
+				cairo_line_to(cr, x, y);
 
 				gain=gain -1;
-				x=get_point(20.0, 20000.0, freq, 358);
-				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 8.5+(y*8));
+				x=get_x_from_freq(20.0, 20000.0, freq, 358);
+				y=get_y_from_gain(gain);
+				cairo_line_to(cr, x, y);
 
 				i=0;
 				while(freq < 30000)
 				{
 					freq=freq*1.58;
 					gain=gain-3;
-					x=get_point(20.0, 20000.0, freq, 358);
-					y=(12-gain)/6;
-					cairo_line_to(cr, 10+x, 8.5+(y*8));
+					x=get_x_from_freq(20.0, 20000.0, freq, 358);
+					y=get_y_from_gain(gain);
+					cairo_line_to(cr, x, y);
 					i++;
 				}
 				break;
 			case INV_DISPLAYFG_MODE_HPF:
 
-				x=get_point(20.0, 20000.0, freq/0.3, 358);
-				y=(12-gain)/6;
-				if(10+x < 376) 
+				x=get_x_from_freq(20.0, 20000.0, freq/0.3, 358);
+				y=get_y_from_gain(gain);
+				if(x < 376) 
 				{
-					cairo_move_to(cr, 376, 8.5+(y*8));
-					cairo_line_to(cr, 10+x, 8.5+(y*8));
+					cairo_move_to(cr, 376, y);
+					cairo_line_to(cr, x, y);
 				} else {
-					cairo_move_to(cr, 10+x, 8.5+(y*8));
+					cairo_move_to(cr, x, y);
 				}
 				gain=gain -1;
-				x=get_point(20.0, 20000.0, freq/0.7, 358);
-				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 8.5+(y*8));
+				x=get_x_from_freq(20.0, 20000.0, freq/0.7, 358);
+				y=get_y_from_gain(gain);
+				cairo_line_to(cr, x, y);
 
 				gain=gain -1;
-				x=get_point(20.0, 20000.0, freq/0.9, 358);
-				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 8.5+(y*8));
+				x=get_x_from_freq(20.0, 20000.0, freq/0.9, 358);
+				y=get_y_from_gain(gain);
+				cairo_line_to(cr, x, y);
 
 				gain=gain -1;
-				x=get_point(20.0, 20000.0, freq, 358);
-				y=(12-gain)/6;
-				cairo_line_to(cr, 10+x, 8.5+(y*8));
-
+				x=get_x_from_freq(20.0, 20000.0, freq, 358);
+				y=get_y_from_gain(gain);
+				cairo_line_to(cr, x, y);
 				i=0;
 				while(freq > 14)
 				{
 					freq=freq/1.58;
 					gain=gain-3;
-					x=get_point(20.0, 20000.0, freq, 358);
-					y=(12-gain)/6;
-					cairo_line_to(cr, 10+x, 8.5+(y*8));
+					x=get_x_from_freq(20.0, 20000.0, freq, 358);
+					y=get_y_from_gain(gain);
+					cairo_line_to(cr, x, y);
 					i++;
 				}
 				break;
 		}
 		cairo_stroke(cr);
 	}
-	INV_DISPLAY_FG(widget)->Lastfreq = freq;
-	INV_DISPLAY_FG(widget)->Lastgain = gain;
   	cairo_destroy(cr);
 }
 
@@ -589,8 +658,103 @@ inv_display_fg_destroy(GtkObject *object)
 	}
 }
 
-float get_point(float min, float max, float num, float range)
+float 
+get_x_from_freq(float min, float max, float freq, float range)
 {
-  return range * (log(num) - log(min)) / (log(max) - log(min));
+  	return 10.0+(range * (log(freq/min) / log(max/min)));
 }
 
+float 
+get_y_from_gain(float gain) 
+{
+	return 8.5 + 8.0*((12.0-gain)/6.0);
+}
+
+float 
+get_fg_freq_from_x(float min, float max, float x, float range)
+{
+  	float r;
+
+	r=log10(max/min);
+	
+	return min * pow( 10 , r*((x-10)/range) );
+}
+
+float 
+get_fg_gain_from_y(float y) 
+{
+	return 12.0-(6.0*((y-8.5)/8.0));
+}
+
+gint
+check_fg_click_on_control(float freq, float gain, float ex, float ey)
+{
+	float cx,cy;
+
+	cx=get_x_from_freq(20.0, 20000.0, freq, 358);
+	cy=get_y_from_gain(gain);
+
+	if(fabs(cy-ey)<=3 && fabs(cx-ex)<=3) {
+		return 1;
+	} else {
+		return 0;
+	}  
+}
+
+void
+get_fg_value_from_motion(float ex, float ey, float *freq, float *gain)
+{
+	float Newfreq,Newgain;
+
+	Newfreq = get_fg_freq_from_x(20.0, 20000.0, ex, 358);
+	Newgain = get_fg_gain_from_y(ey);
+
+	if(Newfreq< 20.0) Newfreq= 20.0;
+	else if(Newfreq> 20000.0) Newfreq= 20000.0;
+
+	if(Newgain< 0.0) Newgain= 0.0;
+	else if(Newgain> 12.0) Newgain= 12.0;
+
+	*freq=Newfreq;
+	*gain=Newgain;
+}
+
+static gboolean 
+inv_display_fg_button_press_event (GtkWidget *widget, GdkEventButton *event)
+{
+	g_assert(INV_IS_DISPLAY_FG(widget));
+	if(check_fg_click_on_control(INV_DISPLAY_FG(widget)->freq,INV_DISPLAY_FG(widget)->gain,event->x,event->y)==1) {
+		g_object_set(G_OBJECT(widget),"has-tooltip",FALSE,NULL);
+		gtk_widget_set_state(widget,GTK_STATE_ACTIVE);
+	    	gtk_widget_grab_focus(widget);
+		//setup for motion function
+		inv_display_fg_paint(widget,INV_DISPLAYFG_DRAW_DATA);
+	}
+	return TRUE;
+}
+
+static gboolean	
+inv_display_fg_motion_notify_event(GtkWidget *widget, GdkEventMotion *event)
+{
+	g_assert(INV_IS_DISPLAY_FG(widget));
+
+	if((GTK_WIDGET (widget)->state)==GTK_STATE_ACTIVE) {
+		get_fg_value_from_motion(event->x,event->y,&(INV_DISPLAY_FG(widget)->freq),&(INV_DISPLAY_FG(widget)->gain));
+		inv_display_fg_paint(widget,INV_DISPLAYFG_DRAW_DATA);
+		return FALSE; //let the after signal run
+	} else {
+		return TRUE;
+	}
+}
+
+static gboolean 
+inv_display_fg_button_release_event (GtkWidget *widget, GdkEventButton *event)
+{
+	g_assert(INV_IS_DISPLAY_FG(widget));
+	if((GTK_WIDGET (widget)->state)==GTK_STATE_ACTIVE) {
+		gtk_widget_set_state(widget,GTK_STATE_NORMAL);
+		g_object_set(G_OBJECT(widget),"has-tooltip",TRUE,NULL);
+		inv_display_fg_paint(widget,INV_DISPLAYFG_DRAW_DATA);
+	}
+	return TRUE;
+}

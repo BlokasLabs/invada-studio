@@ -163,7 +163,7 @@ runITone(LV2_Handle instance, uint32_t SampleCount)
 	if(fActive==0) { 
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
-			fAudio=sin(fAngle);
+			fAudio=fTrim*sin(fAngle);
 			fAngle+=fAngleDelta;
 			if(fAngle > PI) {
 				fAngle -= PI_2;
@@ -250,7 +250,7 @@ convertParam(unsigned long param, float value, double sr) {
 				result= 1;
 			break;
 		case ITONE_FREQ:
-			if(value < 20)
+			if(value < 20.0)
 				result= PI_2*20.0/(float)sr;
 			else if (value < 20000)
 				result= PI_2*value/(float)sr;
@@ -258,10 +258,10 @@ convertParam(unsigned long param, float value, double sr) {
 				result= PI_2*20000.0/(float)sr;
 			break;
 		case ITONE_TRIM:
-			if(value<-24)
-				result= pow(10, -24/20);
-			else if (value < 0)
-				result= pow(10, value/20);
+			if(value<-24.0)
+				result= pow(10, -24.0/20.0);
+			else if (value < 0.0)
+				result= pow(10, value/20.0);
 			else
 				result= 1.0;
 			break;

@@ -50,8 +50,9 @@ struct _InvDisplayFG {
 	float freq;
 	float gain;
 
-	float Lastfreq;
-	float Lastgain;
+	float 		Lastfreq;
+	float 		Lastgain;
+	GtkStateType	Laststate;
 };
 
 struct _InvDisplayFGClass {
@@ -62,10 +63,12 @@ struct _InvDisplayFGClass {
 GtkType inv_display_fg_get_type(void);
 GtkWidget * inv_display_fg_new();
 
-void inv_display_fg_set_bypass(InvDisplayFG *displayFG, gint num);
-void inv_display_fg_set_mode(InvDisplayFG *displayFG, gint num);
-void inv_display_fg_set_freq(InvDisplayFG *displayFG, float num);
-void inv_display_fg_set_gain(InvDisplayFG *displayFG, float num);
+void  inv_display_fg_set_bypass(InvDisplayFG *displayFG, gint num);
+void  inv_display_fg_set_mode(InvDisplayFG *displayFG, gint num);
+void  inv_display_fg_set_freq(InvDisplayFG *displayFG, float num);
+void  inv_display_fg_set_gain(InvDisplayFG *displayFG, float num);
+float inv_display_fg_get_freq(InvDisplayFG *displayFG);
+float inv_display_fg_get_gain(InvDisplayFG *displayFG);
 
 
 G_END_DECLS
