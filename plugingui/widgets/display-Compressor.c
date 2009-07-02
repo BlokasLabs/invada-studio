@@ -217,7 +217,7 @@ inv_display_comp_init(InvDisplayComp *displayComp)
 		displayComp->SIGmax= fabs(displayComp->SIG[i]) > displayComp->SIGmax ? displayComp->SIG[i] : displayComp->SIGmax;
 	}
 
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayComp),"<small><b>Detector and Envelope:</b> This shows how the RMS, Attack and Release interact to produce an envelope.\n<b>Compressor:</b> This shows how the Threshold, Ratio and Gain affect the audio at different levels.</small>");
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayComp),"<span size=\"8000\"><b>Detector and Envelope:</b> This shows how the RMS, Attack and Release interact to produce an envelope.\n<b>Compressor:</b> This shows how the Threshold, Ratio and Gain affect the audio at different levels.</span>");
 }
 
 

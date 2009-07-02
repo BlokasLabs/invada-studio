@@ -137,7 +137,7 @@ inv_phase_meter_init(InvPhaseMeter *meter)
 	meter->mOff90.R=0.4;	meter->mOff90.G=0.2;	meter->mOff90.B=0.0;
 	meter->mOn90.R =0.6;	meter->mOn90.G =0.0;	meter->mOn90.B =0.0;
 
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(meter),"<small>Phase Meter.</small>");
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(meter),"<span size=\"8000\">Phase Meter.</span>");
 }
 
 

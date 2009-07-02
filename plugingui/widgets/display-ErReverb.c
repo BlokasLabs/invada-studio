@@ -243,7 +243,7 @@ inv_display_err_init(InvDisplayErr *displayErr)
 
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(displayErr), GTK_CAN_FOCUS);
 
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayErr),"<small><b>Room Shape:</b> This is a 3D representation of the virtual room.\n<b>Impulse Response:</b> This shows the resultant inpulse response of the room.\n<b>Source and Listerner Position:</b> Use this display to position the source and listener in the virtual room.</small>");
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayErr),"<span size=\"8000\"><b>Room Shape:</b> This is a 3D representation of the virtual room.\n<b>Impulse Response:</b> This shows the resultant inpulse response of the room.\n<b>Source and Listerner Position:</b> Use this display to position the source and listener in the virtual room.</span>");
 }
 
 

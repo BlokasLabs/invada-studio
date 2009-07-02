@@ -182,7 +182,7 @@ inv_display_fg_init(InvDisplayFG *displayFG)
 
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(displayFG), GTK_CAN_FOCUS);
 
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayFG),"<small>This shows the effect of the filter across the autio spectrum.</small>");
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayFG),"<span size=\"8000\"><b>Description:</b> This shows the effect of the filter across the autio spectrum.\n<b>Usage:</b> Click on the dot and drag to adjust the filter.</span>");
 }
 
 

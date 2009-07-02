@@ -174,7 +174,7 @@ inv_meter_init(InvMeter *meter)
 	meter->overOff.R=0.4;	meter->overOff.G=0.2;	meter->overOff.B=0.0;
 	meter->overOn.R =0.6;	meter->overOn.G =0.0;	meter->overOn.B =0.0;
 
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(meter),"<small>Peak Meter.</small>");
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(meter),"<span size=\"8000\">Peak Meter.</span>");
 
 }
 
