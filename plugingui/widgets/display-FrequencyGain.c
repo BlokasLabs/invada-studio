@@ -667,7 +667,7 @@ get_x_from_freq(float min, float max, float freq, float range)
 float 
 get_y_from_gain(float gain) 
 {
-	return 8.5 + 12.0*((12.0-gain)/6.0);
+	return 8.0 + 12.0*((12.0-gain)/6.0);
 }
 
 float 
@@ -683,7 +683,7 @@ get_fg_freq_from_x(float min, float max, float x, float range)
 float 
 get_fg_gain_from_y(float y) 
 {
-	return 12.0-(6.0*((y-8.5)/12.0));
+	return 12.0-(6.0*((y-8.0)/12.0));
 }
 
 gint
