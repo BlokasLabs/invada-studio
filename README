@@ -9,6 +9,10 @@ CONTENTS
 ========
 The following plugins are included:
 
+Delay Plugins
+* Delay Munge - Mono         => Two channel delay with non-linear feedback (munged) plus delay calculator. 
+* Delay Munge - Stereo       => Two channel delay with non-linear feedback (munged) plus delay calculator. 
+
 Distortion Plugins
 * Tube - Mono                => Valve warmth/distortion simulation
 * Tube - Stereo              => Valve warmth/distortion simulation
@@ -33,6 +37,7 @@ Reverb Plugins
 * ER Reverb - Sum L+R In     => early reflection based reverb
 
 Utility Plugins
+* Test Tones                 => Generate test tones at standard and muscial frequencies.
 * Input Module               => alter gain, balance, width, phase on a stereo signal
 
 

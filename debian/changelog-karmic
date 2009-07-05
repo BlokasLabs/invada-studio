@@ -1,3 +1,23 @@
+invada-studio-plugins-lv2 (1.1.0-0ubuntu0~ppa1~karmic2) karmic; urgency=low
+
+  * Updated Readme.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sun, 5 Jul 2009 18:00:00 +1000
+
+
+invada-studio-plugins-lv2 (1.1.0-0ubuntu0~ppa1~karmic1) karmic; urgency=low
+
+  * Added new plugin 'Delay - Munge'.
+  * Added new plugn 'Test Tones'
+  * Added interpolation / fading to eliminate zipping from changing controls.
+  * Updated rdf as per http://lists.lv2plug.in/pipermail/devel-lv2plug.in/2009-June/000226.html
+  * Added extended port properties to rdf
+  * Backed out changes to support lv2rack as it now behaves as expected.
+  * Various GUI tweaks.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sun, 5 Jul 2009 18:00:00 +1000
+
+
 invada-studio-plugins-lv2 (1.0.1-0ubuntu0~ppa1~karmic2) karmic; urgency=low
 
   * Spelling mistakes

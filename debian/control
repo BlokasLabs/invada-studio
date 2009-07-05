@@ -16,6 +16,10 @@ Description: Invada Studio Plugins - a set of LV2 audio plugins
   * Tube - (Mono and Stereo version)
  Valve warmth/distortion simulation.
  .
+  Delay Plugins
+  * Delay Munge - (Mono and Sum version)
+ Delay with munged (non-linear) feedback & delay calculator.
+ .
   Dynamics Plugins
   * Compressor - (Mono and Stereo version)
  Peak/RMS soft-clipping compressor.
@@ -36,5 +40,7 @@ Description: Invada Studio Plugins - a set of LV2 audio plugins
   Utility Plugins
   * Input Module (Stereo only)
  Alter gain, balance, width, phase on a stereo signal.
+  * Test Tones (Mono only)
+ Generate testtones at specific frequencies.
  .
 
