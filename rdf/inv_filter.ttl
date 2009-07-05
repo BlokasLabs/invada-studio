@@ -4,6 +4,7 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
+@prefix epp:   <http://lv2plug.in/ns/dev/extportinfo#> .
 @prefix dc:    <http://dublincore.org/documents/dcmi-namespace/> .
 
 
@@ -107,6 +108,7 @@
 	lv2:minimum 20 ;
 	lv2:maximum 20000 ;
 	units:unit units:hz ;
+        lv2:portProperty epp:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
@@ -199,6 +201,7 @@
 	lv2:minimum 20 ;
 	lv2:maximum 20000 ;
 	units:unit units:hz ;
+        lv2:portProperty epp:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
@@ -319,6 +322,7 @@
 	lv2:minimum 20 ;
 	lv2:maximum 20000 ;
 	units:unit units:hz ;
+        lv2:portProperty epp:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
@@ -411,6 +415,7 @@
 	lv2:minimum 20 ;
 	lv2:maximum 20000 ;
 	units:unit units:hz ;
+        lv2:portProperty epp:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;

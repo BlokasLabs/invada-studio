@@ -4,6 +4,7 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
+@prefix epp:   <http://lv2plug.in/ns/dev/extportinfo#> .
 
 <http://invadarecords.com/plugins/lv2/phaser/gui>
     a uiext:GtkUI;
@@ -112,6 +113,7 @@
 	lv2:minimum 0.5 ;
 	lv2:maximum 500 ;
 	units:unit units:s ;
+        lv2:portProperty epp:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
@@ -251,6 +253,7 @@
 	lv2:minimum 0.5 ;
 	lv2:maximum 500 ;
 	units:unit units:s ;
+        lv2:portProperty epp:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
