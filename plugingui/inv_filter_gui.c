@@ -285,6 +285,7 @@ port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint3
 					inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_BYPASS);
 					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
 				}
+				gtk_widget_queue_draw (pluginGui->windowContainer);
 				break;
 			case IFILTER_FREQ:
 				pluginGui->freq=value;
@@ -359,26 +360,8 @@ on_inv_filter_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, g
 {
 
 	IFilterGui *pluginGui = (IFilterGui *) data;
+
 	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
-
-	if(pluginGui->bypass <= 0.0) {
-		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-		inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_ACTIVE);
-		inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_PLUGIN_ACTIVE);
-		inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_PLUGIN_ACTIVE);
-		inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_PLUGIN_ACTIVE);
-		inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_ACTIVE);
-		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_ACTIVE);
-	} else {
-		inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
-		inv_meter_set_bypass(INV_METER (pluginGui->meterIn),INV_PLUGIN_BYPASS);
-		inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_PLUGIN_BYPASS);
-		inv_display_fg_set_bypass(INV_DISPLAY_FG (pluginGui->display), INV_PLUGIN_BYPASS);
-		inv_knob_set_bypass(INV_KNOB (pluginGui->knobFreq), INV_PLUGIN_BYPASS);
-		inv_knob_set_bypass(INV_KNOB (pluginGui->knobGain), INV_PLUGIN_BYPASS);
-		inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleNoClip), INV_PLUGIN_BYPASS);
-	}
-
 	(*pluginGui->write_function)(pluginGui->controller, IFILTER_BYPASS, 4, 0, &pluginGui->bypass);
 	return;
 }
@@ -389,7 +372,6 @@ on_inv_filter_freq_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data
 	IFilterGui *pluginGui = (IFilterGui *) data;
 
 	pluginGui->freq=inv_knob_get_value(INV_KNOB (widget));
-	inv_display_fg_set_freq(INV_DISPLAY_FG (pluginGui->display), pluginGui->freq);
 	(*pluginGui->write_function)(pluginGui->controller, IFILTER_FREQ, 4, 0, &pluginGui->freq);
 	return;
 }
@@ -401,7 +383,6 @@ on_inv_filter_gain_knob_motion(GtkWidget *widget, GdkEvent *event, gpointer data
 	IFilterGui *pluginGui = (IFilterGui *) data;
 
 	pluginGui->gain=inv_knob_get_value(INV_KNOB (widget));
-	inv_display_fg_set_gain(INV_DISPLAY_FG (pluginGui->display), pluginGui->gain);
 	(*pluginGui->write_function)(pluginGui->controller, IFILTER_GAIN, 4, 0, &pluginGui->gain);
 	return;
 }

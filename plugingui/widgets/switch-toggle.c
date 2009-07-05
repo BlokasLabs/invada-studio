@@ -80,11 +80,7 @@ inv_switch_toggle_get_type(void)
 void
 inv_switch_toggle_set_bypass(InvSwitchToggle *switch_toggle, gint num)
 {
-	if(switch_toggle->bypass != num) {
-		switch_toggle->bypass = num;
-		if(GTK_WIDGET_REALIZED(switch_toggle))
-			inv_switch_toggle_paint(GTK_WIDGET(switch_toggle),INV_SWITCH_TOGGLE_DRAW_ALL);
-	}
+	switch_toggle->bypass = num;
 }
 
 void
@@ -452,7 +448,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 			cairo_set_source_rgb(cr, grey, grey, grey);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), 3-extents.y_bearing);
+			cairo_move_to(cr,31+indent-(extents.width/2), 6-(extents.y_bearing)/2);
 			cairo_show_text(cr,off_text);
 
 			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
@@ -467,7 +463,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 			cairo_set_source_rgb(cr, on.R, on.G, on.B);
 			cairo_text_extents (cr,on_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), 61);
+			cairo_move_to(cr,31+indent-(extents.width/2), 56-(extents.y_bearing)/2);
 			cairo_show_text(cr,on_text);
 
 			cairo_save(cr);
@@ -495,7 +491,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 			cairo_set_source_rgb(cr, off.R, off.G, off.B);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), 3-extents.y_bearing);
+			cairo_move_to(cr,31+indent-(extents.width/2), 6-(extents.y_bearing)/2);
 			cairo_show_text(cr,off_text);
 
 			max = on.R > on.G ? on.R : on.G;
@@ -508,7 +504,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 			cairo_set_source_rgb(cr, grey, grey, grey);
 			cairo_text_extents (cr,on_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width)/2, 61);
+			cairo_move_to(cr,31+indent-(extents.width)/2, 56-(extents.y_bearing)/2);
 			cairo_show_text(cr,on_text);
 
 			cairo_save(cr);

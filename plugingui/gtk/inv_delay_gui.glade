@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Tue Jun 23 01:47:23 2009 -->
+<!--Generated with glade3 3.4.5 on Sun Jul  5 12:54:16 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="delay_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -758,6 +758,8 @@
           <widget class="GtkExpander" id="expander-delaycalc">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="has_tooltip">True</property>
+            <property name="tooltip_markup">&lt;span size="8000"&gt;Click to expose the delay calculator.&lt;/span&gt;</property>
             <property name="spacing">2</property>
             <child>
               <widget class="GtkVBox" id="vbox1">
@@ -854,6 +856,8 @@
             </child>
           </widget>
           <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
             <property name="position">3</property>
           </packing>
         </child>

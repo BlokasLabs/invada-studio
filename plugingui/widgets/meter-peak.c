@@ -88,8 +88,6 @@ inv_meter_set_bypass(InvMeter *meter, gint num)
 				meter->RdB=0;
 				break;
 		}
-		if(GTK_WIDGET_REALIZED(meter))
-			inv_meter_paint(GTK_WIDGET(meter),INV_METER_DRAW_ALL);
 	}
 }
 

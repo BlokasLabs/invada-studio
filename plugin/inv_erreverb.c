@@ -56,26 +56,26 @@ static LV2_Descriptor *IReverbERSumDescriptor = NULL;
 typedef struct {
 
 	/* Ports */
-	float * ControlBypass;
-	float * ControlRoomLength;
-	float * ControlRoomWidth; 
-	float * ControlRoomHeight;
-	float * ControlSourceLR;
-	float * ControlSourceFB;
-	float * ControlDestLR; 
-	float * ControlDestFB;
-	float * ControlHPF;
-	float * ControlWarmth;
-	float * ControlDiffusion;
+	float *ControlBypass;
+	float *ControlRoomLength;
+	float *ControlRoomWidth; 
+	float *ControlRoomHeight;
+	float *ControlSourceLR;
+	float *ControlSourceFB;
+	float *ControlDestLR; 
+	float *ControlDestFB;
+	float *ControlHPF;
+	float *ControlWarmth;
+	float *ControlDiffusion;
 
-	float * AudioOutputBufferL;
-	float * AudioOutputBufferR;
-	float * AudioInputBufferL;
-	float * AudioInputBufferR; 
+	float *AudioOutputBufferL;
+	float *AudioOutputBufferR;
+	float *AudioInputBufferL;
+	float *AudioInputBufferR; 
 
-	float * MeterInput;
-	float * MeterOutputL;
-	float * MeterOutputR;
+	float *MeterInput;
+	float *MeterOutputL;
+	float *MeterOutputR;
 
 	double SampleRate;
 
@@ -99,6 +99,9 @@ typedef struct {
 	float ConvertedBypass; 
 	float ConvertedHPF; 
 	float ConvertedWarmth; 
+
+	/* fade in flag */
+	int fadeIn;
 
 	/* Delay and Reverb Space Data */
 	unsigned int er_size;
@@ -246,6 +249,8 @@ activateIReverbER(LV2_Handle instance)
 	plugin->LastWarmth     = 50;
 	plugin->LastDiffusion  = 50;
 
+	plugin->fadeIn=0;
+
 	plugin->AudioHPFLast=0;
 	plugin->AudioIn1Last=0;
 	plugin->AudioIn2Last=0;
@@ -275,6 +280,10 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	float OutR,EnvOutR;
 	float AudioIn,AudioHPF,AudioIn1,AudioIn2,AudioIn3,AudioIn4,AudioProc;
 	float fBypass,HPFsamples,WarmthSamples;
+	int fadeOut,fadeIn;
+	float fadeVol;
+	double fWarmthDelta,fHPFDelta;
+	int   HasDelta;
 	struct ERunit * er;
 	unsigned long lSampleIndex;
 	unsigned int i;
@@ -289,6 +298,9 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 
 	IReverbER *plugin = (IReverbER *)instance;
 	pParamFunc = &convertParam;
+
+	fadeIn=plugin->fadeIn;
+	fadeOut=0;
 
 	/* see if the room has changed and recalculate the reflection details if needed */
 	if(*(plugin->ControlRoomLength) != plugin->LastRoomLength || 
@@ -308,17 +320,36 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 		  plugin->LastDestFB     = *(plugin->ControlDestFB);
 		  plugin->LastDiffusion  = *(plugin->ControlDiffusion);
 		  
-		  calculateIReverbERWrapper(instance);
+		if(fadeIn==0) {
+			//rather than updating the er straight away, fade out the existing ones.
+			fadeOut=1;
+		} else {
+			//we've just done a fade out so we can update the ers (seens we have to do it again!) and fade in these ones instead.
+			calculateIReverbERWrapper(instance);
+		}
 	}
 
 	/* check if any other params have changed */
 	checkParamChange(IERR_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IERR_WARMTH, plugin->ControlWarmth, &(plugin->LastWarmth), &(plugin->ConvertedWarmth), plugin->SampleRate, pParamFunc);
-	checkParamChange(IERR_HPF,    plugin->ControlHPF,    &(plugin->LastHPF),    &(plugin->ConvertedHPF),    plugin->SampleRate, pParamFunc);
+	fWarmthDelta    = getParamChange(IERR_WARMTH, plugin->ControlWarmth, &(plugin->LastWarmth), &(plugin->ConvertedWarmth), plugin->SampleRate, pParamFunc);
+	fHPFDelta       = getParamChange(IERR_HPF,    plugin->ControlHPF,    &(plugin->LastHPF),    &(plugin->ConvertedHPF),    plugin->SampleRate, pParamFunc);
 
 	fBypass         = plugin->ConvertedBypass;
-	WarmthSamples   = plugin->ConvertedWarmth;
-	HPFsamples   	= plugin->ConvertedHPF;
+
+	if(fWarmthDelta == 0 && fHPFDelta==0) {
+		HasDelta=0;
+		WarmthSamples   = plugin->ConvertedWarmth;
+		HPFsamples   	= plugin->ConvertedHPF;
+	} else {
+		HasDelta=1;
+		WarmthSamples   = plugin->ConvertedWarmth - fWarmthDelta;
+		HPFsamples   	= plugin->ConvertedHPF    - fHPFDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fWarmthDelta = fWarmthDelta/(float)SampleCount;
+			fHPFDelta    = fHPFDelta/(float)SampleCount;
+		}
+	}
 	
 	er_size   	= plugin->er_size;
 	SpaceSize 	= plugin->SpaceSize;
@@ -344,6 +375,8 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	EnvOutL    	= plugin->EnvOutLLast;
 	EnvOutR   	= plugin->EnvOutRLast;
 
+	fadeVol		= 1.0;
+
 	if(fBypass==0) { 
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
@@ -359,7 +392,16 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 			AudioIn4=((WarmthSamples-1) * AudioIn4 + AudioIn3) / WarmthSamples; 
 			  
 			er = plugin->er;
-			  
+
+			// calculate any fading
+			if(fadeIn==1) {
+				fadeVol=(float)lSampleIndex/(float)SampleCount;
+			}
+		
+			if(fadeOut==1) {
+				fadeVol=1.0-((float)lSampleIndex/(float)SampleCount);
+			}
+
 			// now calculate the reflections
 			for(i=0;i<er_size;i++) {
 				// pick the right version of the audio as per reflection count
@@ -381,7 +423,10 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 						AudioProc=AudioIn4;
 						break;
 				}
-
+				// do any fading
+				if(fadeIn==1 || fadeOut==1) {
+					AudioProc=AudioProc*fadeVol;
+				}
 				// add to the delay space
 				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, er->Delay, er->DelayOffset, AudioProc*er->GainL);
 				SpaceAdd(SpaceRCur, SpaceREnd, SpaceSize, er->Delay, er->DelayOffset, AudioProc*er->GainR);
@@ -404,7 +449,12 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
-	
+
+			//update any changeing parameters
+			if(HasDelta==1) {
+				WarmthSamples += fWarmthDelta;
+				HPFsamples    += fHPFDelta;
+			}
 		}
 	} else {
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
@@ -430,6 +480,16 @@ runMonoIReverbER(LV2_Handle instance, uint32_t SampleCount)
 		EnvOutL =0;
 		EnvOutR =0;
 	}
+	if(fadeIn==1) {
+		//we've fadded in the new er, so turn off the flag
+		plugin->fadeIn=0;
+	}
+	if(fadeOut==1) {
+		//we've fadded out the exisiting er, update the ers for the next run and flag it to be fadded in
+		plugin->fadeIn=1;
+		calculateIReverbERWrapper(instance);
+	}
+
 	// remember for next run
 	plugin->SpaceLCur=SpaceLCur;
 	plugin->SpaceRCur=SpaceRCur;
@@ -454,29 +514,36 @@ static void
 runSumIReverbER(LV2_Handle instance, uint32_t SampleCount) 
 {
 	float (*pParamFunc)(unsigned long, float, double) = NULL;
-	float * pfAudioInputL;
-	float * pfAudioInputR;
-	float * pfAudioOutputL;
-	float * pfAudioOutputR;
+	float *pfAudioInputL;
+	float *pfAudioInputR;
+	float *pfAudioOutputL;
+	float *pfAudioOutputR;
 	float In,EnvIn;
 	float OutL,EnvOutL;
 	float OutR,EnvOutR;
 	float AudioIn,AudioHPF,AudioIn1,AudioIn2,AudioIn3,AudioIn4,AudioProc;
 	float fBypass,HPFsamples,WarmthSamples;
+	int fadeOut,fadeIn;
+	float fadeVol;
+	double fWarmthDelta,fHPFDelta;
+	int   HasDelta;
 	struct ERunit * er;
 	unsigned long lSampleIndex;
 	unsigned int i;
 	unsigned int er_size;
 	unsigned long SpaceSize;
-	float * SpaceLStr;
-	float * SpaceRStr;
-	float * SpaceLCur;
-	float * SpaceRCur;
-	float * SpaceLEnd;
-	float * SpaceREnd;
+	float *SpaceLStr;
+	float *SpaceRStr;
+	float *SpaceLCur;
+	float *SpaceRCur;
+	float *SpaceLEnd;
+	float *SpaceREnd;
 
 	IReverbER *plugin = (IReverbER *)instance;
 	pParamFunc = &convertParam;
+
+	fadeIn=plugin->fadeIn;
+	fadeOut=0;
 
 	/* see if the room has changed and recalculate the reflection details if needed */
 	if(*(plugin->ControlRoomLength) != plugin->LastRoomLength || 
@@ -496,17 +563,36 @@ runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 		  plugin->LastDestFB     = *(plugin->ControlDestFB);
 		  plugin->LastDiffusion  = *(plugin->ControlDiffusion);
 		  
-		  calculateIReverbERWrapper(instance);
+		if(fadeIn==0) {
+			//rather than updating the er straight away, fade out the existing ones.
+			fadeOut=1;
+		} else {
+			//we've just done a fade out so we can update the ers (again!) and fade in these ones instead.
+			calculateIReverbERWrapper(instance);
+		}
 	}
 
 	/* check if any other params have changed */
 	checkParamChange(IERR_BYPASS, plugin->ControlBypass, &(plugin->LastBypass), &(plugin->ConvertedBypass), plugin->SampleRate, pParamFunc);
-	checkParamChange(IERR_WARMTH, plugin->ControlWarmth, &(plugin->LastWarmth), &(plugin->ConvertedWarmth), plugin->SampleRate, pParamFunc);
-	checkParamChange(IERR_HPF,    plugin->ControlHPF,    &(plugin->LastHPF),    &(plugin->ConvertedHPF),    plugin->SampleRate, pParamFunc);
+	fWarmthDelta    = getParamChange(IERR_WARMTH, plugin->ControlWarmth, &(plugin->LastWarmth), &(plugin->ConvertedWarmth), plugin->SampleRate, pParamFunc);
+	fHPFDelta       = getParamChange(IERR_HPF,    plugin->ControlHPF,    &(plugin->LastHPF),    &(plugin->ConvertedHPF),    plugin->SampleRate, pParamFunc);
 
 	fBypass         = plugin->ConvertedBypass;
-	WarmthSamples   = plugin->ConvertedWarmth;
-	HPFsamples   	= plugin->ConvertedHPF;
+
+	if(fWarmthDelta == 0 && fHPFDelta==0) {
+		HasDelta=0;
+		WarmthSamples   = plugin->ConvertedWarmth;
+		HPFsamples   	= plugin->ConvertedHPF;
+	} else {
+		HasDelta=1;
+		WarmthSamples   = plugin->ConvertedWarmth - fWarmthDelta;
+		HPFsamples   	= plugin->ConvertedHPF    - fHPFDelta;
+		if(SampleCount > 0) {
+			/* these are the incements to use in the run loop */
+			fWarmthDelta = fWarmthDelta/(float)SampleCount;
+			fHPFDelta    = fHPFDelta/(float)SampleCount;
+		}
+	}
 	
 	er_size   	= plugin->er_size;
 	SpaceSize 	= plugin->SpaceSize;
@@ -533,6 +619,8 @@ runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 	EnvOutL    	= plugin->EnvOutLLast;
 	EnvOutR   	= plugin->EnvOutRLast;
 
+	fadeVol		= 1.0;
+
 	if(fBypass==0) { 
 		for (lSampleIndex = 0; lSampleIndex < SampleCount; lSampleIndex++) {
 
@@ -549,7 +637,14 @@ runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 			AudioIn4=((WarmthSamples-1) * AudioIn4 + AudioIn3) / WarmthSamples; 
 			  
 			er = plugin->er;
-			  
+			// calculate any fading
+			if(fadeIn==1) {
+				fadeVol=(float)lSampleIndex/(float)SampleCount;
+			}
+		
+			if(fadeOut==1) {
+				fadeVol=1.0-((float)lSampleIndex/(float)SampleCount);
+			}
 			// now calculate the reflections
 			for(i=0;i<er_size;i++) {
 				// pick the right version of the audio as per reflection count
@@ -570,6 +665,10 @@ runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 					default:
 						AudioProc=AudioIn4;
 						break;
+				}
+				// do any fading
+				if(fadeIn==1 || fadeOut==1) {
+					AudioProc=AudioProc*fadeVol;
 				}
 				// add to the delay space
 				SpaceAdd(SpaceLCur, SpaceLEnd, SpaceSize, er->Delay, er->DelayOffset, AudioProc*er->GainL);
@@ -593,6 +692,12 @@ runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
 			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
 			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+
+			//update any changing parameters
+			if(HasDelta==1) {
+				WarmthSamples += fWarmthDelta;
+				HPFsamples    += fHPFDelta;
+			}
 	
 		}
 	} else {
@@ -618,6 +723,15 @@ runSumIReverbER(LV2_Handle instance, uint32_t SampleCount)
 		EnvIn   =0;
 		EnvOutL =0;
 		EnvOutR =0;
+	}
+	if(fadeIn==1) {
+		//we've fadded in the new er, so turn off the flag
+		plugin->fadeIn=0;
+	}
+	if(fadeOut==1) {
+		//we've fadded out the exisiting er, update the ers for the next run and flag it to be fadded in
+		plugin->fadeIn=1;
+		calculateIReverbERWrapper(instance);
 	}
 	// remember for next run
 	plugin->SpaceLCur=SpaceLCur;

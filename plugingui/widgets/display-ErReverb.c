@@ -89,11 +89,7 @@ inv_display_err_get_active_dot(InvDisplayErr *displayErr) {
 void
 inv_display_err_set_bypass(InvDisplayErr *displayErr, gint num)
 {
-	if(displayErr->bypass != num) {
-		displayErr->bypass = num;
-		if(GTK_WIDGET_REALIZED(displayErr))
-			inv_display_err_paint(GTK_WIDGET(displayErr),INV_DISPLAY_ERR_DRAW_ALL);
-	}
+	displayErr->bypass = num;
 }
 
 float 

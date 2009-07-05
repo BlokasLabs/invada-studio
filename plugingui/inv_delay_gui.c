@@ -465,6 +465,7 @@ port_eventIDelayGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 					inv_knob_set_bypass(          INV_KNOB          (pluginGui->knobVol2),        INV_PLUGIN_BYPASS);
 					gtk_widget_set_sensitive(     GTK_WIDGET        (pluginGui->treeviewDelayCalc),FALSE);
 				}
+				gtk_widget_queue_draw (pluginGui->windowContainer);
 				break;
 			case IDELAY_MODE:
 				pluginGui->mode=value;

@@ -215,6 +215,7 @@ port_eventIToneGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_
 					gtk_widget_set_sensitive(   GTK_WIDGET        (pluginGui->treeTest),     FALSE);
 					gtk_widget_set_sensitive(   GTK_WIDGET        (pluginGui->treeMusic),    FALSE);
 				}
+				gtk_widget_queue_draw (pluginGui->windowContainer);
 				break;
 			case ITONE_FREQ:
 				pluginGui->freq=value;

@@ -86,11 +86,7 @@ inv_display_fg_get_type(void)
 void
 inv_display_fg_set_bypass(InvDisplayFG *displayFG, gint num)
 {
-	if(displayFG->bypass != num) {
-		displayFG->bypass = num;
-		if(GTK_WIDGET_REALIZED(displayFG))
-			inv_display_fg_paint(GTK_WIDGET(displayFG),INV_DISPLAYFG_DRAW_ALL);
-	}
+	displayFG->bypass = num;
 }
 
 void

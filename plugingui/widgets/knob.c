@@ -90,11 +90,7 @@ inv_knob_get_type(void)
 void
 inv_knob_set_bypass(InvKnob *knob, gint num)
 {
-	if(knob->bypass != num) {
-		knob->bypass = num;
-		if(GTK_WIDGET_REALIZED(knob))
-			inv_knob_paint(GTK_WIDGET(knob),INV_KNOB_DRAW_ALL);
-	}
+	knob->bypass = num;
 }
 
 void

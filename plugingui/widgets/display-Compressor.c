@@ -75,11 +75,7 @@ inv_display_comp_get_type(void)
 void
 inv_display_comp_set_bypass(InvDisplayComp *displayComp, gint num)
 {
-	if(displayComp->bypass != num) {
-		displayComp->bypass = num;
-		if(GTK_WIDGET_REALIZED(displayComp))
-			inv_display_comp_paint(GTK_WIDGET(displayComp),INV_DISPLAYCOMP_DRAW_ALL);
-	}
+	displayComp->bypass = num;
 }
 
 void
