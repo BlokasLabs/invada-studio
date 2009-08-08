@@ -47,6 +47,13 @@
 #define INVADA_METER_PHASE 2
 #define INVADA_METER_LAMP 3
 
+struct Envelope {
+	float attack;
+	float decay;
+};
+
+
+
 struct ERunit {
 	int Active;
 	float rand;
@@ -73,6 +80,8 @@ void checkParamChange(unsigned long param, float * control, float * last, float 
 float  getParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
 
 /* audio envelope */
+void  initIEnvelope(struct Envelope * Env, int mode, double sr);
+float applyIEnvelope(struct Envelope * Env, float value, float envelope);
 float IEnvelope(float value, float envelope, int mode, double sr);
 
 /* add or subtract to delay space */

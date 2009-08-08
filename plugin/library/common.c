@@ -69,6 +69,39 @@ getParamChange(
 }
 
 /* a function which maps an envelope to a sound */
+void 
+initIEnvelope(struct Envelope * Env, int mode, double sr)
+{
+	switch(mode) {
+		case INVADA_METER_VU:  //300ms attack and decay
+			Env->attack = 1 - pow(10, -301.0301 / ((float)sr * 300.0));
+			Env->decay  = Env->attack;
+		break;
+		case INVADA_METER_PEAK: //50us attack and 100ms decay
+			Env->attack = 1 - pow(10, -301.0301 / ((float)sr *   0.5));
+			Env->decay  = 1 - pow(10, -301.0301 / ((float)sr * 100.0));
+		break;
+		case INVADA_METER_PHASE: //10ms attack and decay
+			Env->attack = 1 - pow(10, -301.0301 / ((float)sr * 10.0));
+			Env->decay  = Env->attack;
+		break;
+		case INVADA_METER_LAMP: //10ms attack and 100ms decay
+			Env->attack = 1 - pow(10, -301.0301 / ((float)sr *  10.0));
+			Env->decay  = 1 - pow(10, -301.0301 / ((float)sr * 100.0));
+		break;
+	}
+}
+
+float 
+applyIEnvelope(struct Envelope * Env, float audio_value, float envelope_value)
+{
+	float valueA;
+
+	valueA=fabs(audio_value);
+
+	return (valueA > envelope_value)  ? Env->attack * (valueA - envelope_value)  : Env->decay * (valueA - envelope_value);
+}
+
 float 
 IEnvelope(float value, float envelope, int mode, double sr)
 {

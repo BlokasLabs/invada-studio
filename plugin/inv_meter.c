@@ -58,6 +58,7 @@ typedef struct {
 	float ConvertedMeterMode;
 	float ConvertedSpecMode;
 
+	struct Envelope EnvAD[4];
 	float EnvMeterLLast; 
 	float EnvMeterRLast; 
 	float EnvSpecLast[31];
@@ -134,8 +135,7 @@ activateIMeter(LV2_Handle instance)
 	IMeter *plugin = (IMeter *)instance;
 	int i;
 
-	// these values force the conversion to take place      
-
+	//defaults     
 	plugin->LastBypass = 0;
 	plugin->LastMeterMode = 0;
 	plugin->LastSpecMode = 0;
@@ -150,6 +150,12 @@ activateIMeter(LV2_Handle instance)
 	plugin->ConvertedBypass    = convertParam(IMETER_BYPASS,     plugin->LastBypass,     plugin->SampleRate);
 	plugin->ConvertedMeterMode = convertParam(IMETER_METER_MODE, plugin->LastMeterMode,  plugin->SampleRate);
 	plugin->ConvertedSpecMode  = convertParam(IMETER_SPEC_MODE,  plugin->LastSpecMode,   plugin->SampleRate);
+
+	/* initialise envelopes */
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_VU],    INVADA_METER_VU,    plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK],  INVADA_METER_PEAK,  plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], INVADA_METER_PHASE, plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP],  INVADA_METER_LAMP,  plugin->SampleRate);
 
 	/* initialise filters */
 	initBandpassFilter(&plugin->filters[0],  plugin->SampleRate,   20.0, 0.3);
@@ -305,11 +311,11 @@ runIMeter(LV2_Handle instance, uint32_t SampleCount)
 
 			//evelope on in and out for meters
 			if(fMeterMode<0.5) {
-				EnvMeterL  	+= IEnvelope(InL, EnvMeterL, INVADA_METER_PEAK,  plugin->SampleRate);
-				EnvMeterR  	+= IEnvelope(InR, EnvMeterR, INVADA_METER_PEAK,  plugin->SampleRate);
+				EnvMeterL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], InL, EnvMeterL);
+				EnvMeterR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], InR, EnvMeterR);
 			} else {
-				EnvMeterL  	+= IEnvelope(InL, EnvMeterL, INVADA_METER_VU,  plugin->SampleRate);
-				EnvMeterR  	+= IEnvelope(InR, EnvMeterR, INVADA_METER_VU,  plugin->SampleRate);
+				EnvMeterL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_VU], InL, EnvMeterL);
+				EnvMeterR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_VU], InR, EnvMeterR);
 			}
 
 			//envelope for phase
@@ -318,15 +324,19 @@ runIMeter(LV2_Handle instance, uint32_t SampleCount)
 			} else {
 				CurrentPhase =0;
 			}
-			EnvPhase += IEnvelope(CurrentPhase,EnvPhase,INVADA_METER_PHASE,plugin->SampleRate);
+			EnvPhase += applyIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], CurrentPhase, EnvPhase);
 
 			//envelop for spectrum
 			filter=plugin->filters;
 			for(i=0;i<32;i++) {
 				if(fSpecMode< 0.5) {
-					EnvSpec[i]+=IEnvelope(applyBandpassFilter(&filter[i],In), EnvSpec[i], INVADA_METER_PEAK,  plugin->SampleRate);
+					EnvSpec[i]+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], 
+								    applyBandpassFilter(&filter[i],In),
+								    EnvSpec[i]);
 				} else {
-					EnvSpec[i]+=IEnvelope(applyBandpassFilter(&filter[31+i],applyBandpassFilter(&filter[i],In)), EnvSpec[i], INVADA_METER_PEAK,  plugin->SampleRate);
+					EnvSpec[i]+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], 
+								    applyBandpassFilter(&filter[31+i],applyBandpassFilter(&filter[i],In)), 
+								    EnvSpec[i]);
 				}
 			}
 
