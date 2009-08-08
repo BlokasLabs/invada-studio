@@ -59,6 +59,15 @@ struct ERunit {
 	float GainR;
 };
 
+
+struct FilterP {
+	double Gain;
+	double x[7];
+	double y[7];
+	double i[6];
+};
+
+
 /* param change detect functions, second one calculates deltas for interpolation in run loops */
 void checkParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
 float  getParamChange(unsigned long param, float * control, float * last, float * converted, double sr, float (*ConvertFunction)(unsigned long, float, double));
@@ -86,5 +95,9 @@ int calculateIReverbER(struct ERunit *erarray, int erMax,
 			float destLR, float destFB, float objectHeight, 
 			float diffusion,
 			double sr);
+
+/* Butterworth bandpass for spectral analysier */
+void initBandpassFilter(struct FilterP *f, float lf, float hf);
+float applyBandpassFilter(struct FilterP *f, float in);
 
 #endif /*__INVADA_COMMON_H */

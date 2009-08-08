@@ -524,3 +524,37 @@ calculateIReverbER(struct ERunit *erarray, int erMax,
 	return TotalNum;
 }
 
+void 
+initBandpassFilter(struct FilterP *f, float lf, float hf)
+{ 
+	int i;
+
+	for(i=0;i<7;i++) {
+		f->x[i] = 0.0; 
+		f->y[i] = 0.0; 
+	}
+
+	return;
+}
+
+float 
+applyBandpassFilter(struct FilterP *f, float in)
+{ 
+	int i;
+
+	for(i=0;i<6;i++) {
+		f->x[i] = f->x[i+1]; 
+		f->y[i] = f->y[i+1]; 
+	}
+
+	f->x[6] = in/f->Gain;
+	f->y[6] = (f->x[6] - f->x[0]) + 3 * (f->x[2] - f->x[4])
+	      + (f->i[0] * f->y[0]) + (f->i[1] * f->y[1])
+	      + (f->i[2] * f->y[2]) + (f->i[3] * f->y[3])
+	      + (f->i[4] * f->y[4]) + (f->i[4] * f->y[5]);
+
+        return f->y[6];
+}
+
+
+

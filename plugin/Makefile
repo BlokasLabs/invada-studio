@@ -29,6 +29,7 @@ PLUGINS		=	inv_compressor.so \
                         inv_erreverb.so \
                         inv_filter.so \
                         inv_input.so \
+                        inv_meter.so \
                         inv_phaser.so \
                         inv_testtone.so \
                         inv_tube.so \
@@ -43,6 +44,7 @@ inv_delay.so:		inv_delay.o		inv_delay.h
 inv_erreverb.so:	inv_erreverb.o		inv_erreverb.h    
 inv_filter.so:		inv_filter.o		inv_filter.h    
 inv_input.so:		inv_input.o		inv_input.h   
+inv_meter.so:		inv_meter.o		inv_meter.h   
 inv_phaser.so:		inv_phaser.o		inv_phaser.h   
 inv_testtone.so:	inv_testtone.o		inv_testtone.h   
 inv_tube.so:		inv_tube.o		inv_tube.h     
