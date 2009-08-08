@@ -19,6 +19,4 @@
 */
 
 static void on_inv_meter_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_inv_meter_mode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
-static void on_inv_spec_mode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 

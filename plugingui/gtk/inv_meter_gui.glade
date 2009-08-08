@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sat Aug  8 15:09:19 2009 -->
+<!--Generated with glade3 3.4.5 on Sat Aug  8 19:13:29 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="meter_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -71,45 +71,23 @@
                 <property name="visible">True</property>
                 <property name="label_xalign">0</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox2">
+                  <widget class="GtkAlignment" id="alignment_meter_peak">
                     <property name="visible">True</property>
+                    <property name="xscale">0</property>
+                    <property name="yscale">0</property>
+                    <property name="top_padding">4</property>
+                    <property name="bottom_padding">4</property>
+                    <property name="left_padding">4</property>
+                    <property name="right_padding">4</property>
                     <child>
-                      <widget class="GtkAlignment" id="alignment_meter_display">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkAlignment" id="alignment_meter_toggle">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </widget>
                 </child>
                 <child>
                   <widget class="GtkLabel" id="label1">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Meter</property>
+                    <property name="label" translatable="yes">Peak</property>
                     <property name="use_markup">True</property>
                   </widget>
                   <packing>
@@ -123,6 +101,48 @@
             <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkAlignment" id="alignment-vu-meter">
+            <property name="visible">True</property>
+            <property name="top_padding">2</property>
+            <property name="bottom_padding">6</property>
+            <property name="left_padding">6</property>
+            <property name="right_padding">6</property>
+            <child>
+              <widget class="GtkFrame" id="frame-vu-meter">
+                <property name="visible">True</property>
+                <property name="label_xalign">0</property>
+                <child>
+                  <widget class="GtkAlignment" id="alignment_meter_vu">
+                    <property name="visible">True</property>
+                    <property name="xscale">0</property>
+                    <property name="yscale">0</property>
+                    <property name="top_padding">4</property>
+                    <property name="bottom_padding">4</property>
+                    <property name="left_padding">4</property>
+                    <property name="right_padding">4</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </widget>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label3">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">VU</property>
+                    <property name="use_markup">True</property>
+                  </widget>
+                  <packing>
+                    <property name="type">label_item</property>
+                  </packing>
+                </child>
+              </widget>
+            </child>
+          </widget>
+          <packing>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -153,7 +173,7 @@
                 <child>
                   <widget class="GtkLabel" id="label10">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Phase Meter</property>
+                    <property name="label" translatable="yes">Phase</property>
                     <property name="use_markup">True</property>
                   </widget>
                   <packing>
@@ -166,7 +186,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -181,7 +201,7 @@
                 <property name="visible">True</property>
                 <property name="label_xalign">0</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox1">
+                  <widget class="GtkVBox" id="vbox1">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkAlignment" id="alignment_spec_display">
@@ -198,7 +218,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment_spec_toggle">
+                      <widget class="GtkAlignment" id="alignment_spec_display1">
                         <property name="visible">True</property>
                         <property name="xscale">0</property>
                         <property name="yscale">0</property>
@@ -212,6 +232,142 @@
                       </widget>
                       <packing>
                         <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display2">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display3">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display4">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display5">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display6">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display7">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">7</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display8">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">8</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment_spec_display9">
+                        <property name="visible">True</property>
+                        <property name="xscale">0</property>
+                        <property name="yscale">0</property>
+                        <property name="top_padding">4</property>
+                        <property name="bottom_padding">4</property>
+                        <property name="left_padding">4</property>
+                        <property name="right_padding">4</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">9</property>
                       </packing>
                     </child>
                   </widget>
@@ -232,7 +388,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </widget>

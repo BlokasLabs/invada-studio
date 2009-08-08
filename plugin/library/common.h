@@ -70,7 +70,9 @@ struct ERunit {
 struct FilterP {
 	int Active;
 	double x[3];
+	double x2[3];
 	double y[3];
+	double y2[3];
 	double i[5];
 };
 

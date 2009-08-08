@@ -73,19 +73,19 @@ void
 initIEnvelope(struct Envelope * Env, int mode, double sr)
 {
 	switch(mode) {
-		case INVADA_METER_VU:  //300ms attack and decay
-			Env->attack = 1 - pow(10, -301.0301 / ((float)sr * 300.0));
+		case INVADA_METER_VU:  
+			Env->attack = 1 - pow(10, -301.0301 / ((float)sr * 150.0));
 			Env->decay  = Env->attack;
 		break;
-		case INVADA_METER_PEAK: //50us attack and 100ms decay
+		case INVADA_METER_PEAK: 
 			Env->attack = 1 - pow(10, -301.0301 / ((float)sr *   0.5));
 			Env->decay  = 1 - pow(10, -301.0301 / ((float)sr * 100.0));
 		break;
-		case INVADA_METER_PHASE: //10ms attack and decay
+		case INVADA_METER_PHASE: 
 			Env->attack = 1 - pow(10, -301.0301 / ((float)sr * 10.0));
 			Env->decay  = Env->attack;
 		break;
-		case INVADA_METER_LAMP: //10ms attack and 100ms decay
+		case INVADA_METER_LAMP: 
 			Env->attack = 1 - pow(10, -301.0301 / ((float)sr *  10.0));
 			Env->decay  = 1 - pow(10, -301.0301 / ((float)sr * 100.0));
 		break;
@@ -568,7 +568,10 @@ initBandpassFilter(struct FilterP *f, double sr, double cf, double bw)
 
 		for(i=0;i<3;i++) {
 			f->x[i] = 0.0; 
+			f->x2[i] = 0.0; 
 			f->y[i] = 0.0; 
+			f->y2[i] = 0.0; 
+
 		}
 
 		w0 = PI_2*cf/sr;
@@ -601,15 +604,21 @@ applyBandpassFilter(struct FilterP *f, float in)
 
 	if(f->Active==1) {
 		for(i=0;i<2;i++) {
-			f->x[i] = f->x[i+1]; 
-			f->y[i] = f->y[i+1]; 
+			f->x[i]  = f->x[i+1]; 
+			f->x2[i] = f->x2[i+1]; 
+			f->y[i]  = f->y[i+1]; 
+			f->y2[i] = f->y2[i+1]; 
 		}
 
 		f->x[2] = (double)in;
 		f->y[2] = f->i[0]*f->x[2] + f->i[1]*f->x[1] + f->i[2]*f->x[0]
 		                          - f->i[3]*f->y[1] - f->i[4]*f->y[0];  
 
-		return (float)f->y[2];
+		f->x2[2] = f->y[2];
+		f->y2[2] = f->i[0]*f->x2[2] + f->i[1]*f->x2[1] + f->i[2]*f->x2[0]
+		                            - f->i[3]*f->y2[1] - f->i[4]*f->y2[0];  
+
+		return (float)f->y2[2];
 	} else {
 		return 0;
 	}

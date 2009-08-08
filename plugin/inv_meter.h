@@ -21,18 +21,49 @@
 #define IMETER_URI		"http://invadarecords.com/plugins/lv2/meter";
 #define IMETER_GUI_URI		"http://invadarecords.com/plugins/lv2/meter/gui";
 #define IMETER_BYPASS		0
-#define IMETER_METER_MODE	1
-#define IMETER_SPEC_MODE	2
-#define IMETER_AUDIO_INL	3
-#define IMETER_AUDIO_INR	4
-#define IMETER_AUDIO_OUTL	5
-#define IMETER_AUDIO_OUTR	6
-#define IMETER_METER_L  	7
-#define IMETER_METER_R  	8  
+#define IMETER_AUDIO_INL	1
+#define IMETER_AUDIO_INR	2
+#define IMETER_AUDIO_OUTL	3
+#define IMETER_AUDIO_OUTR	4
+#define IMETER_METER_L  	5
+#define IMETER_METER_R  	6  
+#define IMETER_VU_L  		7
+#define IMETER_VU_R  		8 
 #define IMETER_METER_PHASE 	9 
+#define IMETER_SPEC_20 		10 
+#define IMETER_SPEC_25 		11 
+#define IMETER_SPEC_31 		12 
+#define IMETER_SPEC_40 		13 
+#define IMETER_SPEC_50 		14 
+#define IMETER_SPEC_63 		15 
+#define IMETER_SPEC_80 		16 
+#define IMETER_SPEC_100 	17 
+#define IMETER_SPEC_125 	18 
+#define IMETER_SPEC_160 	19 
+#define IMETER_SPEC_200 	20 
+#define IMETER_SPEC_250 	21 
+#define IMETER_SPEC_315 	22 
+#define IMETER_SPEC_400 	23 
+#define IMETER_SPEC_500 	24 
+#define IMETER_SPEC_630 	25 
+#define IMETER_SPEC_800 	26 
+#define IMETER_SPEC_1000 	27 
+#define IMETER_SPEC_1250 	28 
+#define IMETER_SPEC_1600 	29 
+#define IMETER_SPEC_2000 	30 
+#define IMETER_SPEC_2500 	31 
+#define IMETER_SPEC_3150 	32 
+#define IMETER_SPEC_4000 	33 
+#define IMETER_SPEC_5000 	34 
+#define IMETER_SPEC_6300 	35 
+#define IMETER_SPEC_8000 	36 
+#define IMETER_SPEC_10000 	37 
+#define IMETER_SPEC_12500 	38 
+#define IMETER_SPEC_16000 	39 
+#define IMETER_SPEC_20000 	40 
 
 
-#define FILTER_COUNT		62
+#define FILTER_COUNT		31
 
 
 /* control conversion function */
