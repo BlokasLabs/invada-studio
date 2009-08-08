@@ -21,15 +21,18 @@
 #define IMETER_URI		"http://invadarecords.com/plugins/lv2/meter";
 #define IMETER_GUI_URI		"http://invadarecords.com/plugins/lv2/meter/gui";
 #define IMETER_BYPASS		0
-#define IMETER_AUDIO_INL	1
-#define IMETER_AUDIO_INR	2
-#define IMETER_AUDIO_OUTL	3
-#define IMETER_AUDIO_OUTR	4
-#define IMETER_METER_PEAK_L  	5
-#define IMETER_METER_PEAK_R  	6  
-#define IMETER_METER_VU_L 	7
-#define IMETER_METER_VU_R 	8 
+#define IMETER_METER_MODE	1
+#define IMETER_SPEC_MODE	2
+#define IMETER_AUDIO_INL	3
+#define IMETER_AUDIO_INR	4
+#define IMETER_AUDIO_OUTL	5
+#define IMETER_AUDIO_OUTR	6
+#define IMETER_METER_L  	7
+#define IMETER_METER_R  	8  
 #define IMETER_METER_PHASE 	9 
+
+
+#define FILTER_COUNT		62
 
 
 /* control conversion function */

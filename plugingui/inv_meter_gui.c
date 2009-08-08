@@ -40,13 +40,16 @@ typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
 	GtkWidget	*toggleBypass;
+	GtkWidget	*toggleMeterMode;
+	GtkWidget	*toggleSpecMode;
 	GtkWidget	*meterPeak;
-	GtkWidget	*meterVU;
 	GtkWidget	*meterPhase;
 
 	gint		InChannels;
 	gint		OutChannels;
 	float 		bypass;
+	float 		meterMode;
+	float 		specMode;
 
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
@@ -92,19 +95,30 @@ instantiateIMeterGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->toggleBypass = inv_switch_toggle_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->toggleBypass);
 
-	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_peak"));
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_display"));
 	pluginGui->meterPeak = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterPeak);
 
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_toggle"));
+	pluginGui->toggleMeterMode = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->toggleMeterMode);
 
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_phase"));
 	pluginGui->meterPhase = inv_phase_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterPhase);
 
 
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_spec_toggle"));
+	pluginGui->toggleSpecMode = inv_switch_toggle_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->toggleSpecMode);
+
+
 	pluginGui->InChannels	= 2;
 	pluginGui->OutChannels	= 2;
 	pluginGui->bypass	= 0.0;
+	pluginGui->meterMode	= 0.0;
+	pluginGui->specMode	= 0.0;
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0);
@@ -121,6 +135,26 @@ instantiateIMeterGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_meter_set_channels(INV_METER (pluginGui->meterPeak), pluginGui->InChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterPeak),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterPeak),-90);
+
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_PLUGIN_ACTIVE);
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_OFF, "Peak");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_ON,  "VU");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleMeterMode),"button-release-event",G_CALLBACK(on_inv_meter_mode_toggle_button_release),pluginGui);
+
+	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_PLUGIN_ACTIVE);
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_OFF, 0.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_OFF, 0.0, 1.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_OFF, "18dB/oct");
+	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_ON,  1.0);
+	inv_switch_toggle_set_colour(INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_ON,  1.0, 0.0, 0.0);
+	inv_switch_toggle_set_text(  INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_ON,  "36dB/oct");
+	inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_OFF);
+	g_signal_connect_after(G_OBJECT(pluginGui->toggleSpecMode),"button-release-event",G_CALLBACK(on_inv_spec_mode_toggle_button_release),pluginGui);
 
 	inv_phase_meter_set_bypass(INV_PHASE_METER (pluginGui->meterPhase),INV_PLUGIN_ACTIVE);
 	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
@@ -161,29 +195,42 @@ port_eventIMeterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 			case IMETER_BYPASS:
 				pluginGui->bypass=value;
 				if(value <= 0.0) {
-					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
-					inv_meter_set_bypass(         INV_METER         (pluginGui->meterPeak),      INV_PLUGIN_ACTIVE);
-					inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_ACTIVE);
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass),      INV_SWITCH_TOGGLE_OFF);
+					inv_meter_set_bypass(         INV_METER         (pluginGui->meterPeak),       INV_PLUGIN_ACTIVE);
+					inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),      INV_PLUGIN_ACTIVE);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_PLUGIN_ACTIVE);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode),  INV_PLUGIN_ACTIVE);
 				} else {
-					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
-					inv_meter_set_bypass(         INV_METER         (pluginGui->meterPeak),      INV_PLUGIN_BYPASS);
-					inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_BYPASS);
+					inv_switch_toggle_set_state(INV_SWITCH_TOGGLE (pluginGui->toggleBypass),      INV_SWITCH_TOGGLE_ON);
+					inv_meter_set_bypass(         INV_METER         (pluginGui->meterPeak),       INV_PLUGIN_BYPASS);
+					inv_phase_meter_set_bypass(   INV_PHASE_METER   (pluginGui->meterPhase),      INV_PLUGIN_BYPASS);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_PLUGIN_BYPASS);
+					inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode),  INV_PLUGIN_BYPASS);
+				}
+				gtk_widget_queue_draw (pluginGui->windowContainer);
+				break;
+			case IMETER_METER_MODE:
+				pluginGui->meterMode=value;
+				if(value <= 0.5) {
+					inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleMeterMode), INV_SWITCH_TOGGLE_ON);
 				}
 				break;
-			case IMETER_METER_PEAK_L:
+			case IMETER_SPEC_MODE:
+				pluginGui->specMode=value;
+				if(value <= 0.5) {
+					inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_OFF);
+				} else {
+					inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleSpecMode), INV_SWITCH_TOGGLE_ON);
+				}
+				break;
+			case IMETER_METER_L:
 				inv_meter_set_LdB(INV_METER (pluginGui->meterPeak),value);
 				break;
-			case IMETER_METER_PEAK_R:
+			case IMETER_METER_R:
 				inv_meter_set_RdB(INV_METER (pluginGui->meterPeak),value);
 				break;
-/*
-			case IMETER_METER_VU_L:
-				inv_meter_set_dB(INV_METER (pluginGui->meterVuL),value);
-				break;
-			case IMETER_METER_VU_R:
-				inv_meter_set_dB(INV_METER (pluginGui->meterVuR),value);
-				break;
-*/
 			case IMETER_METER_PHASE:
 				inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),value);
 				break;
@@ -233,6 +280,26 @@ on_inv_meter_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gp
 	return;
 }
 
+static void 
+on_inv_meter_mode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
 
+	IMeterGui *pluginGui = (IMeterGui *) data;
+
+	pluginGui->meterMode=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IMETER_METER_MODE, 4, 0, &pluginGui->meterMode);
+	return;
+}
+
+static void 
+on_inv_spec_mode_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+
+	IMeterGui *pluginGui = (IMeterGui *) data;
+
+	pluginGui->specMode=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
+	(*pluginGui->write_function)(pluginGui->controller, IMETER_SPEC_MODE, 4, 0, &pluginGui->specMode);
+	return;
+}
 
 

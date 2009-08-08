@@ -525,13 +525,37 @@ calculateIReverbER(struct ERunit *erarray, int erMax,
 }
 
 void 
-initBandpassFilter(struct FilterP *f, float lf, float hf)
+initBandpassFilter(struct FilterP *f, double sr, double cf, double bw)
 { 
 	int i;
+	double w0,alpha,a0,a1,a2,b0,b1,b2;
 
-	for(i=0;i<7;i++) {
-		f->x[i] = 0.0; 
-		f->y[i] = 0.0; 
+	if(cf<sr/2.0) {
+		f->Active=1;
+
+		for(i=0;i<3;i++) {
+			f->x[i] = 0.0; 
+			f->y[i] = 0.0; 
+		}
+
+		w0 = PI_2*cf/sr;
+
+		alpha = sin(w0)*sinh((log(2)/2) * bw * (w0/sin(w0))) ;      
+
+		b0 =   alpha;
+		b1 =   0;
+		b2 =  -alpha;
+		a0 =   1 + alpha;
+		a1 =  -2*cos(w0);
+		a2 =   1 - alpha;
+
+		f->i[0]=b0/a0;
+		f->i[1]=b1/a0;
+		f->i[2]=b2/a0;
+		f->i[3]=a1/a0;
+		f->i[4]=a2/a0;
+	} else {
+		f->Active=0;
 	}
 
 	return;
@@ -542,18 +566,20 @@ applyBandpassFilter(struct FilterP *f, float in)
 { 
 	int i;
 
-	for(i=0;i<6;i++) {
-		f->x[i] = f->x[i+1]; 
-		f->y[i] = f->y[i+1]; 
+	if(f->Active==1) {
+		for(i=0;i<2;i++) {
+			f->x[i] = f->x[i+1]; 
+			f->y[i] = f->y[i+1]; 
+		}
+
+		f->x[2] = (double)in;
+		f->y[2] = f->i[0]*f->x[2] + f->i[1]*f->x[1] + f->i[2]*f->x[0]
+		                          - f->i[3]*f->y[1] - f->i[4]*f->y[0];  
+
+		return (float)f->y[2];
+	} else {
+		return 0;
 	}
-
-	f->x[6] = in/f->Gain;
-	f->y[6] = (f->x[6] - f->x[0]) + 3 * (f->x[2] - f->x[4])
-	      + (f->i[0] * f->y[0]) + (f->i[1] * f->y[1])
-	      + (f->i[2] * f->y[2]) + (f->i[3] * f->y[3])
-	      + (f->i[4] * f->y[4]) + (f->i[4] * f->y[5]);
-
-        return f->y[6];
 }
 
 

@@ -61,10 +61,10 @@ struct ERunit {
 
 
 struct FilterP {
-	double Gain;
-	double x[7];
-	double y[7];
-	double i[6];
+	int Active;
+	double x[3];
+	double y[3];
+	double i[5];
 };
 
 
@@ -97,7 +97,7 @@ int calculateIReverbER(struct ERunit *erarray, int erMax,
 			double sr);
 
 /* Butterworth bandpass for spectral analysier */
-void initBandpassFilter(struct FilterP *f, float lf, float hf);
+void  initBandpassFilter(struct FilterP *f, double sr, double cf, double bw);
 float applyBandpassFilter(struct FilterP *f, float in);
 
 #endif /*__INVADA_COMMON_H */

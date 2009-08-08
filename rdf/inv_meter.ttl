@@ -13,7 +13,15 @@
     uiext:optionalFeature uiext:noUserResize ;
 
     uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 0 ;
+	lv2:symbol "bypass" ;
+	lv2:name "Bypass" ;
+	lv2:portProperty lv2:toggled ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
         uiext:portIndex 5 ;
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
@@ -56,48 +64,48 @@
 	lv2:minimum 0.0 ;
 	lv2:maximum 1.0 ;
     ] , [
-	a lv2:InputPort, lv2:AudioPort ;
+	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 1 ;
+	lv2:symbol "metermode" ;
+	lv2:name "Meter Mode" ;
+	lv2:portProperty lv2:toggled ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:ControlPort ;
+	lv2:index 2 ;
+	lv2:symbol "specmode" ;
+	lv2:name "Spectrum Mode" ;
+	lv2:portProperty lv2:toggled ;
+	lv2:default 0.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 1.0 ;
+    ] , [
+	a lv2:InputPort, lv2:AudioPort ;
+	lv2:index 3 ;
 	lv2:symbol "inL" ;
 	lv2:name "L In" ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
-	lv2:index 2 ;
+	lv2:index 4 ;
 	lv2:symbol "inR" ;
 	lv2:name "R In" ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 3 ;
+	lv2:index 5 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
    ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
-	lv2:index 4 ;
+	lv2:index 6 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
    ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 5 ;
-	lv2:symbol "meterPeakL" ;
-	lv2:name "L In Peak" ;
-	lv2:default -60.0 ;
-	lv2:minimum -60.0 ;
-	lv2:maximum 6.0 ;
-	units:unit units:db ;
-    ] , [
-	a lv2:OutputPort, lv2:ControlPort ;
-	lv2:index 6 ;
-	lv2:symbol "meterPeakR" ;
-	lv2:name "R In Peak" ;
-	lv2:default -60.0 ;
-	lv2:minimum -60.0 ;
-	lv2:maximum 6.0 ;
-	units:unit units:db ;
-    ] , [
-	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 7 ;
-	lv2:symbol "meterVuL" ;
-	lv2:name "L In VU" ;
+	lv2:symbol "meterL" ;
+	lv2:name "Meter L In" ;
 	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
@@ -105,8 +113,8 @@
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 8 ;
-	lv2:symbol "meterVuR" ;
-	lv2:name "R In VU" ;
+	lv2:symbol "meterR" ;
+	lv2:name "Meter R In" ;
 	lv2:default -60.0 ;
 	lv2:minimum -60.0 ;
 	lv2:maximum 6.0 ;
