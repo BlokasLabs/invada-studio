@@ -268,6 +268,7 @@ activateIDelay(LV2_Handle instance)
 	plugin->EnvOutRLast 	= 0; 
 
 	plugin->ConvertedBypass     = convertParam(IDELAY_BYPASS,    plugin->LastBypass,    plugin->SampleRate);  
+	plugin->ConvertedMode       = convertParam(IDELAY_MODE,	     plugin->LastMode,      plugin->SampleRate);  
 	plugin->ConvertedMungeMode  = convertParam(IDELAY_MUNGEMODE, plugin->LastMungeMode, plugin->SampleRate);  
 	plugin->ConvertedMunge      = convertParam(IDELAY_MUNGE,     plugin->LastMunge,     plugin->SampleRate); 
 	plugin->ConvertedLPFsamples = convertMunge(0,                plugin->LastMunge,     plugin->SampleRate); 
