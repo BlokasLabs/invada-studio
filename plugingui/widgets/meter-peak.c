@@ -36,6 +36,7 @@ static void 	inv_meter_paint(GtkWidget *widget, gint drawmode);
 static void	inv_meter_destroy(GtkObject *object);
 static void	inv_meter_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led);
 static void	inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led);
+static void	inv_meter_colour_bigtozero(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led);
 
 
 GtkType
@@ -184,9 +185,18 @@ inv_meter_size_request(GtkWidget *widget,
 	g_return_if_fail(widget != NULL);
 	g_return_if_fail(INV_IS_METER(widget));
 	g_return_if_fail(requisition != NULL);
+	switch(INV_METER(widget)->mode) {
+		case INV_METER_DRAW_MODE_TOZERO:
+		case INV_METER_DRAW_MODE_FROMZERO:
+			requisition->width = 149;
+			requisition->height = 37;
+			break;
+		case INV_METER_DRAW_MODE_BIGTOZERO:
+			requisition->width = 308;
+			requisition->height = 37;
+			break;
+	}
 
-	requisition->width = 149;
-	requisition->height = 37;
 }
 
 
@@ -224,8 +234,18 @@ inv_meter_realize(GtkWidget *widget)
 	attributes.window_type = GDK_WINDOW_CHILD;
 	attributes.x = widget->allocation.x;
 	attributes.y = widget->allocation.y;
-	attributes.width = 149;
-	attributes.height = 37;
+
+	switch(INV_METER(widget)->mode) {
+		case INV_METER_DRAW_MODE_TOZERO:
+		case INV_METER_DRAW_MODE_FROMZERO:
+			attributes.width = 149;
+			attributes.height = 37;
+			break;
+		case INV_METER_DRAW_MODE_BIGTOZERO:
+			attributes.width = 308;
+			attributes.height = 37;
+			break;
+	}
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
 	attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
@@ -283,12 +303,16 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 
 	switch(mode) {
 		case INV_METER_DRAW_MODE_TOZERO:
-			Lpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(INV_METER(widget)->LdB+60.01) : 0 ;  /* -60 to +6 db step 1db  = 67 points*/
-			Rpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(INV_METER(widget)->RdB+60.01) : 0 ;
+			Lpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(INV_METER(widget)->LdB+60.51) : 0 ;  /* -60 to +6 db step 1db  = 67 points*/
+			Rpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(INV_METER(widget)->RdB+60.51) : 0 ;
 			break;
 		case INV_METER_DRAW_MODE_FROMZERO:
-			Lpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->LdB)+71.01): 72 ; /* -35.5 to 0 db step 0.5db = 71 points */
-			Rpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->RdB)+71.01): 72 ;
+			Lpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->LdB)+71.51): 72 ; /* -35.5 to 0 db step 0.5db = 71 points */
+			Rpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->RdB)+71.51): 72 ;
+			break;
+		case INV_METER_DRAW_MODE_BIGTOZERO:
+			Lpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->LdB)+120.51) : 0 ;  /* -60 to +12 db step 0.5db  = 145 points*/
+			Rpos = bypass==INV_PLUGIN_ACTIVE ? (gint)(2*(INV_METER(widget)->RdB)+120.51) : 0 ;
 			break;
 	}
 
@@ -303,28 +327,56 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 
 			gdk_cairo_set_source_color(cr,&style->bg[GTK_STATE_NORMAL]);
 			cairo_paint(cr);
-	
-			cairo_set_source_rgb(cr, 0, 0, 0);
-			cairo_rectangle(cr, 0, 0, 149, 24);
-			cairo_fill(cr);
+			switch(mode) {
+				case INV_METER_DRAW_MODE_TOZERO:
+				case INV_METER_DRAW_MODE_FROMZERO:
+					cairo_set_source_rgb(cr, 0, 0, 0);
+					cairo_rectangle(cr, 0, 0, 149, 24);
+					cairo_fill(cr);
 
-			cairo_new_path(cr);
+					cairo_new_path(cr);
 
-			cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
-			cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
-			cairo_set_line_width(cr,1);
+					cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
+					cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
+					cairo_set_line_width(cr,1);
 
-			gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
-			cairo_move_to(cr, 0, 23);
-			cairo_line_to(cr, 0, 0);
-			cairo_line_to(cr, 148, 0);
-			cairo_stroke(cr);
+					gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+					cairo_move_to(cr, 0, 23);
+					cairo_line_to(cr, 0, 0);
+					cairo_line_to(cr, 148, 0);
+					cairo_stroke(cr);
 
-			gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
-			cairo_move_to(cr, 0, 23);
-			cairo_line_to(cr, 148, 23);
-			cairo_line_to(cr, 148, 0);
-			cairo_stroke(cr);
+					gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+					cairo_move_to(cr, 0, 23);
+					cairo_line_to(cr, 148, 23);
+					cairo_line_to(cr, 148, 0);
+					cairo_stroke(cr);
+					break;
+				case INV_METER_DRAW_MODE_BIGTOZERO:
+					cairo_set_source_rgb(cr, 0, 0, 0);
+					cairo_rectangle(cr, 0, 0, 303, 24);
+					cairo_fill(cr);
+
+					cairo_new_path(cr);
+
+					cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
+					cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
+					cairo_set_line_width(cr,1);
+
+					gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+					cairo_move_to(cr, 0, 23);
+					cairo_line_to(cr, 0, 0);
+					cairo_line_to(cr, 302, 0);
+					cairo_stroke(cr);
+
+					gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+					cairo_move_to(cr, 0, 23);
+					cairo_line_to(cr, 302, 23);
+					cairo_line_to(cr, 302, 0);
+					cairo_stroke(cr);
+					break;
+			}	
+
 
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 			cairo_new_path(cr);
@@ -335,7 +387,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 				gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
 			}
 
-			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_set_font_size(cr,8);
 			strcpy(label,"0");
 			cairo_text_extents (cr,label,&extents);
@@ -369,6 +421,24 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 						cairo_show_text(cr,label);
 					}
 					break;
+				case INV_METER_DRAW_MODE_BIGTOZERO: 
+					for(i=0;i<=12;i++) {
+						cairo_rectangle(cr, 10+(i*24), 25, 1, 2);
+						cairo_fill(cr);
+						if(i>10) {
+							sprintf(label,"+%i",(6*i)-60);
+						} else {
+							sprintf(label,"%i",(6*i)-60);
+						}
+						cairo_text_extents (cr,label,&extents);
+						if(i>=10) {
+							cairo_move_to(cr,10+(i*24)-(extents.width/2),29+fh);
+						} else {
+							cairo_move_to(cr,9+(i*24)-(2*extents.width/3),29+fh);
+						}
+						cairo_show_text(cr,label);
+					}
+					break;
 			}
 
 			if(bypass==INV_PLUGIN_BYPASS) {
@@ -376,7 +446,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 			} else {
 				cairo_set_source_rgb(cr, 1, 1, 1);
 			}
-			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_set_font_size(cr,8);
 
 			switch(mode) {
@@ -455,6 +525,50 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 						}
 					}
 					break;
+				case INV_METER_DRAW_MODE_BIGTOZERO:
+					switch(channels)
+					{
+						case 1:
+							cairo_move_to(cr,3,8+fh);
+							cairo_show_text(cr,"M");
+							break;
+						case 2:
+							cairo_move_to(cr,3,3+fh);
+							cairo_show_text(cr,"L");
+							cairo_move_to(cr,3,13+fh);
+							cairo_show_text(cr,"R");
+							break; 
+					}
+
+					for ( i = 1; i <= 144; i++) 
+					{
+						switch(channels)
+						{
+							case 1:
+								Lon = i <= Lpos ? 1 : 0;
+
+								inv_meter_colour_bigtozero(widget, bypass, i, Lon, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
+								cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
+								cairo_fill(cr);
+								break;
+							case 2:
+								Lon = i <= Lpos ? 1 : 0;
+								Ron = i <= Rpos ? 1 : 0;
+
+								inv_meter_colour_bigtozero(widget, bypass, i, Lon, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
+								cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
+								cairo_fill(cr);
+
+								inv_meter_colour_bigtozero(widget, bypass, i, Ron, &led);
+								cairo_set_source_rgb(cr, led.R, led.G, led.B);
+								cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
+								cairo_fill(cr);
+								break; 
+						}
+					}
+					break;
 			}
 			INV_METER(widget)->lastLpos = Lpos;
 			INV_METER(widget)->lastRpos = Rpos;
@@ -489,21 +603,55 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					}
 					break;
 				case INV_METER_DRAW_MODE_FROMZERO:
-					for ( i = 1; i <= 71; i++) 
-					{
-						Lon = i > Lpos ? 1 : 0;
-						inv_meter_colour_fromzero(widget, bypass, i, Lon, &led);
-						cairo_set_source_rgb(cr, led.R, led.G, led.B);
-						switch(channels)
+					min = lastLpos < Lpos ? lastLpos : Lpos;
+					max = lastLpos > Lpos ? lastLpos : Lpos;
+					if(min<1) min=1;
+					if(max<1) max=1;
+					if(min>71) min=71;
+					if(max>71) max=71;
+					if(min != max || max == 1 ) {
+						for ( i = min ; i <= max; i++) 
 						{
-							case 1:
-								cairo_rectangle(cr, 2+(i*2), 3, 1, 18);
-								break;
-							case 2:
-								cairo_rectangle(cr, 2+(i*2), 3, 1, 8);
-								break; 
+							Lon = i > Lpos ? 1 : 0;
+							inv_meter_colour_fromzero(widget, bypass, i, Lon, &led);
+							cairo_set_source_rgb(cr, led.R, led.G, led.B);
+							switch(channels)
+							{
+								case 1:
+									cairo_rectangle(cr, 2+(i*2), 3, 1, 18);
+									break;
+								case 2:
+									cairo_rectangle(cr, 2+(i*2), 3, 1, 8);
+									break; 
+							}
+							cairo_fill(cr);
 						}
-						cairo_fill(cr);
+					}
+					break;
+				case INV_METER_DRAW_MODE_BIGTOZERO:
+					min = lastLpos < Lpos ? lastLpos : Lpos;
+					max = lastLpos > Lpos ? lastLpos : Lpos;
+					if(min<1) min=1;
+					if(max<1) max=1;
+					if(min>144) min=144;
+					if(max>144) max=144;
+					if(min != max || max == 1 ) {
+						for ( i = min ; i <= max; i++) 
+						{
+							Lon = i <= Lpos ? 1 : 0;
+							inv_meter_colour_bigtozero(widget, bypass, i, Lon, &led);
+							cairo_set_source_rgb(cr, led.R, led.G, led.B);
+							switch(channels)
+							{
+								case 1:
+									cairo_rectangle(cr, 10+(i*2), 3, 1, 18);
+									break;
+								case 2:
+									cairo_rectangle(cr, 10+(i*2), 3, 1, 8);
+									break; 
+							}
+							cairo_fill(cr);
+						}
 					}
 					break;
 			}
@@ -531,13 +679,39 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 					}
 					break;
 				case INV_METER_DRAW_MODE_FROMZERO:
-					for ( i = 1; i <= 71; i++) 
-					{
-						Lon = i > Lpos ? 1 : 0;
-						inv_meter_colour_fromzero(widget, bypass, i, Lon, &led);
-						cairo_set_source_rgb(cr, led.R, led.G, led.B);
-						cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
-						cairo_fill(cr);
+					min = lastRpos < Rpos ? lastRpos : Rpos;
+					max = lastRpos > Rpos ? lastRpos : Rpos;
+					if(min<1) min=1;
+					if(max<1) max=1;
+					if(min>71) min=71;
+					if(max>71) max=71;
+					if(min != max || max == 1 ) {
+						for ( i = min ; i <= max; i++) 
+						{
+							Ron = i > Rpos ? 1 : 0;
+							inv_meter_colour_fromzero(widget, bypass, i, Ron, &led);
+							cairo_set_source_rgb(cr, led.R, led.G, led.B);
+							cairo_rectangle(cr, 2+(i*2), 13, 1, 8);
+							cairo_fill(cr);
+						}
+					}
+					break;
+				case INV_METER_DRAW_MODE_BIGTOZERO:
+					min = lastRpos < Rpos ? lastRpos : Rpos;
+					max = lastRpos > Rpos ? lastRpos : Rpos;
+					if(min<1) min=1;
+					if(max<1) max=1;
+					if(min>144) min=144;
+					if(max>144) max=144;
+					if(min != max || max == 1 ) {
+						for ( i = min ; i <= max; i++) 
+						{
+							Ron = i <= Rpos ? 1 : 0;
+							inv_meter_colour_bigtozero(widget, bypass, i, Ron, &led);
+							cairo_set_source_rgb(cr, led.R, led.G, led.B);
+							cairo_rectangle(cr, 10+(i*2), 13, 1, 8);
+							cairo_fill(cr);
+						}
 					}
 					break;
 			}
@@ -692,5 +866,65 @@ inv_meter_colour_fromzero(GtkWidget *widget, gint bypass, gint pos, gint on,  st
 		led->G=led->R;
 		led->B=led->R;
 	}	
+}
+
+static void	
+inv_meter_colour_bigtozero(GtkWidget *widget, gint bypass, gint pos, gint on, struct colour *led)
+{
+	float r1,r2;
+	struct colour mOff60  = INV_METER(widget)->mOff60;
+	struct colour mOn60   = INV_METER(widget)->mOn60;
+	struct colour mOff12  = INV_METER(widget)->mOff12;
+	struct colour mOn12   = INV_METER(widget)->mOn12;
+	struct colour mOff6   = INV_METER(widget)->mOff6;
+	struct colour mOn6    = INV_METER(widget)->mOn6;
+	struct colour mOff0   = INV_METER(widget)->mOff0;
+	struct colour mOn0    = INV_METER(widget)->mOn0;
+	struct colour overOff = INV_METER(widget)->overOff;
+	struct colour overOn  = INV_METER(widget)->overOn;
+/* 
+	144 = +12dB
+	120 =   0dB
+	102 =  -9dB
+	84  = -18dB
+*/
+	if(pos < 84) 
+	{
+		r1=(84.0-(float)pos)/84.0;
+		r2=(float)pos/84.0;
+		led->R=(r1 * mOff60.R + (r2 * mOff12.R))  + (on * ((r1 * mOn60.R) + (r2 * mOn12.R))) ;
+		led->G=(r1 * mOff60.G + (r2 * mOff12.G))  + (on * ((r1 * mOn60.G) + (r2 * mOn12.G))) ;
+		led->B=(r1 * mOff60.B + (r2 * mOff12.B))  + (on * ((r1 * mOn60.B) + (r2 * mOn12.B))) ;
+	} 
+
+	else if (pos < 102)
+	{
+		r1=(102.0-(float)pos)/18.0;
+		r2=((float)pos-84.0)/18.0;
+		led->R=(r1 * mOff12.R + (r2 * mOff6.R))  + (on * ((r1 * mOn12.R) + (r2 * mOn6.R))) ;
+		led->G=(r1 * mOff12.G + (r2 * mOff6.G))  + (on * ((r1 * mOn12.G) + (r2 * mOn6.G))) ;
+		led->B=(r1 * mOff12.B + (r2 * mOff6.B))  + (on * ((r1 * mOn12.B) + (r2 * mOn6.B))) ;
+	}
+
+	else if (pos < 120)
+	{
+		r1=(120.0-(float)pos)/18.0;
+		r2=((float)pos-102.0)/18.0;
+		led->R=(r1 * mOff6.R + (r2 * mOff0.R))  + (on * ((r1 * mOn6.R) + (r2 * mOn0.R))) ;
+		led->G=(r1 * mOff6.G + (r2 * mOff0.G))  + (on * ((r1 * mOn6.G) + (r2 * mOn0.G))) ;
+		led->B=(r1 * mOff6.B + (r2 * mOff0.B))  + (on * ((r1 * mOn6.B) + (r2 * mOn0.B))) ;
+	}
+	else
+	{
+		led->R=overOff.R + (on * overOn.R) ;
+		led->G=overOff.G + (on * overOn.G) ;
+		led->B=overOff.B + (on * overOn.B) ;
+	}	
+
+	if(bypass==INV_PLUGIN_BYPASS) {
+		led->R=(led->R+led->G+led->B)/3;
+		led->G=led->R;
+		led->B=led->R;
+	}
 }
 

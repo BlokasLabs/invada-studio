@@ -28,14 +28,15 @@ all:			libinv_widgets.a
 
 # RULES TO BUILD LIBRARIES FROM C CODE
 
-libinv_widgets.a:	display-ErReverb.o display-FrequencyGain.o display-Compressor.o knob.o lamp.o meter-peak.o meter-phase.o switch-toggle.o \
-			display-ErReverb.h display-FrequencyGain.h display-Compressor.h knob.h lamp.h meter-peak.h meter-phase.h switch-toggle.h \
+libinv_widgets.a:	display-ErReverb.o display-FrequencyGain.o display-Compressor.o display-Spectrograph.o knob.o lamp.o meter-peak.o meter-phase.o switch-toggle.o \
+			display-ErReverb.h display-FrequencyGain.h display-Compressor.h display-Spectrograph.h knob.h lamp.h meter-peak.h meter-phase.h switch-toggle.h \
 			widgets.h
 			@echo "Creating libinv_widgets.a"
 			@ar rcs libinv_widgets.a \
 				display-ErReverb.o \
 				display-FrequencyGain.o \
 				display-Compressor.o \
+				display-Spectrograph.o \
 				knob.o \
 				lamp.o \
 				meter-peak.o \

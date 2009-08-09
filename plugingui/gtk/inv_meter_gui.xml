@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Sat Aug  8 19:13:29 2009 -->
+<!--Generated with glade3 3.4.5 on Sun Aug  9 09:13:35 2009 -->
 <interface>
   <object class="GtkWindow" id="meter_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -191,174 +191,16 @@
                 <property name="visible">True</property>
                 <property name="label_xalign">0</property>
                 <child>
-                  <object class="GtkVBox" id="vbox1">
+                  <object class="GtkAlignment" id="alignment_spec_display">
                     <property name="visible">True</property>
+                    <property name="xscale">0</property>
+                    <property name="yscale">0</property>
+                    <property name="top_padding">4</property>
+                    <property name="bottom_padding">4</property>
+                    <property name="left_padding">4</property>
+                    <property name="right_padding">4</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment_spec_display">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display1">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display2">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display3">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display4">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">4</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display5">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display6">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">6</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display7">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">7</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display8">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">8</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="alignment_spec_display9">
-                        <property name="visible">True</property>
-                        <property name="xscale">0</property>
-                        <property name="yscale">0</property>
-                        <property name="top_padding">4</property>
-                        <property name="bottom_padding">4</property>
-                        <property name="left_padding">4</property>
-                        <property name="right_padding">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">9</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </object>
                 </child>

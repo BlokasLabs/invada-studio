@@ -413,7 +413,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 			cairo_stroke(cr);
 
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
-			cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
 			cairo_set_font_size(cr,8);
 			topdent=41.0-(8.0*(float)(strlen(label))/2);
@@ -426,7 +426,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 		}
 	}
 
-	cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(cr,9);
 
 	if(inv_switch_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {

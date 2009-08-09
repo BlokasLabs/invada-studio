@@ -33,6 +33,7 @@ G_BEGIN_DECLS
 
 #define INV_METER_DRAW_MODE_TOZERO 0
 #define INV_METER_DRAW_MODE_FROMZERO 1
+#define INV_METER_DRAW_MODE_BIGTOZERO 2
 
 #define INV_METER(obj) GTK_CHECK_CAST(obj, inv_meter_get_type (), InvMeter)
 #define INV_METER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, inv_meter_get_type(), InvMeterClass)
