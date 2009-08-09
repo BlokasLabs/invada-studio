@@ -401,11 +401,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 
 						sprintf(label,"%i",(12*i)-60);
 						cairo_text_extents (cr,label,&extents);
-						if(i==5) {
-							cairo_move_to(cr,10+(i*24)-(extents.width/2),29+fh);
-						} else {
-							cairo_move_to(cr,9+(i*24)-(2*extents.width/3),29+fh);
-						}
+						cairo_move_to(cr,10+(i*24)-(extents.width/2),29+fh);
 						cairo_show_text(cr,label);
 					}
 					break;
@@ -431,11 +427,7 @@ inv_meter_paint(GtkWidget *widget, gint drawmode)
 							sprintf(label,"%i",(6*i)-60);
 						}
 						cairo_text_extents (cr,label,&extents);
-						if(i>=10) {
-							cairo_move_to(cr,10+(i*24)-(extents.width/2),29+fh);
-						} else {
-							cairo_move_to(cr,9+(i*24)-(2*extents.width/3),29+fh);
-						}
+						cairo_move_to(cr,10+(i*24)-(extents.width/2),29+fh);
 						cairo_show_text(cr,label);
 					}
 					break;

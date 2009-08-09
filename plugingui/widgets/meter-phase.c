@@ -294,7 +294,7 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 1, 1, 1);
 		}
 
-		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		strcpy(label,"0");
 		cairo_text_extents (cr,label,&extents);
@@ -302,12 +302,12 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 
 		strcpy(label,"-90");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,13-(2*extents.width/3),25+fh);
+		cairo_move_to(cr,13-(extents.width/2),25+fh);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"-45");
 		cairo_text_extents (cr,label,&extents);
-		cairo_move_to(cr,103-(2*extents.width/3),25+fh);
+		cairo_move_to(cr,103-(extents.width/2),25+fh);
 		cairo_show_text(cr,label);
 
 		strcpy(label,"0");

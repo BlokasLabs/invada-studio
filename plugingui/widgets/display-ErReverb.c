@@ -424,7 +424,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		cairo_rectangle(cr, 211, 1, 318, 298 );
 		cairo_fill(cr);
 
-		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
@@ -660,7 +660,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 		// show min and max
-		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
 		} else {
@@ -819,7 +819,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.3);
 		}
-		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		strcpy(label,"Source");
 		cairo_text_extents (cr,label,&extents);
@@ -857,7 +857,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 0.6, 0.35, 0.3);
 		}		
-		cairo_select_font_face(cr,"monospace",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		strcpy(label,"Listener");
 		cairo_text_extents (cr,label,&extents);
