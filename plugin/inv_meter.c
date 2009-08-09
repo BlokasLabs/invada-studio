@@ -327,8 +327,8 @@ runIMeter(LV2_Handle instance, uint32_t SampleCount)
 	// update the meters
 	*(plugin->MeterL) 	= (EnvMeterL  > 0.001) ? 20*log10(EnvMeterL)  : -90.0;
 	*(plugin->MeterR) 	= (EnvMeterR  > 0.001) ? 20*log10(EnvMeterR)  : -90.0;
-	*(plugin->VuL) 		= (EnvVuL  > 0.001) ? 20*log10(EnvVuL)  : -90.0;
-	*(plugin->VuR) 		= (EnvVuR  > 0.001) ? 20*log10(EnvVuR)  : -90.0;
+	*(plugin->VuL) 		= EnvVuL;
+	*(plugin->VuR) 		= EnvVuR;
 	*(plugin->MeterPhase)	= EnvPhase;
 
 	for(i=0;i<FILTER_COUNT;i++) {

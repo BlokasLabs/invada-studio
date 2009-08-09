@@ -29,6 +29,7 @@
 #include "widgets/widgets.h"
 #include "widgets/meter-peak.h"
 #include "widgets/meter-phase.h"
+#include "widgets/meter-vu.h"
 #include "widgets/switch-toggle.h"
 #include "widgets/display-Spectrograph.h"
 #include "../plugin/inv_meter.h"
@@ -42,7 +43,8 @@ typedef struct {
 	GtkWidget	*heading;
 	GtkWidget	*toggleBypass;
 	GtkWidget	*meterPeak;
-	GtkWidget	*meterVU;
+	GtkWidget	*meterVUL;
+	GtkWidget	*meterVUR;
 	GtkWidget	*meterPhase;
 	GtkWidget	*specDisplay;
 
@@ -98,9 +100,13 @@ instantiateIMeterGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->meterPeak = inv_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterPeak);
 
-	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_vu"));
-	pluginGui->meterVU = inv_meter_new ();
-	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterVU);
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_vu_l"));
+	pluginGui->meterVUL = inv_vu_meter_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterVUL);
+
+	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_vu_r"));
+	pluginGui->meterVUR = inv_vu_meter_new ();
+	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterVUR);
 
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_phase"));
 	pluginGui->meterPhase = inv_phase_meter_new ();
@@ -131,11 +137,9 @@ instantiateIMeterGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_meter_set_LdB(INV_METER (pluginGui->meterPeak),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterPeak),-90);
 
-	inv_meter_set_bypass(INV_METER (pluginGui->meterVU),INV_PLUGIN_ACTIVE);
-	inv_meter_set_mode(INV_METER (pluginGui->meterVU), INV_METER_DRAW_MODE_TOZERO);
-	inv_meter_set_channels(INV_METER (pluginGui->meterVU), pluginGui->InChannels);
-	inv_meter_set_LdB(INV_METER (pluginGui->meterVU),-90);
-	inv_meter_set_RdB(INV_METER (pluginGui->meterVU),-90);
+	inv_vu_meter_set_bypass(INV_VU_METER (pluginGui->meterVUL),INV_PLUGIN_ACTIVE);
+
+	inv_vu_meter_set_bypass(INV_VU_METER (pluginGui->meterVUR),INV_PLUGIN_ACTIVE);
 
 	inv_phase_meter_set_bypass(INV_PHASE_METER (pluginGui->meterPhase),INV_PLUGIN_ACTIVE);
 	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
@@ -180,13 +184,15 @@ port_eventIMeterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 				if(value <= 0.0) {
 					inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF);
 					inv_meter_set_bypass(        INV_METER         (pluginGui->meterPeak),    INV_PLUGIN_ACTIVE);
-					inv_meter_set_bypass(        INV_METER         (pluginGui->meterVU),      INV_PLUGIN_ACTIVE);
+					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUL),     INV_PLUGIN_ACTIVE);
+					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUR),     INV_PLUGIN_ACTIVE);
 					inv_phase_meter_set_bypass(  INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_ACTIVE);
 					inv_display_spec_set_bypass( INV_DISPLAY_SPEC  (pluginGui->specDisplay),  INV_PLUGIN_ACTIVE);
 				} else {
 					inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
 					inv_meter_set_bypass(        INV_METER         (pluginGui->meterPeak),    INV_PLUGIN_BYPASS);
-					inv_meter_set_bypass(        INV_METER         (pluginGui->meterVU),      INV_PLUGIN_BYPASS);
+					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUL),     INV_PLUGIN_ACTIVE);
+					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUR),     INV_PLUGIN_ACTIVE);
 					inv_phase_meter_set_bypass(  INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_BYPASS);
 					inv_display_spec_set_bypass( INV_DISPLAY_SPEC  (pluginGui->specDisplay),  INV_PLUGIN_BYPASS);
 				}
@@ -199,10 +205,10 @@ port_eventIMeterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 				inv_meter_set_RdB(INV_METER (pluginGui->meterPeak),value);
 				break;
 			case IMETER_VU_L:
-				inv_meter_set_LdB(INV_METER (pluginGui->meterVU),value);
+				inv_vu_meter_set_value(INV_VU_METER (pluginGui->meterVUL),value);
 				break;
 			case IMETER_VU_R:
-				inv_meter_set_RdB(INV_METER (pluginGui->meterVU),value);
+				inv_vu_meter_set_value(INV_VU_METER (pluginGui->meterVUR),value);
 				break;
 			case IMETER_METER_PHASE:
 				inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),value);

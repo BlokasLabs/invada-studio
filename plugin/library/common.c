@@ -21,6 +21,8 @@
 */
 
 #include <stdlib.h> 
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <lv2.h>
 #include "common.h"
@@ -563,7 +565,15 @@ initBandpassFilter(struct FilterP *f, double sr, double cf, double bw)
 	int i;
 	double w0,alpha,a0,a1,a2,b0,b1,b2;
 
+
+
 	if(cf<sr/2.0) {
+
+		//shrink the bandwidth if it takes us over the nyquist frequency 
+		if((1.0+bw)*cf > sr/2.0) {
+			bw= ( (bw) + ((sr/(2*cf)) -1.0)  )/2;
+		}
+
 		f->Active=1;
 
 		for(i=0;i<3;i++) {
