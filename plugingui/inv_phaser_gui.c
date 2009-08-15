@@ -210,7 +210,7 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	inv_knob_set_size(INV_KNOB (pluginGui->knobPhase), INV_KNOB_SIZE_MEDIUM);
 	inv_knob_set_curve(INV_KNOB (pluginGui->knobPhase), INV_KNOB_CURVE_LINEAR);
 	inv_knob_set_markings(INV_KNOB (pluginGui->knobPhase), INV_KNOB_MARKINGS_5); 
-	inv_knob_set_units(INV_KNOB (pluginGui->knobPhase), "ᵒ");
+	inv_knob_set_units(INV_KNOB (pluginGui->knobPhase), "");
 	inv_knob_set_min(INV_KNOB (pluginGui->knobPhase), -180);
 	inv_knob_set_max(INV_KNOB (pluginGui->knobPhase), 180);
 	inv_knob_set_value(INV_KNOB (pluginGui->knobPhase), pluginGui->phase);

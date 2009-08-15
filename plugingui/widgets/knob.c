@@ -402,7 +402,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 	switch(size) {
 		case INV_KNOB_SIZE_SMALL:
 			yc=(size/2)+19;
-			fontsize=8;
+			fontsize=7;
 			ls=3;
 			ll=7;
 			tb=11;
@@ -410,7 +410,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 			break;
 		case INV_KNOB_SIZE_MEDIUM:
 			yc=(size/2)+22;
-			fontsize=9;
+			fontsize=8;
 			ls=5;
 			ll=9;
 			tb=12;

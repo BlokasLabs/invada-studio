@@ -294,7 +294,7 @@ inv_phase_meter_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 1, 1, 1);
 		}
 
-		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		strcpy(label,"0");
 		cairo_text_extents (cr,label,&extents);

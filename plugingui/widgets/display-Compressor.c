@@ -358,7 +358,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		}
 
 		/* detector labels */
-		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		} else {
@@ -412,7 +412,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 		/* compressor labels */
-		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		} else {
@@ -435,7 +435,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_rectangle(cr, 306, 207, 260, 1);
 		cairo_fill(cr);
 
-		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,8);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);

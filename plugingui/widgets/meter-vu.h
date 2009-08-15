@@ -46,6 +46,9 @@ struct _InvVuMeter {
 	float value;
 	float lastvalue;
 
+	gint  headroom;
+	float scale;
+
 	float cx,cy;
 	float r[4],a[5];
 
@@ -74,6 +77,7 @@ GtkWidget * inv_vu_meter_new();
 
 void inv_vu_meter_set_bypass(InvVuMeter *meter, gint num);
 void inv_vu_meter_set_value(InvVuMeter *meter, float num);
+void inv_vu_meter_set_headroom(InvVuMeter *meter, gint num);
 
 
 G_END_DECLS

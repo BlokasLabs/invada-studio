@@ -20,3 +20,7 @@
 
 static void on_inv_meter_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gpointer data);
 
+static void on_inv_meter_headroom_radio_toggled_6db(GtkWidget *widget, gpointer data);
+static void on_inv_meter_headroom_radio_toggled_9db(GtkWidget *widget, gpointer data);
+static void on_inv_meter_headroom_radio_toggled_12db(GtkWidget *widget, gpointer data);
+

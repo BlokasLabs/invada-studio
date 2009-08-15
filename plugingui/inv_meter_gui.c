@@ -45,6 +45,9 @@ typedef struct {
 	GtkWidget	*meterPeak;
 	GtkWidget	*meterVUL;
 	GtkWidget	*meterVUR;
+	GtkWidget	*radio6db;
+	GtkWidget	*radio9db;
+	GtkWidget	*radio12db;
 	GtkWidget	*meterPhase;
 	GtkWidget	*specDisplay;
 
@@ -110,6 +113,10 @@ instantiateIMeterGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->meterVUR = inv_vu_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterVUR);
 
+	pluginGui->radio6db  = GTK_WIDGET (gtk_builder_get_object (builder, "radio6db"));
+	pluginGui->radio9db  = GTK_WIDGET (gtk_builder_get_object (builder, "radio9db"));
+	pluginGui->radio12db = GTK_WIDGET (gtk_builder_get_object (builder, "radio12db"));
+
 	tempObject=GTK_WIDGET (gtk_builder_get_object (builder, "alignment_meter_phase"));
 	pluginGui->meterPhase = inv_phase_meter_new ();
 	gtk_container_add (GTK_CONTAINER (tempObject), pluginGui->meterPhase);
@@ -144,6 +151,11 @@ instantiateIMeterGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	inv_vu_meter_set_bypass(INV_VU_METER (pluginGui->meterVUL),INV_PLUGIN_ACTIVE);
 
 	inv_vu_meter_set_bypass(INV_VU_METER (pluginGui->meterVUR),INV_PLUGIN_ACTIVE);
+
+	g_signal_connect_after(G_OBJECT(pluginGui->radio6db),"toggled",G_CALLBACK(on_inv_meter_headroom_radio_toggled_6db),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->radio9db),"toggled",G_CALLBACK(on_inv_meter_headroom_radio_toggled_9db),pluginGui);
+	g_signal_connect_after(G_OBJECT(pluginGui->radio12db),"toggled",G_CALLBACK(on_inv_meter_headroom_radio_toggled_12db),pluginGui);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(pluginGui->radio9db),TRUE);
 
 	inv_phase_meter_set_bypass(INV_PHASE_METER (pluginGui->meterPhase),INV_PLUGIN_ACTIVE);
 	inv_phase_meter_set_phase(INV_PHASE_METER (pluginGui->meterPhase),0);
@@ -190,13 +202,19 @@ port_eventIMeterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 					inv_meter_set_bypass(        INV_METER         (pluginGui->meterPeak),    INV_PLUGIN_ACTIVE);
 					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUL),     INV_PLUGIN_ACTIVE);
 					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUR),     INV_PLUGIN_ACTIVE);
+					gtk_widget_set_sensitive(    GTK_WIDGET        (pluginGui->radio6db),     TRUE);
+					gtk_widget_set_sensitive(    GTK_WIDGET        (pluginGui->radio9db),     TRUE);
+					gtk_widget_set_sensitive(    GTK_WIDGET        (pluginGui->radio12db),    TRUE);
 					inv_phase_meter_set_bypass(  INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_ACTIVE);
 					inv_display_spec_set_bypass( INV_DISPLAY_SPEC  (pluginGui->specDisplay),  INV_PLUGIN_ACTIVE);
 				} else {
 					inv_switch_toggle_set_state( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_ON);
 					inv_meter_set_bypass(        INV_METER         (pluginGui->meterPeak),    INV_PLUGIN_BYPASS);
-					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUL),     INV_PLUGIN_ACTIVE);
-					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUR),     INV_PLUGIN_ACTIVE);
+					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUL),     INV_PLUGIN_BYPASS);
+					inv_vu_meter_set_bypass(     INV_VU_METER      (pluginGui->meterVUR),     INV_PLUGIN_BYPASS);
+					gtk_widget_set_sensitive(    GTK_WIDGET        (pluginGui->radio6db),     FALSE);
+					gtk_widget_set_sensitive(    GTK_WIDGET        (pluginGui->radio9db),     FALSE);
+					gtk_widget_set_sensitive(    GTK_WIDGET        (pluginGui->radio12db),    FALSE);
 					inv_phase_meter_set_bypass(  INV_PHASE_METER   (pluginGui->meterPhase),   INV_PLUGIN_BYPASS);
 					inv_display_spec_set_bypass( INV_DISPLAY_SPEC  (pluginGui->specDisplay),  INV_PLUGIN_BYPASS);
 				}
@@ -251,7 +269,7 @@ port_eventIMeterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 				inv_display_spec_set_value(INV_DISPLAY_SPEC (pluginGui->specDisplay),port-10,value);
 				if(port < pluginGui->specLast) {
 					pluginGui->specCount++;
-					if(pluginGui->specCount > 44) {
+					if(pluginGui->specCount > 10) {
 						pluginGui->specCount=0;
 						gtk_widget_queue_draw (pluginGui->specDisplay);
 					}	
@@ -302,6 +320,33 @@ on_inv_meter_bypass_toggle_button_release(GtkWidget *widget, GdkEvent *event, gp
 	pluginGui->bypass=inv_switch_toggle_get_value(INV_SWITCH_TOGGLE (widget));
 	(*pluginGui->write_function)(pluginGui->controller, IMETER_BYPASS, 4, 0, &pluginGui->bypass);
 	return;
+}
+
+static void on_inv_meter_headroom_radio_toggled_6db(GtkWidget *widget, gpointer data)
+{
+	IMeterGui *pluginGui = (IMeterGui *) data;
+	if(gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget))) {
+		inv_vu_meter_set_headroom(INV_VU_METER (pluginGui->meterVUL),6);
+		inv_vu_meter_set_headroom(INV_VU_METER (pluginGui->meterVUR),6);
+	}
+}
+
+static void on_inv_meter_headroom_radio_toggled_9db(GtkWidget *widget, gpointer data)
+{
+	IMeterGui *pluginGui = (IMeterGui *) data;
+	if(gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget))) {
+		inv_vu_meter_set_headroom(INV_VU_METER (pluginGui->meterVUL),9);
+		inv_vu_meter_set_headroom(INV_VU_METER (pluginGui->meterVUR),9);
+	}
+}
+
+static void on_inv_meter_headroom_radio_toggled_12db(GtkWidget *widget, gpointer data)
+{
+	IMeterGui *pluginGui = (IMeterGui *) data;
+	if(gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(widget))) {
+		inv_vu_meter_set_headroom(INV_VU_METER (pluginGui->meterVUL),12);
+		inv_vu_meter_set_headroom(INV_VU_METER (pluginGui->meterVUR),12);
+	}
 }
 
 

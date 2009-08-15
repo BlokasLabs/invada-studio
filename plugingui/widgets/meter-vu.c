@@ -95,6 +95,14 @@ GtkWidget * inv_vu_meter_new()
 	return GTK_WIDGET(gtk_type_new(inv_vu_meter_get_type()));
 }
 
+void
+inv_vu_meter_set_headroom(InvVuMeter *meter, gint num)
+{
+	if(meter->headroom != num) {
+		meter->headroom = num;
+		meter->scale=pow(10,((float)meter->headroom+4.0)/20.0);
+	}
+}
 
 static void
 inv_vu_meter_class_init(InvVuMeterClass *klass)
@@ -122,6 +130,10 @@ inv_vu_meter_init(InvVuMeter *meter)
 	meter->value = 0;
 
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(meter),"<span size=\"8000\">VU Meter.</span>");
+
+
+	meter->headroom=9;
+	meter->scale=pow(10,((float)meter->headroom+4)/20);
 
 	meter->cx=91.0;
 	meter->cy=130.0;
@@ -217,7 +229,7 @@ inv_vu_meter_init(InvVuMeter *meter)
 
 	meter->cp[0].x=60;
 	meter->cp[0].y=104;
-	meter->cp[1].x=122;
+	meter->cp[1].x=166;
 	meter->cp[1].y=104;
 
 }
@@ -306,7 +318,7 @@ inv_vu_meter_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 inv_vu_meter_paint(GtkWidget *widget, gint mode)
 {
-	float 			value;
+	float 			rawvalue,value;
 	gint 			bypass;
 
 	cairo_t 		*cr;
@@ -316,8 +328,9 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 	cairo_text_extents_t 	extents;
 
 
-	bypass  = INV_VU_METER(widget)->bypass;
-	value   = INV_VU_METER(widget)->value*4.4668359215096312; //13db
+	bypass   = INV_VU_METER(widget)->bypass;
+	rawvalue = INV_VU_METER(widget)->value;
+	value    = rawvalue*INV_VU_METER(widget)->scale;
 
 	style   = gtk_widget_get_style(widget);
 
@@ -326,7 +339,11 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 
 	if(mode==INV_VU_METER_DRAW_ALL) {
 
-		cairo_set_source_rgb(cr, 1.0, 0.90, 0.65);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.85, 0.85, 0.85);
+		} else {
+			cairo_set_source_rgb(cr, 1.0, 0.90, 0.65);
+		}
 		cairo_paint(cr);
 
 		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
@@ -348,8 +365,12 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 
 		cairo_set_line_width(cr,1.5);
-		cairo_set_source_rgb(cr, 0.15, 0.12, 0.08);
-
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.12, 0.12, 0.12);
+		} else {
+			cairo_set_source_rgb(cr, 0.15, 0.12, 0.08);
+		}
+		
 		//VU label
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_BOLD);
 		cairo_set_font_size(cr,13);
@@ -435,7 +456,12 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 
 		//scale marks
 		cairo_set_line_width(cr,1.5);
-		cairo_set_source_rgb(cr, 0.80, 0.22, 0.15);
+		if(bypass==INV_PLUGIN_BYPASS) {
+			cairo_set_source_rgb(cr, 0.39, 0.39, 0.39);
+		} else {
+			cairo_set_source_rgb(cr, 0.80, 0.22, 0.15);
+		}
+		
 
 		cairo_move_to(cr,INV_VU_METER(widget)->db00[0].x,INV_VU_METER(widget)->db00[0].y);
 		cairo_line_to(cr,INV_VU_METER(widget)->db00[1].x,INV_VU_METER(widget)->db00[1].y);
@@ -482,7 +508,11 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 
 	}
 
-	cairo_set_source_rgb(cr, 1.0, 0.90, 0.65);
+	if(bypass==INV_PLUGIN_BYPASS) {
+		cairo_set_source_rgb(cr, 0.85, 0.85, 0.85);
+	} else {
+		cairo_set_source_rgb(cr, 1.0, 0.90, 0.65);
+	}
 	cairo_move_to(cr,INV_VU_METER(widget)->cp[0].x,INV_VU_METER(widget)->cp[0].y);
 	cairo_arc(cr,INV_VU_METER(widget)->cx,INV_VU_METER(widget)->cy,INV_VU_METER(widget)->r[0]+1,INV_VU_METER(widget)->a[3],INV_VU_METER(widget)->a[4]);
 	cairo_line_to(cr,INV_VU_METER(widget)->cp[1].x,INV_VU_METER(widget)->cp[1].y);
@@ -492,12 +522,26 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 
 	cairo_set_line_width(cr,1.5);
 	cairo_set_source_rgb(cr, 0, 0, 0);
-	cairo_move_to(cr,INV_VU_METER(widget)->cx,INV_VU_METER(widget)->cy);
-	cairo_line_to(cr,INV_VU_METER(widget)->cx+INV_VU_METER(widget)->r[0]*(sin(value-0.7943)),
-			 INV_VU_METER(widget)->cy-INV_VU_METER(widget)->r[0]*cos(value-0.7943));
+	
+
+
+	if(value < 1.5886) {
+		cairo_move_to(cr,INV_VU_METER(widget)->cx,INV_VU_METER(widget)->cy);
+		cairo_line_to(cr,INV_VU_METER(widget)->cx+(INV_VU_METER(widget)->r[0]*sin(value-0.7943)),
+				 INV_VU_METER(widget)->cy-(INV_VU_METER(widget)->r[0]*cos(value-0.7943)) );
+	} else {
+		cairo_curve_to(cr,INV_VU_METER(widget)->cx,
+				  INV_VU_METER(widget)->cy,
+				  INV_VU_METER(widget)->cx+(INV_VU_METER(widget)->r[0]*2*sin(value-0.7943)/3),
+				  INV_VU_METER(widget)->cy-(INV_VU_METER(widget)->r[0]*2*cos(value-0.7943)/3),
+				  INV_VU_METER(widget)->cx+(INV_VU_METER(widget)->r[0]*0.7133),
+				  INV_VU_METER(widget)->cy-(INV_VU_METER(widget)->r[0]*0.7008) );
+	}
   	cairo_stroke(cr);
 	
   	cairo_destroy(cr);
+
+	INV_VU_METER(widget)->lastvalue=rawvalue;
 }
 
 
