@@ -511,7 +511,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 			}
 		}
 
-		cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,fontsize);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);

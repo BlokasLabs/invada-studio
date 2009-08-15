@@ -51,6 +51,8 @@ typedef struct {
 	gint		InChannels;
 	gint		OutChannels;
 	float 		bypass;
+	gint		specLast;
+	gint		specCount;
 
 	LV2UI_Write_Function 	write_function;
 	LV2UI_Controller 	controller;
@@ -120,6 +122,8 @@ instantiateIMeterGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	pluginGui->InChannels	= 2;
 	pluginGui->OutChannels	= 2;
 	pluginGui->bypass	= 0.0;
+	pluginGui->specLast	= 0;
+	pluginGui->specCount	= 0;
 
 	inv_switch_toggle_set_bypass( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_PLUGIN_ACTIVE);
 	inv_switch_toggle_set_value( INV_SWITCH_TOGGLE (pluginGui->toggleBypass), INV_SWITCH_TOGGLE_OFF, 0.0);
@@ -245,6 +249,14 @@ port_eventIMeterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
  			case IMETER_SPEC_16000: 
 			case IMETER_SPEC_20000: 
 				inv_display_spec_set_value(INV_DISPLAY_SPEC (pluginGui->specDisplay),port-10,value);
+				if(port < pluginGui->specLast) {
+					pluginGui->specCount++;
+					if(pluginGui->specCount > 44) {
+						pluginGui->specCount=0;
+						gtk_widget_queue_draw (pluginGui->specDisplay);
+					}	
+				}
+				pluginGui->specLast=port;
 				break;
 		}
 	}

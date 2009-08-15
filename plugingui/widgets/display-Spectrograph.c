@@ -341,7 +341,7 @@ inv_display_spec_paint(GtkWidget *widget, gint drawmode, gint pos)
 			}
 
 
-			cairo_select_font_face(cr,"serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+			cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_set_font_size(cr,8);
 			strcpy(label,"0");
 			cairo_text_extents (cr,label,&extents);
@@ -496,22 +496,22 @@ inv_display_spec_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on
 /* 
 	66 =  +6dB
 	60 =   0dB
-	51 =  -9dB
-	42 = -18dB
+	48 = -12dB
+	36 = -24dB
 */
-	if(pos < 42) 
+	if(pos < 36) 
 	{
-		r1=(42.0-(float)pos)/42.0;
-		r2=(float)pos/42.0;
+		r1=(36.0-(float)pos)/36.0;
+		r2=(float)pos/36.0;
 		led->R=(r1 * mOff60.R + (r2 * mOff12.R))  + (on * ((r1 * mOn60.R) + (r2 * mOn12.R))) ;
 		led->G=(r1 * mOff60.G + (r2 * mOff12.G))  + (on * ((r1 * mOn60.G) + (r2 * mOn12.G))) ;
 		led->B=(r1 * mOff60.B + (r2 * mOff12.B))  + (on * ((r1 * mOn60.B) + (r2 * mOn12.B))) ;
 	} 
 
-	else if (pos < 51)
+	else if (pos < 48)
 	{
-		r1=(51.0-(float)pos)/9.0;
-		r2=((float)pos-42.0)/9.0;
+		r1=(48.0-(float)pos)/12.0;
+		r2=((float)pos-36.0)/12.0;
 		led->R=(r1 * mOff12.R + (r2 * mOff6.R))  + (on * ((r1 * mOn12.R) + (r2 * mOn6.R))) ;
 		led->G=(r1 * mOff12.G + (r2 * mOff6.G))  + (on * ((r1 * mOn12.G) + (r2 * mOn6.G))) ;
 		led->B=(r1 * mOff12.B + (r2 * mOff6.B))  + (on * ((r1 * mOn12.B) + (r2 * mOn6.B))) ;
@@ -519,8 +519,8 @@ inv_display_spec_colour_tozero(GtkWidget *widget, gint bypass, gint pos, gint on
 
 	else if (pos < 60)
 	{
-		r1=(60.0-(float)pos)/9.0;
-		r2=((float)pos-51.0)/9.0;
+		r1=(60.0-(float)pos)/12.0;
+		r2=((float)pos-48.0)/12.0;
 		led->R=(r1 * mOff6.R + (r2 * mOff0.R))  + (on * ((r1 * mOn6.R) + (r2 * mOn0.R))) ;
 		led->G=(r1 * mOff6.G + (r2 * mOff0.G))  + (on * ((r1 * mOn6.G) + (r2 * mOn0.G))) ;
 		led->B=(r1 * mOff6.B + (r2 * mOff0.B))  + (on * ((r1 * mOn6.B) + (r2 * mOn0.B))) ;

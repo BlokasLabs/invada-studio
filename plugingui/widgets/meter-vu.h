@@ -46,6 +46,22 @@ struct _InvVuMeter {
 	float value;
 	float lastvalue;
 
+	float cx,cy;
+	float r[4],a[5];
+
+	struct point2D  dbm20[3];
+	struct point2D  dbm10[3];
+	struct point2D  dbm07[3];
+	struct point2D  dbm05[3];
+	struct point2D  dbm03[3];
+	struct point2D  dbm02[3];
+	struct point2D  dbm01[3];
+	struct point2D  db00[3];
+	struct point2D  dbp01[3];
+	struct point2D  dbp02[3];
+	struct point2D  dbp03[3];
+
+	struct point2D  cp[2];
 };
 
 struct _InvVuMeterClass {

@@ -84,7 +84,7 @@ initIEnvelope(struct Envelope * Env, int mode, double sr)
 			Env->decay  = 1 - pow(10, -301.0301 / ((float)sr * 100.0));
 		break;
 		case INVADA_METER_PHASE: 
-			Env->attack = 1 - pow(10, -301.0301 / ((float)sr * 10.0));
+			Env->attack = 1 - pow(10, -301.0301 / ((float)sr * 20.0));
 			Env->decay  = Env->attack;
 		break;
 		case INVADA_METER_LAMP: 
