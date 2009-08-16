@@ -58,6 +58,7 @@ typedef struct {
 
 	double SampleRate;
 	float Offset;
+	struct Envelope EnvAD[4];
 
 	/* Stuff to remember to avoid recalculating the delays every run */
 	float LastBypass;
@@ -221,6 +222,12 @@ activateIPhaser(LV2_Handle instance)
 	plugin->ConvertedWidth  = convertParam(IPHASER_WIDTH,  plugin->LastWidth,  plugin->SampleRate);  
 	plugin->ConvertedDepth  = convertParam(IPHASER_DEPTH,  plugin->LastDepth,  plugin->SampleRate);  
 	plugin->ConvertedNoClip = convertParam(IPHASER_NOCLIP, plugin->LastNoClip, plugin->SampleRate);  
+
+	/* initialise envelopes */
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_VU],    INVADA_METER_VU,    plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK],  INVADA_METER_PEAK,  plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], INVADA_METER_PHASE, plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP],  INVADA_METER_LAMP,  plugin->SampleRate);
 }
 
 
@@ -345,11 +352,12 @@ runMonoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
 
 			//evelope on in and out for meters
-			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvIn  		+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], In,   EnvIn);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL, EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutR, EnvOutR);
+
 			drive = driveL > driveR ? driveL : driveR;
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 			//update any changing parameters
 			if(HasDelta==1) {
@@ -528,13 +536,13 @@ runStereoIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
 
 			//evelope on in and out for meters
-			EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvInL 		+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], InL,  EnvInL);
+			EnvInR 		+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], InR,  EnvInR);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL, EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutR, EnvOutR);
 
 			drive = driveL > driveR ? driveL : driveR;
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 			//update any changing parameters
 			if(HasDelta==1) {
@@ -714,11 +722,12 @@ runSumIPhaser(LV2_Handle instance, uint32_t SampleCount)
 			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
 
 			//evelope on in and out for meters
-			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvIn  		+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], In,   EnvIn);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL, EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutR, EnvOutR);
+
 			drive = driveL > driveR ? driveL : driveR;
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 			//update any changing parameters
 			if(HasDelta==1) {

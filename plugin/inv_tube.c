@@ -50,6 +50,7 @@ typedef struct {
 	float *MeterDrive;
 
 	double SampleRate; 
+	struct Envelope EnvAD[4];
 
 	/* params get remembered */
 	float LastBypass; 
@@ -165,6 +166,12 @@ activateITube(LV2_Handle instance)
 	plugin->ConvertedDcoffset = convertParam(ITUBE_DCOFFSET, plugin->LastDcoffset,  plugin->SampleRate);
 	plugin->ConvertedPhase    = convertParam(ITUBE_PHASE,    plugin->LastPhase,     plugin->SampleRate);
 	plugin->ConvertedMix      = convertParam(ITUBE_MIX,      plugin->LastMix,       plugin->SampleRate);
+
+	/* initialise envelopes */
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_VU],    INVADA_METER_VU,    plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK],  INVADA_METER_PEAK,  plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], INVADA_METER_PHASE, plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP],  INVADA_METER_LAMP,  plugin->SampleRate);
 }
 
 
@@ -236,10 +243,11 @@ runMonoITube(LV2_Handle instance, uint32_t SampleCount)
 			*(pfAudioOutputL++) = OutL;
 
 			//evelope on in and out for meters
-			EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvInL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioL, EnvInL);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL,    EnvOutL);
+
 			drive = fabs(fabs(fabs((fAudioL+fDCOffset)*fDrive) - fabs(fDCOffset*fDrive)) - fabs(TubeOut));
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 			//update any changing parameters
 			if(HasDelta==1) {
@@ -358,15 +366,15 @@ runStereoITube(LV2_Handle instance, uint32_t SampleCount)
 			*(pfAudioOutputR++) = OutR;
 
 			//evelope on in and out for meters
-			EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvInR  += IEnvelope(fAudioR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvInL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioL, EnvInL);
+			EnvInR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioR, EnvInR);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL,    EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutR,    EnvOutR);
 
 			driveL = fabs(fabs(fabs((fAudioL+fDCOffset)*fDrive) - fabs(fDCOffset*fDrive)) - fabs(TubeOutL));
 			driveR = fabs(fabs(fabs((fAudioR+fDCOffset)*fDrive) - fabs(fDCOffset*fDrive)) - fabs(TubeOutR));
 			drive = driveL > driveR ? driveL : driveR;
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 			//update any changing parameters
 			if(HasDelta==1) {

@@ -55,6 +55,7 @@ typedef struct {
 
 	/* stuff we need to remember to reduce cpu */ 
 	double SampleRate; 
+	struct Envelope EnvAD[4];
 
 	/* stuff we need to remember to reduce cpu */ 
 	float LastBypass;
@@ -187,6 +188,12 @@ activateIInput(LV2_Handle instance)
 	plugin->ConvertedPan    = convertParam(IINPUT_PAN,    plugin->LastPan,     plugin->SampleRate);
 	plugin->ConvertedWidth  = convertParam(IINPUT_WIDTH,  plugin->LastWidth,   plugin->SampleRate);
 	plugin->ConvertedNoClip = convertParam(IINPUT_NOCLIP, plugin->LastNoClip,  plugin->SampleRate);
+
+	/* initialise envelopes */
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_VU],    INVADA_METER_VU,    plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK],  INVADA_METER_PEAK,  plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], INVADA_METER_PHASE, plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP],  INVADA_METER_LAMP,  plugin->SampleRate);
 }
 
 
@@ -292,20 +299,20 @@ runIInput(LV2_Handle instance, uint32_t SampleCount)
 			*(pfAudioOutputR++) = fAudioR;
 
 			//evelope on in and out for meters
-			EnvInL  += IEnvelope(InL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvInR  += IEnvelope(InR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(fAudioL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(fAudioR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvInL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], InL,     EnvInL);
+			EnvInR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], InR,     EnvInR);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioL, EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioR, EnvOutR);
 
 			if(fabs(fAudioL) > 0.001 || fabs(fAudioR) > 0.001) {  // -60 db
 				CurrentPhase = fabs(fAudioL+fAudioR) > 0.000001 ? atan(fabs((fAudioL-fAudioR)/(fAudioL+fAudioR))) : PI_ON_2;
 			} else {
 				CurrentPhase =0;
 			}
-			EnvPhase += IEnvelope(CurrentPhase,EnvPhase,INVADA_METER_PHASE,plugin->SampleRate);
+			EnvPhase  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE],CurrentPhase,EnvPhase);
 
 			drive = driveL > driveR ? driveL : driveR;
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 
 			//update any changing parameters

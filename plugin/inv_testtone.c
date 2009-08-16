@@ -43,6 +43,7 @@ typedef struct {
 
 	/* stuff we need to remember to reduce cpu */ 
 	double SampleRate; 
+	struct Envelope EnvAD[4];
 
 	/* stuff we need to remember to reduce cpu */ 
 	float LastActive;
@@ -115,6 +116,12 @@ activateITone(LV2_Handle instance)
 	plugin->ConvertedActive = convertParam(ITONE_ACTIVE, plugin->LastActive,  plugin->SampleRate);
 	plugin->ConvertedFreq   = convertParam(ITONE_FREQ,   plugin->LastFreq,    plugin->SampleRate);
 	plugin->ConvertedTrim   = convertParam(ITONE_TRIM,   plugin->LastTrim,    plugin->SampleRate);
+
+	/* initialise envelopes */
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_VU],    INVADA_METER_VU,    plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK],  INVADA_METER_PEAK,  plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], INVADA_METER_PHASE, plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP],  INVADA_METER_LAMP,  plugin->SampleRate);
 }
 
 
@@ -171,7 +178,7 @@ runITone(LV2_Handle instance, uint32_t SampleCount)
 			*(pfAudioOutput++) = fAudio;
 
 			//evelope on in and out for meters
-			EnvOut += IEnvelope(fAudio,EnvOut,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvOut  += applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudio,   EnvOut);
 
 			//update any changing parameters
 			if(HasDelta==1) {

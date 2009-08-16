@@ -58,6 +58,8 @@ typedef struct {
 
 	double SampleRate; 
 
+	struct Envelope EnvAD[4];
+
 	/* these params are used to remember the control values and the converted (internal) value to save a bit of cpu converting them every run */
 	float LastBypass;  
 	float LastRms;         
@@ -196,6 +198,12 @@ static void activateIComp(LV2_Handle instance)
 	plugin->ConvertedRatio  =convertParam(ICOMP_RATIO,   plugin->LastRatio,   plugin->SampleRate);
 	plugin->ConvertedGain   =convertParam(ICOMP_GAIN,    plugin->LastGain,    plugin->SampleRate);
 	plugin->ConvertedNoClip =convertParam(ICOMP_NOCLIP,  plugin->LastNoClip,  plugin->SampleRate);
+
+	/* initialise envelopes */
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_VU],    INVADA_METER_VU,    plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK],  INVADA_METER_PEAK,  plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], INVADA_METER_PHASE, plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP],  INVADA_METER_LAMP,  plugin->SampleRate);
 }
 
 
@@ -281,9 +289,9 @@ static void runMonoIComp(LV2_Handle instance, uint32_t SampleCount)
 			*(pfAudioOutputL++) =OutL;
 
 			//evelope on in and out for meters
-			EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvInL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioL, EnvInL);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL,    EnvOutL);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 			//update any changing parameters
 			if(HasDelta==1) {
@@ -420,13 +428,13 @@ static void runStereoIComp(LV2_Handle instance, uint32_t SampleCount)
 			*(pfAudioOutputR++) = OutR ;
 
 			//evelope on in and out for meters
-			EnvInL  += IEnvelope(fAudioL, EnvInL, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvInR  += IEnvelope(fAudioR, EnvInR, INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvInL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioL, EnvInL);
+			EnvInR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], fAudioR, EnvInR);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL,    EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutR,    EnvOutR);
 
 			drive = driveL > driveR ? driveL : driveR;
-			EnvDrive += IEnvelope(drive,EnvDrive,INVADA_METER_LAMP,plugin->SampleRate);
+			EnvDrive  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP], drive,   EnvDrive);
 
 			//update any changing parameters
 			if(HasDelta==1) {

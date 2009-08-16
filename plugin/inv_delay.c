@@ -63,6 +63,8 @@ typedef struct {
 
 	double SampleRate;
 
+	struct Envelope EnvAD[4];
+
 	/* Stuff to remember to avoid recalculating the delays every run */
 	float LastBypass;
 	float LastMode;
@@ -283,6 +285,12 @@ activateIDelay(LV2_Handle instance)
 	plugin->Converted2FB        = convertParam(IDELAY_2_FB,      plugin->Last2FB,       plugin->SampleRate); 
 	plugin->Converted2Pan       = convertParam(IDELAY_2_PAN,     plugin->Last2Pan,      plugin->SampleRate); 
 	plugin->Converted2Vol       = convertParam(IDELAY_2_VOL,     plugin->Last2Vol,      plugin->SampleRate); 
+
+	/* initialise envelopes */
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_VU],    INVADA_METER_VU,    plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK],  INVADA_METER_PEAK,  plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_PHASE], INVADA_METER_PHASE, plugin->SampleRate);
+	initIEnvelope(&plugin->EnvAD[INVADA_METER_LAMP],  INVADA_METER_LAMP,  plugin->SampleRate);
 }
 
 
@@ -577,9 +585,9 @@ runMonoIDelay(LV2_Handle instance, uint32_t SampleCount)
 			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
 
 			//evelope on in and out for meters
-			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvIn  		+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], In,   EnvIn);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL, EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutR, EnvOutR);
 
 			//update any changing parameters
 			if(HasDelta==1) {
@@ -969,9 +977,9 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 			SpaceRCur = SpaceRCur < SpaceREnd ? SpaceRCur + 1 : SpaceRStr;
 
 			//evelope on in and out for meters
-			EnvIn   += IEnvelope(In,  EnvIn,  INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutL += IEnvelope(OutL,EnvOutL,INVADA_METER_PEAK,plugin->SampleRate);
-			EnvOutR += IEnvelope(OutR,EnvOutR,INVADA_METER_PEAK,plugin->SampleRate);
+			EnvIn  		+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], In,   EnvIn);
+			EnvOutL  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutL, EnvOutL);
+			EnvOutR  	+= applyIEnvelope(&plugin->EnvAD[INVADA_METER_PEAK], OutR, EnvOutR);
 
 			//update any changing parameters
 			if(HasDelta==1) {

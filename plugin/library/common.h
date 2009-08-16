@@ -84,7 +84,6 @@ float  getParamChange(unsigned long param, float * control, float * last, float 
 /* audio envelope */
 void  initIEnvelope(struct Envelope * Env, int mode, double sr);
 float applyIEnvelope(struct Envelope * Env, float value, float envelope);
-float IEnvelope(float value, float envelope, int mode, double sr);
 
 /* add or subtract to delay space */
 void SpaceAdd(float *SpacePos, float *SpaceEnd, unsigned long SpaceSize, unsigned long Delay, float Offset, float Value);

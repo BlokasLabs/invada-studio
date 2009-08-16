@@ -104,39 +104,6 @@ applyIEnvelope(struct Envelope * Env, float audio_value, float envelope_value)
 	return (valueA > envelope_value)  ? Env->attack * (valueA - envelope_value)  : Env->decay * (valueA - envelope_value);
 }
 
-float 
-IEnvelope(float value, float envelope, int mode, double sr)
-{
-	float valueA;
-	float EnvelopeDelta;
-
-	valueA=fabs(value);
-
-	switch(mode) 
-	{
-		case INVADA_METER_VU:
-			/* 300ms attack, 300ms decay */
-			EnvelopeDelta=(valueA > envelope)   ? 0.00005 * (valueA - envelope)   : 0.00005 * (valueA - envelope);
-			break;
-		case INVADA_METER_PEAK:  
-			/* 50us attack, 100ms decay */
-			EnvelopeDelta=(valueA > envelope)   ? 0.3 * (valueA - envelope)   : 0.00015 * (valueA - envelope);
-			break;
-
-		case INVADA_METER_PHASE:  
-			/* 10ms attack, 10ms decay */
-			EnvelopeDelta=(valueA > envelope)   ? 0.0015 * (valueA - envelope)   : 0.0015 * (valueA - envelope);
-			break;
-		case INVADA_METER_LAMP:  
-			/* 10ms attack, 100ms decay */
-			EnvelopeDelta=(valueA > envelope)   ? 0.0015 * (valueA - envelope)   : 0.00005 * (valueA - envelope);
-			break;
-		default:
-			EnvelopeDelta=0;
-	}
-	return EnvelopeDelta;
-}
-
 void 
 SpaceAdd(float *SpacePos, float *SpaceEnd, unsigned long SpaceSize, unsigned long Delay, float Offset, float Value)
 {
