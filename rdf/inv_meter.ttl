@@ -27,6 +27,99 @@
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
         uiext:portIndex 9 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 10 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 11 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 12 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 13 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 14 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 15 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 16 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 17 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 18 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 19 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 20 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 21 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 22 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 23 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 24 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 25 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 26 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 27 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 28 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 29 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 30 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 31 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 32 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 33 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 34 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 35 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 36 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 37 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 38 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 39 ;
+    ],[ 
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
+        uiext:portIndex 40 ;
     ] .
 
 <http://invadarecords.com/plugins/lv2/meter> 
