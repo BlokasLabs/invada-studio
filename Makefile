@@ -35,7 +35,7 @@ INSTALL_BUNDLE_DIR		=	invada.lv2
 
 SUBDIRS		=	plugin/library plugin plugingui/widgets plugingui
 GLADEDIRS	=	plugingui/gtk 
-
+DESTDIR		=	""
 
 all:	        
 	@for i in $(SUBDIRS); do \
@@ -52,26 +52,26 @@ glade:
 
 install:
 	@echo ""
-	@echo "use 'make install-user' to install in $(INSTALL_USER_PLUGINS_DIR) or 'make install-sys' to install in $(INSTALL_SYS_PLUGINS_DIR)"
+	@echo "use 'make install-user' to install in $(DESTDIR)$(INSTALL_USER_PLUGINS_DIR) or 'make install-sys' to install in $(INSTALL_SYS_PLUGINS_DIR)"
 	@echo ""
 
 install-sys: 
-	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	-mkdir -p		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp plugin/*.so 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp plugingui/*.so	$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp rdf/*.ttl 		$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp plugingui/gtk/*.png	$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp plugingui/gtk/*.xml	$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	-mkdir -p		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	-mkdir -p		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp plugin/*.so 		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp plugingui/*.so	$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp rdf/*.ttl 		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp plugingui/gtk/*.png	$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp plugingui/gtk/*.xml	$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 
 install-user: 
-	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp plugin/*.so 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp plugingui/*.so	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp rdf/*.ttl 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp plugingui/gtk/*.png	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
-	cp plugingui/gtk/*.xml	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	-mkdir -p		$(DESTDIR)$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	-mkdir -p		$(DESTDIR)$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp plugin/*.so 		$(DESTDIR)$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp plugingui/*.so	$(DESTDIR)$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp rdf/*.ttl 		$(DESTDIR)$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp plugingui/gtk/*.png	$(DESTDIR)$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	cp plugingui/gtk/*.xml	$(DESTDIR)$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 
 
 always:	
