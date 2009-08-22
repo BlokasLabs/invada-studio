@@ -5,6 +5,7 @@
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
 @prefix epp:   <http://lv2plug.in/ns/dev/extportinfo#> .
+@prefix pg:    <http://lv2plug.in/ns/dev/port-groups#> .
 
 <http://invadarecords.com/plugins/lv2/delay/gui>
     a uiext:GtkUI;
@@ -39,6 +40,11 @@
 	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/sum> ;
         uiext:portIndex 17 ;
     ] .
+
+<http://invadarecords.com/plugins/lv2/delay/mono#out> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "out" .
 
 <http://invadarecords.com/plugins/lv2/delay/mono> 
     a lv2:Plugin, lv2:DelayPlugin ;
@@ -229,13 +235,26 @@
 	lv2:index 19 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/delay/mono#out> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 20 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/delay/mono#out> ;
+	pg:role pg:rightChannel ;
     ] .
 
+<http://invadarecords.com/plugins/lv2/delay/sum#in> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "in" .
+  
+<http://invadarecords.com/plugins/lv2/delay/sum#out> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "out" .
 
 <http://invadarecords.com/plugins/lv2/delay/sum> 
     a lv2:Plugin, lv2:DelayPlugin ;
@@ -421,19 +440,27 @@
 	lv2:index 18 ;
 	lv2:symbol "inL" ;
 	lv2:name "In L" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/delay/sum#in> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 19 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/delay/sum#out> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 20 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/delay/sum#out> ;
+	pg:role pg:rightChannel ;
     ] , [
 	a lv2:InputPort, lv2:AudioPort ;
 	lv2:index 21 ;
 	lv2:symbol "inR" ;
 	lv2:name "In R" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/delay/sum#in> ;
+	pg:role pg:rightChannel ;
     ] .

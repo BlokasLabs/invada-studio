@@ -5,6 +5,7 @@
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
 @prefix epp:   <http://lv2plug.in/ns/dev/extportinfo#> .
+@prefix pg:    <http://lv2plug.in/ns/dev/port-groups#> .
 
 <http://invadarecords.com/plugins/lv2/phaser/gui>
     a uiext:GtkUI;
@@ -77,6 +78,10 @@
         uiext:portIndex 14 ;
     ] .
 
+<http://invadarecords.com/plugins/lv2/phaser/mono#out> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "out" .
 
 <http://invadarecords.com/plugins/lv2/phaser/mono> 
     a lv2:Plugin, lv2:PhaserPlugin ;
@@ -179,11 +184,15 @@
 	lv2:index 9 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/mono#out> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 10 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/mono#out> ;
+	pg:role pg:rightChannel ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 11 ;
@@ -217,6 +226,16 @@
 	lv2:maximum 6.0 ;
 	units:unit units:db ;
     ] .
+
+<http://invadarecords.com/plugins/lv2/phaser/stereo#in> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "in" .
+  
+<http://invadarecords.com/plugins/lv2/phaser/stereo#out> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "out" .
 
 <http://invadarecords.com/plugins/lv2/phaser/stereo> 
     a lv2:Plugin, lv2:PhaserPlugin ;
@@ -319,11 +338,15 @@
 	lv2:index 9 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/stereo#out> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 10 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/stereo#out> ;
+	pg:role pg:rightChannel ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 11 ;
@@ -347,6 +370,8 @@
 	lv2:index 13 ;
 	lv2:symbol "inL" ;
 	lv2:name "InL" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/compressor/stereo#in> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 14 ;
@@ -361,6 +386,8 @@
 	lv2:index 15 ;
 	lv2:symbol "inR" ;
 	lv2:name "In R" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/compressor/stereo#in> ;
+	pg:role pg:rightChannel ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 16 ;
@@ -372,6 +399,15 @@
 	units:unit units:db ;
     ] .
 
+<http://invadarecords.com/plugins/lv2/phaser/sum#in> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "in" .
+  
+<http://invadarecords.com/plugins/lv2/phaser/sum#out> 
+    a pg:Group ;
+    a pg:StereoGroup ;
+    lv2:symbol "out" .
 
 <http://invadarecords.com/plugins/lv2/phaser/sum> 
     a lv2:Plugin, lv2:PhaserPlugin ;
@@ -473,11 +509,15 @@
 	lv2:index 9 ;
 	lv2:symbol "outL" ;
 	lv2:name "L Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/sum#out> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:AudioPort ;
 	lv2:index 10 ;
 	lv2:symbol "outR" ;
 	lv2:name "R Out" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/sum#out> ;
+	pg:role pg:rightChannel ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 11 ;
@@ -501,6 +541,8 @@
 	lv2:index 13 ;
 	lv2:symbol "inL" ;
 	lv2:name "In L" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/sum#in> ;
+	pg:role pg:leftChannel ;
     ] , [
 	a lv2:OutputPort, lv2:ControlPort ;
 	lv2:index 14 ;
@@ -515,4 +557,6 @@
 	lv2:index 15 ;
 	lv2:symbol "inR" ;
 	lv2:name "In R" ;
+	pg:inGroup <http://invadarecords.com/plugins/lv2/phaser/sum#in> ;
+	pg:role pg:rightChannel ;
     ] .

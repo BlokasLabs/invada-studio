@@ -5,6 +5,7 @@
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
 @prefix epp:   <http://lv2plug.in/ns/dev/extportinfo#> .
+@prefix pg:    <http://lv2plug.in/ns/dev/port-groups#> .
 
 
 <http://invadarecords.com/plugins/lv2/testtone/gui>
