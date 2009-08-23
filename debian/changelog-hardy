@@ -1,3 +1,16 @@
+invada-studio-plugins-lv2 (1.2.0-0ubuntu0~ppa1~hardy1) hardy; urgency=low
+
+  * Added new plugin 'Meters'.
+  * Envelope attack & decay for meters now consistant across sample rates.
+  * Improved font selection for widgets for compatibility across different systems.
+  * Initialised uninitialised variables in the delay plugin (thx Damon).
+  * Added LV2 'Portgroups' extension to RDF's (thx Dave).
+  * 'DESTDIR' make option to help packagers (thx Philipp).
+  * Various GUI tweaks.
+
+ -- Fraser Stuart (Obleak) <fraser@arkhostings.com>  Sun, 23 Aug 2009 18:00:00 +1000
+
+
 invada-studio-plugins-lv2 (1.1.0-0ubuntu0~ppa1~hardy2) hardy; urgency=low
 
   * Updated Readme.

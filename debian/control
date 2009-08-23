@@ -40,6 +40,8 @@ Description: Invada Studio Plugins - a set of LV2 audio plugins
   Utility Plugins
   * Input Module (Stereo only)
  Alter gain, balance, width, phase on a stereo signal.
+  * Meters (Stereo only)
+ Peak, VU, Phase and spectrograph meters.
   * Test Tones (Mono only)
  Generate testtones at specific frequencies.
  .

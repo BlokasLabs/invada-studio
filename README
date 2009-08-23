@@ -37,8 +37,9 @@ Reverb Plugins
 * ER Reverb - Sum L+R In     => early reflection based reverb
 
 Utility Plugins
-* Test Tones                 => Generate test tones at standard and muscial frequencies.
 * Input Module               => alter gain, balance, width, phase on a stereo signal
+* Meters                     => peak, VU, phase and spectrograph meters
+* Test Tones                 => Generate test tones at standard and muscial frequencies.
 
 
 
@@ -87,6 +88,15 @@ The plugins will install into "/usr" by default.
 PACKAGES (Ubuntu and derivatives)
 =================================
 Pre built binary packagaes for ubuntu are available from https://launchpad.net/~invada/+archive/ppa
+
+
+
+PACKAGING FOR DISTROS
+=================================
+An alternative download is available at launchpad which has no 'debian' packaging information in it. Look for the 'nopkg' tarball.
+When building in fakeroot type environments, the installation directory can be prefixed with a destination directory like so:
+make install-sys DESTDIR='/a/fake/root/location'
+which will install into /a/fake/root/location/usr/local/lib/lv2
 
 
 
