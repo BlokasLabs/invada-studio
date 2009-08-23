@@ -237,6 +237,9 @@ inv_display_err_init(InvDisplayErr *displayErr)
 	displayErr->er=(struct ERunit *)malloc(sizeof(struct ERunit) * MAX_ER);
 	displayErr->er_size=0;
 
+	displayErr->header_font_size=0;
+	displayErr->info_font_size=0;
+
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(displayErr), GTK_CAN_FOCUS);
 
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayErr),"<span size=\"8000\"><b>Room Shape:</b> This is a 3D representation of the virtual room.\n<b>Impulse Response:</b> This shows the resultant inpulse response of the room.\n<b>Source and Listerner Position:</b> Use this display to position the source and listener in the virtual room.</span>");
@@ -371,6 +374,14 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 	style = gtk_widget_get_style(widget);
 	cr = gdk_cairo_create(widget->window);
 
+	if(INV_DISPLAY_ERR(widget)->header_font_size==0) {
+		INV_DISPLAY_ERR(widget)->header_font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,8.1,"0");
+	}
+
+	if(INV_DISPLAY_ERR(widget)->info_font_size==0) {
+		INV_DISPLAY_ERR(widget)->info_font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,6.1,"0");
+	}
+
 	if(mode==INV_DISPLAY_ERR_DRAW_ALL) {
 		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
 		cairo_set_line_width(cr,1);
@@ -431,24 +442,24 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
 		}
-		cairo_set_font_size(cr,10);
-
+		cairo_set_font_size(cr,INV_DISPLAY_ERR(widget)->header_font_size);
 		sprintf(label,"Source And Listener Position");
-		cairo_move_to(cr,275,11);
+		cairo_text_extents (cr,label,&extents);
+		cairo_move_to(cr,360-(extents.width/2),11);
 		cairo_show_text(cr,label);
 
-		cairo_set_font_size(cr,8);
+		cairo_set_font_size(cr,INV_DISPLAY_ERR(widget)->info_font_size);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.35, 0.35, 0.35);
 		} else {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		}
-
 		sprintf(label,"(click and drag to move)");
-		cairo_move_to(cr,300,21);
+		cairo_text_extents (cr,label,&extents);
+		cairo_move_to(cr,360-(extents.width/2),21);
 		cairo_show_text(cr,label);
 
-		cairo_set_font_size(cr,10);
+		cairo_set_font_size(cr,INV_DISPLAY_ERR(widget)->header_font_size);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		} else {
@@ -456,11 +467,13 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		}
 
 		sprintf(label,"Room Shape");
-		cairo_move_to(cr,75,11);
+		cairo_text_extents (cr,label,&extents);
+		cairo_move_to(cr,105-(extents.width/2),11);
 		cairo_show_text(cr,label);
 		
 		sprintf(label,"Impulse Response");
-		cairo_move_to(cr,56,161);
+		cairo_text_extents (cr,label,&extents);
+		cairo_move_to(cr,105-(extents.width/2),161);
 		cairo_show_text(cr,label);
 	}
 
@@ -548,7 +561,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
 		}
-		cairo_rectangle(cr, 3, 12, 204, 135 );
+		cairo_rectangle(cr, 3, 13, 204, 134 );
 		cairo_fill(cr);
 
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
@@ -666,14 +679,25 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		}
-		cairo_set_font_size(cr,8);
+		cairo_set_font_size(cr,INV_DISPLAY_ERR(widget)->info_font_size);
 
-		sprintf(label,"Pre-Delay: %.1fms",min_delay);
-		cairo_move_to(cr,115,286);
+		sprintf(label,"Pre-Delay:");
+		cairo_text_extents (cr,label,&extents);
+		cairo_move_to(cr,160-extents.width,286);
 		cairo_show_text(cr,label);
 
-		sprintf(label,"   Length: %.1fms",max_delay);
-		cairo_move_to(cr,115,295);
+		sprintf(label,"%.1fms",min_delay);
+		cairo_move_to(cr,165,286);
+		cairo_show_text(cr,label);
+
+
+		sprintf(label,"Length:");
+		cairo_text_extents (cr,label,&extents);
+		cairo_move_to(cr,160-extents.width,295);
+		cairo_show_text(cr,label);
+
+		sprintf(label,"%.1fms",max_delay);
+		cairo_move_to(cr,165,295);
 		cairo_show_text(cr,label);
 
 		//show impulse repsonse
@@ -820,7 +844,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.3);
 		}
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,8);
+		cairo_set_font_size(cr,INV_DISPLAY_ERR(widget)->info_font_size);
 		strcpy(label,"Source");
 		cairo_text_extents (cr,label,&extents);
 		if(l<w) {
@@ -858,7 +882,7 @@ inv_display_err_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.6, 0.35, 0.3);
 		}		
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,8);
+		cairo_set_font_size(cr,INV_DISPLAY_ERR(widget)->info_font_size);
 		strcpy(label,"Listener");
 		cairo_text_extents (cr,label,&extents);
 		if(l<w) {

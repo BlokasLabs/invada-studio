@@ -59,6 +59,8 @@ struct _InvMeter {
 
 	struct colour mOff60,mOff12,mOff6,mOff0,overOff;
 	struct colour mOn60, mOn12, mOn6, mOn0, overOn;  /* delta */
+
+	gint label_font_size,scale_font_size;
 };
 
 struct _InvMeterClass {

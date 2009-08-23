@@ -84,6 +84,8 @@ struct _InvKnob {
 	GdkPixbuf *img_med;
 	GdkPixbuf *img_large;
 
+	gint font_size;
+
 };
 
 struct _InvKnobClass {

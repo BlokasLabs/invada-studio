@@ -39,23 +39,35 @@ DESTDIR		=	""
 
 all:	        
 	@for i in $(SUBDIRS); do \
-        echo "\nmake all in $$i..."; \
+        echo ""; \
+        echo "=================================="; \
+        echo "make all in $$i"; \
+        echo "=================================="; \
         (cd $$i; $(MAKE) ); done
+	@echo ""
 
 glade:	        
 	@for i in $(GLADEDIRS); do \
-        echo "\nmake all in $$i..."; \
+        echo ""; \
+        echo "=================================="; \
+        echo "make all in $$i"; \
+        echo "=================================="; \
         (cd $$i; $(MAKE) ); done
+	@echo ""
 
 
 # OTHER TARGETS
 
 install:
 	@echo ""
-	@echo "use 'make install-user' to install in $(DESTDIR)$(INSTALL_USER_PLUGINS_DIR) or 'make install-sys' to install in $(INSTALL_SYS_PLUGINS_DIR)"
+	@echo "use 'make install-user' to install in $(INSTALL_USER_PLUGINS_DIR) or 'make install-sys' to install in $(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)"
 	@echo ""
 
 install-sys: 
+	@echo ""
+	@echo "=================================="; 
+	@echo "Installing into $(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)"; 
+	@echo "=================================="; 
 	-mkdir -p		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	-mkdir -p		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 	cp plugin/*.so 		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
@@ -63,8 +75,13 @@ install-sys:
 	cp rdf/*.ttl 		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp plugingui/gtk/*.png	$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 	cp plugingui/gtk/*.xml	$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	@echo ""
 
 install-user: 
+	@echo ""
+	@echo "=================================="; 
+	@echo "Installing into $(INSTALL_USER_PLUGINS_DIR)"; 
+	@echo "=================================="; 
 	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 	cp plugin/*.so 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
@@ -72,21 +89,26 @@ install-user:
 	cp rdf/*.ttl 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp plugingui/gtk/*.png	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 	cp plugingui/gtk/*.xml	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
+	@echo ""
 
 
 always:	
 
 clean:
+	@echo ""
 	-rm -f `find . -name "*.so"`
 	-rm -f `find . -name "*.a"`
 	-rm -f `find . -name "*.o"`
 	-rm -f `find . -name "*~"`
+	@echo ""
 
 veryclean:
+	@echo ""
 	-rm -f `find . -name "*.so"`
 	-rm -f `find . -name "*.a"`
 	-rm -f `find . -name "*.o"`
 	-rm -f `find . -name "*.xml"`
 	-rm -f `find . -name "*~"`
+	@echo ""
 
 

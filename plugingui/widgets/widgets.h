@@ -21,6 +21,9 @@
 #ifndef __INV_WIDGETS_H
 #define __INV_WIDGETS_H
 
+#include <gtk/gtk.h>
+#include <cairo.h>
+
 #define INV_PLUGIN_ACTIVE 0
 #define INV_PLUGIN_BYPASS 1
 
@@ -42,5 +45,9 @@ struct colour {
 	float G;
 	float B;
 };
+
+gint	inv_choose_light_dark(GdkColor *bg,GdkColor *light,GdkColor *dark);
+gint	inv_choose_font_size(cairo_t *cr, const char *family, cairo_font_slant_t slant, cairo_font_weight_t weight, double width, double height, const char *character);
+
 
 #endif /* __INV_WIDGETS_H */

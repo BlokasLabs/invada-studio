@@ -47,7 +47,6 @@ static void	inv_knob_label_pan(char *label, float value, float min, float max);
 static float	inv_knob_label_set_dp(float value);
 static float    inv_marking_to_value(float mark, gint curve, float min, float max);
 static float	inv_value_to_angle(float value, gint curve, float min, float max);
-static gint	inv_choose_light_dark(GdkColor *bg,GdkColor *light,GdkColor *dark);
 static float	inv_value_from_motion(float x_delta, float y_delta, float current, gint curve, float min, float max);
 
 
@@ -238,6 +237,8 @@ inv_knob_init(InvKnob *knob)
      	knob->img_med=gdk_pixbuf_new_from_xpm_data((const char **)knob_img_medium_xpm);
      	knob->img_large=gdk_pixbuf_new_from_xpm_data((const char **)knob_img_large_xpm);
 
+	knob->font_size=0;
+
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(knob), GTK_CAN_FOCUS);
 }
 
@@ -373,7 +374,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 
 	gint i;
 	float xc,yc,r,ll,ls,tb,angle;
-	gint fontsize;
+	gint fontheight;
 	char label[20];
 	cairo_text_extents_t extents;
 
@@ -402,7 +403,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 	switch(size) {
 		case INV_KNOB_SIZE_SMALL:
 			yc=(size/2)+19;
-			fontsize=7;
+			fontheight=5;
 			ls=3;
 			ll=7;
 			tb=11;
@@ -410,7 +411,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 			break;
 		case INV_KNOB_SIZE_MEDIUM:
 			yc=(size/2)+22;
-			fontsize=8;
+			fontheight=6;
 			ls=5;
 			ll=9;
 			tb=12;
@@ -419,12 +420,16 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 		case INV_KNOB_SIZE_LARGE:
 		default:
 			yc=(size/2)+25;
-			fontsize=10;
+			fontheight=7;
 			ls=7;
 			ll=11;
 			tb=13;
 			img = INV_KNOB(widget)->img_large;
 			break;
+	}
+
+	if(INV_KNOB(widget)->font_size==0) {
+		INV_KNOB(widget)->font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,(double)fontheight+0.1,"0");
 	}
 
 	/* sanity check - ardour 2.7 doesn't initialise control values properly */
@@ -512,7 +517,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 		}
 
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,fontsize);
+		cairo_set_font_size(cr,INV_KNOB(widget)->font_size);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);
 		} else {
@@ -614,10 +619,10 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 				case INV_KNOB_MARKINGS_10:
 				case INV_KNOB_MARKINGS_CUST10:
 				case INV_KNOB_MARKINGS_CUST12:
-					cairo_move_to(cr,xc-(extents.width/2)-1,(1.5*fontsize)+1);
+					cairo_move_to(cr,xc-(extents.width/2)-1,(2*fontheight)+1);
 					break;
 				case INV_KNOB_MARKINGS_5:
-					cairo_move_to(cr,xc-(extents.width/2)-1,fontsize+1);
+					cairo_move_to(cr,xc-(extents.width/2)-1,fontheight+3);
 					break;
 			}
 			cairo_show_text(cr,label);
@@ -685,7 +690,7 @@ inv_knob_paint(GtkWidget *widget, gint mode)
 		cairo_rectangle(cr, 4, yc+r+ll+9, 2*r-4, tb);
 		cairo_fill(cr);
 
-		cairo_set_font_size(cr,fontsize);
+		cairo_set_font_size(cr,INV_KNOB(widget)->font_size);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			gdk_cairo_set_source_color(cr,&style->text[GTK_STATE_INSENSITIVE]);
 		} else {
@@ -947,17 +952,6 @@ inv_value_to_angle(float value, gint curve, float min, float max)
 	return angle;
 }
 
-static gint
-inv_choose_light_dark(GdkColor *bg,GdkColor *light,GdkColor *dark)
-{
-
-	float ld,dd;
-
-	ld=pow(bg->red-light->red,2) + pow(bg->green-light->green,2) + pow(bg->blue-light->blue,2);
-	dd=pow(bg->red-dark->red,2) + pow(bg->green-dark->green,2) + pow(bg->blue-dark->blue,2);
-
-	return ld > dd ? 1 : 0;
-}
 
 static float
 inv_value_from_motion(float x_delta, float y_delta, float current, gint curve, float min, float max)

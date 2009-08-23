@@ -118,7 +118,7 @@ instantiateIToneGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	pluginGui->trim		= 0.0;
 
 	inv_meter_set_bypass(INV_METER (pluginGui->meterOut),INV_PLUGIN_ACTIVE);
-	inv_meter_set_mode(INV_METER (pluginGui->meterOut), INV_METER_DRAW_MODE_TOZERO);
+	inv_meter_set_mode(INV_METER (pluginGui->meterOut), INV_METER_DRAW_MODE_BIGTOZERO);
 	inv_meter_set_channels(INV_METER (pluginGui->meterOut), pluginGui->OutChannels);
 	inv_meter_set_LdB(INV_METER (pluginGui->meterOut),-90);
 	inv_meter_set_RdB(INV_METER (pluginGui->meterOut),-90);

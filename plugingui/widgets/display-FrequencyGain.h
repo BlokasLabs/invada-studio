@@ -53,6 +53,8 @@ struct _InvDisplayFG {
 	float 		Lastfreq;
 	float 		Lastgain;
 	GtkStateType	Laststate;
+
+	gint font_size;
 };
 
 struct _InvDisplayFGClass {

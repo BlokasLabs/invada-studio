@@ -176,6 +176,8 @@ inv_display_fg_init(InvDisplayFG *displayFG)
 	displayFG->Lastgain = 0.0;
 	displayFG->Laststate = GTK_STATE_NORMAL;
 
+	displayFG->font_size=0;
+
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(displayFG), GTK_CAN_FOCUS);
 
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayFG),"<span size=\"8000\"><b>Description:</b> This shows the effect of the filter across the autio spectrum.\n<b>Usage:</b> Click on the dot and drag to adjust the filter.</span>");
@@ -291,6 +293,10 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 
 	cr = gdk_cairo_create(widget->window);
 
+	if(INV_DISPLAY_FG(widget)->font_size==0) {
+		INV_DISPLAY_FG(widget)->font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,6.1,"0");
+	}
+
 	if(mode==INV_DISPLAYFG_DRAW_ALL) {
 
 		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
@@ -332,7 +338,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,8);
+		cairo_set_font_size(cr,INV_DISPLAY_FG(widget)->font_size);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 		} else {
@@ -380,7 +386,7 @@ inv_display_fg_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,8);
+		cairo_set_font_size(cr,INV_DISPLAY_FG(widget)->font_size);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 		} else {

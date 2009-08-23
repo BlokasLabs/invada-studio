@@ -51,6 +51,8 @@ struct _InvDisplaySpec {
 	struct colour mOff60,mOff12,mOff6,mOff0,overOff;
 	struct colour mOn60, mOn12, mOn6, mOn0, overOn;  /* delta */
 
+	gint font_size;
+
 };
 
 struct _InvDisplaySpecClass {

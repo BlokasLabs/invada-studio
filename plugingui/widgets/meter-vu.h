@@ -65,6 +65,8 @@ struct _InvVuMeter {
 	struct point2D  dbp03[3];
 
 	struct point2D  cp[2];
+
+	gint label_font_size,scale_font_size;
 };
 
 struct _InvVuMeterClass {

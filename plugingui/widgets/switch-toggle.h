@@ -64,6 +64,8 @@ struct _InvSwitchToggle {
 	GdkPixbuf *img_on;
 	GdkPixbuf *img_off;
 
+	gint	font_size;
+
 };
 
 struct _InvSwitchToggleClass {

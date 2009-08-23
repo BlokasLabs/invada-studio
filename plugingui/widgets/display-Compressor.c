@@ -213,6 +213,10 @@ inv_display_comp_init(InvDisplayComp *displayComp)
 		displayComp->SIGmax= fabs(displayComp->SIG[i]) > displayComp->SIGmax ? displayComp->SIG[i] : displayComp->SIGmax;
 	}
 
+	displayComp->header_font_size=0;
+	displayComp->label_font_size=0;
+	displayComp->info_font_size=0;
+
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(displayComp),"<span size=\"8000\"><b>Detector and Envelope:</b> This shows how the RMS, Attack and Release interact to produce an envelope.\n<b>Compressor:</b> This shows how the Threshold, Ratio and Gain affect the audio at different levels.</span>");
 }
 
@@ -326,6 +330,18 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 
 	cr = gdk_cairo_create(widget->window);
 
+	if(INV_DISPLAY_COMP(widget)->header_font_size==0) {
+		INV_DISPLAY_COMP(widget)->header_font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,8.1,"0");
+	}
+
+	if(INV_DISPLAY_COMP(widget)->label_font_size==0) {
+		INV_DISPLAY_COMP(widget)->label_font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,7.1,"0");
+	}
+
+	if(INV_DISPLAY_COMP(widget)->info_font_size==0) {
+		INV_DISPLAY_COMP(widget)->info_font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,6.1,"0");
+	}
+
 	if(mode==INV_DISPLAYCOMP_DRAW_ALL) {
 
 		cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);
@@ -365,12 +381,12 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
 		}
 		
-		cairo_set_font_size(cr,10);
+		cairo_set_font_size(cr,INV_DISPLAY_COMP(widget)->header_font_size);
 		sprintf(label,"Detector And Envelope");
-		cairo_move_to(cr,75,12);
+		cairo_move_to(cr,75,13);
 		cairo_show_text(cr,label);
 
-		cairo_set_font_size(cr,9);
+		cairo_set_font_size(cr,INV_DISPLAY_COMP(widget)->label_font_size);
 		sprintf(label,"Audio");
 		cairo_move_to(cr,35,230);
 		cairo_show_text(cr,label);
@@ -419,9 +435,9 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
 		}
 		
-		cairo_set_font_size(cr,10);
+		cairo_set_font_size(cr,INV_DISPLAY_COMP(widget)->header_font_size);
 		sprintf(label,"Compressor");
-		cairo_move_to(cr,415,12);
+		cairo_move_to(cr,415,13);
 		cairo_show_text(cr,label);
 
 		if(bypass==INV_PLUGIN_BYPASS) {
@@ -436,7 +452,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		cairo_fill(cr);
 
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,8);
+		cairo_set_font_size(cr,INV_DISPLAY_COMP(widget)->info_font_size);
 		if(bypass==INV_PLUGIN_BYPASS) {
 			cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
 		} else {
@@ -467,7 +483,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 		} else {
 			cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
 		}
-		cairo_set_font_size(cr,9);
+		cairo_set_font_size(cr,INV_DISPLAY_COMP(widget)->label_font_size);
 		sprintf(label,"Original");
 		cairo_move_to(cr,385,230);
 		cairo_show_text(cr,label);
@@ -545,7 +561,7 @@ inv_display_comp_paint(GtkWidget *widget, gint mode)
 			cairo_set_source_rgb(cr, 0.05, 0.05, 0.2);
 		}
 
-		cairo_rectangle(cr, 3, 13, 294, 208 );
+		cairo_rectangle(cr, 3, 15, 294, 206 );
 		cairo_fill(cr);
 
 

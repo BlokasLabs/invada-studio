@@ -199,8 +199,9 @@ inv_display_spec_init(InvDisplaySpec *display_spec)
 	display_spec->overOff.R=0.4;	display_spec->overOff.G=0.2;	display_spec->overOff.B=0.0;
 	display_spec->overOn.R =0.6;	display_spec->overOn.G =0.0;	display_spec->overOn.B =0.0;
 
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(display_spec),"<span size=\"8000\">Spectrograph</span>");
+	display_spec->font_size=0;
 
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(display_spec),"<span size=\"8000\">Spectrograph</span>");
 }
 
 
@@ -302,6 +303,11 @@ inv_display_spec_paint(GtkWidget *widget, gint drawmode, gint pos)
 
 	cr = gdk_cairo_create(widget->window);
 
+
+	if(INV_DISPLAY_SPEC(widget)->font_size==0) {
+		INV_DISPLAY_SPEC(widget)->font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,6.1,"0");
+	}
+
 	switch(drawmode) {
 		case INV_DISPLAY_SPEC_DRAW_ALL:
 
@@ -342,7 +348,7 @@ inv_display_spec_paint(GtkWidget *widget, gint drawmode, gint pos)
 
 
 			cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-			cairo_set_font_size(cr,8);
+			cairo_set_font_size(cr,INV_DISPLAY_SPEC(widget)->font_size);
 			strcpy(label,"0");
 			cairo_text_extents (cr,label,&extents);
 			fh=extents.height;
@@ -365,8 +371,19 @@ inv_display_spec_paint(GtkWidget *widget, gint drawmode, gint pos)
 					case 26:
 					case 28:
 					case 30:
+						if(inv_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
+							gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+						} else {
+							gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+						}
 						cairo_rectangle(cr, (i*12)+7,140, 1, 2);
 						cairo_fill(cr);
+
+						if(bypass==INV_PLUGIN_BYPASS) {
+							gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);
+						} else {
+							gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
+						}
 						cairo_move_to(cr,(i*12)+7-(extents.width/2),144+fh);
 						cairo_show_text(cr,INV_DISPLAY_SPEC(widget)->label[i]);
 						break;
@@ -385,8 +402,19 @@ inv_display_spec_paint(GtkWidget *widget, gint drawmode, gint pos)
 					case 25:
 					case 27:
 					case 29:
+						if(inv_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
+							gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
+						} else {
+							gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
+						}
 						cairo_rectangle(cr, (i*12)+7,140, 1, 11);
 						cairo_fill(cr);
+
+						if(bypass==INV_PLUGIN_BYPASS) {
+							gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_INSENSITIVE]);
+						} else {
+							gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
+						}
 						cairo_move_to(cr,(i*12)+7-(extents.width/2),153+fh);
 						cairo_show_text(cr,INV_DISPLAY_SPEC(widget)->label[i]);
 						break;

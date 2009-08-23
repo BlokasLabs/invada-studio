@@ -14,7 +14,7 @@
     uiext:optionalFeature uiext:noUserResize ;
 
     uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;	
+	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
         uiext:portIndex 5 ;
     ],[ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;

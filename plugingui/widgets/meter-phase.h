@@ -47,6 +47,8 @@ struct _InvPhaseMeter {
 
 	struct colour mOff0,mOff30,mOff45,mOff60,mOff90;
 	struct colour mOn0, mOn30, mOn45, mOn60, mOn90;  /* delta */
+
+	gint font_size;
 };
 
 struct _InvPhaseMeterClass {

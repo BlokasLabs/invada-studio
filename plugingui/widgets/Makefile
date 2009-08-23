@@ -38,7 +38,7 @@ libinv_widgets.a:	display-Compressor.o    display-Compressor.h \
 			meter-phase.o           meter-phase.h \
 			meter-vu.o              meter-vu.h \
 			switch-toggle.o         switch-toggle.h \
-			widgets.h
+			widgets.o		widgets.h
 			@echo "Creating libinv_widgets.a"
 			@ar rcs libinv_widgets.a \
 				display-Compressor.o \
@@ -50,7 +50,8 @@ libinv_widgets.a:	display-Compressor.o    display-Compressor.h \
 				meter-peak.o \
 				meter-phase.o \
 				meter-vu.o \
-				switch-toggle.o
+				switch-toggle.o \
+				widgets.o
 
 # OTHER TARGETS
 

@@ -60,6 +60,8 @@ struct _InvDisplayComp {
 	float SIG[292], SIGmax;
 	float RMS[292];
 	float ENV[292];
+
+	float header_font_size,label_font_size,info_font_size;
 };
 
 struct _InvDisplayCompClass {

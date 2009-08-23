@@ -69,6 +69,8 @@ struct _InvDisplayErr {
 
 	struct ERunit * er;
 	gint er_size;
+
+	float header_font_size,info_font_size;
 };
 
 struct _InvDisplayErrClass {

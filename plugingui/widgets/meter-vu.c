@@ -232,6 +232,9 @@ inv_vu_meter_init(InvVuMeter *meter)
 	meter->cp[1].x=166;
 	meter->cp[1].y=104;
 
+	meter->label_font_size=0;
+	meter->scale_font_size=0;
+
 }
 
 
@@ -334,8 +337,16 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 
 	style   = gtk_widget_get_style(widget);
 
-
 	cr = gdk_cairo_create(widget->window);
+
+
+	if(INV_VU_METER(widget)->label_font_size==0) {
+		INV_VU_METER(widget)->label_font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,9.1,"0");
+	}
+
+	if(INV_VU_METER(widget)->scale_font_size==0) {
+		INV_VU_METER(widget)->scale_font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,99.0,7.1,"0");
+	}
 
 	if(mode==INV_VU_METER_DRAW_ALL) {
 
@@ -373,14 +384,14 @@ inv_vu_meter_paint(GtkWidget *widget, gint mode)
 		
 		//VU label
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_BOLD);
-		cairo_set_font_size(cr,13);
+		cairo_set_font_size(cr,INV_VU_METER(widget)->label_font_size);
 		strcpy(label,"VU");
 //		cairo_text_extents (cr,label,&extents);
 		cairo_move_to(cr,6,99);
 		cairo_show_text(cr,label);
 
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(cr,10);
+		cairo_set_font_size(cr,INV_VU_METER(widget)->scale_font_size);
 
 
 		//scale marks

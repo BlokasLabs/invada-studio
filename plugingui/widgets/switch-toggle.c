@@ -39,8 +39,6 @@ static gboolean	inv_switch_toggle_button_press_event (GtkWidget *widget, GdkEven
 static gboolean inv_switch_toggle_button_release_event (GtkWidget *widget, GdkEventButton *event);
 static void	inv_switch_toggle_destroy(GtkObject *object);
 
-static gint	inv_switch_choose_light_dark(GdkColor *bg,GdkColor *light,GdkColor *dark);
-
 
 GtkType
 inv_switch_toggle_get_type(void)
@@ -223,6 +221,8 @@ inv_switch_toggle_init(InvSwitchToggle *switch_toggle)
      	switch_toggle->img_on=gdk_pixbuf_new_from_xpm_data((const char **)switch_toggle_img_on_xpm);
      	switch_toggle->img_off=gdk_pixbuf_new_from_xpm_data((const char **)switch_toggle_img_off_xpm);
 
+	switch_toggle->font_size=0;
+
     	GTK_WIDGET_SET_FLAGS (GTK_WIDGET(switch_toggle), GTK_CAN_FOCUS);
 }
 
@@ -241,7 +241,7 @@ inv_switch_toggle_size_request(GtkWidget *widget,
 		requisition->width = 64;
 	}
 	
-	requisition->height = 64;
+	requisition->height = 66;
 }
 
 
@@ -284,7 +284,7 @@ inv_switch_toggle_realize(GtkWidget *widget)
 	} else {
 		attributes.width = 64;
 	}
-	attributes.height = 64;
+	attributes.height = 66;
 
 	attributes.wclass = GDK_INPUT_OUTPUT;
 	attributes.event_mask = gtk_widget_get_events(widget) | 
@@ -369,6 +369,11 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 	cr = gdk_cairo_create(widget->window);
 
+	if(INV_SWITCH_TOGGLE(widget)->font_size==0) {
+		INV_SWITCH_TOGGLE(widget)->font_size=inv_choose_font_size(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL,7.1,7.1,"O");
+	}
+					
+
 	indent = strlen(label)>0 ? 12.0 : 0.0;
 
 	if(mode==INV_SWITCH_TOGGLE_DRAW_ALL) {
@@ -384,52 +389,53 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 		cairo_move_to(cr, indent, 13);
 		cairo_line_to(cr, 63+indent, 13);
 		cairo_line_to(cr, 63+indent, 0);
-		cairo_move_to(cr, indent, 63);
-		cairo_line_to(cr, 63+indent, 63);
-		cairo_line_to(cr, 63+indent, 50);
+		cairo_move_to(cr, indent, 65);
+		cairo_line_to(cr, 63+indent, 65);
+		cairo_line_to(cr, 63+indent, 52);
 		cairo_stroke(cr);
 
 		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
 		cairo_move_to(cr, indent, 13);
 		cairo_line_to(cr, indent, 0);
 		cairo_line_to(cr, 63+indent, 0);
-		cairo_move_to(cr, indent, 63);
-		cairo_line_to(cr, indent, 50);
-		cairo_line_to(cr, 63+indent, 50);
+		cairo_move_to(cr, indent, 65);
+		cairo_line_to(cr, indent, 52);
+		cairo_line_to(cr, 63+indent, 52);
 		cairo_stroke(cr);
 
 		cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 		cairo_new_path(cr);
 
 		if(strlen(label)>0) {
-			if(inv_switch_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
+			if(inv_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
 				gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
 			} else {
 				gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
 			}
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_NONE);
 			cairo_set_line_width(cr,1);
-			cairo_rectangle(cr, 0, 1, 9, 62);
+			cairo_rectangle(cr, 0, 1, 10, 64);
 			cairo_stroke(cr);
 
 			cairo_set_antialias (cr,CAIRO_ANTIALIAS_DEFAULT);
 			cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 			gdk_cairo_set_source_color(cr,&style->fg[GTK_STATE_NORMAL]);
-			cairo_set_font_size(cr,8);
-			topdent=41.0-(8.0*(float)(strlen(label))/2);
+			cairo_set_font_size(cr,INV_SWITCH_TOGGLE(widget)->font_size);
+			topdent=42.0-(8.0*(float)(strlen(label))/2);
 			for(i=0; i<strlen(label); i++) {
 				character[0]=label[i];
 				character[1]='\0';
-				cairo_move_to(cr,2, topdent+((float)i*8.0));
+				cairo_text_extents (cr,character,&extents);
+				cairo_move_to(cr,extents.width<=2? 4:2, topdent+((float)i*8.0));
 				cairo_show_text(cr,character);
 			}
 		}
 	}
 
 	cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size(cr,8);
+	cairo_set_font_size(cr,INV_SWITCH_TOGGLE(widget)->font_size);
 
-	if(inv_switch_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
+	if(inv_choose_light_dark(&style->bg[GTK_STATE_NORMAL],&style->light[GTK_STATE_NORMAL],&style->dark[GTK_STATE_NORMAL])==1) {
 		gdk_cairo_set_source_color(cr,&style->light[GTK_STATE_NORMAL]);
 	} else {
 		gdk_cairo_set_source_color(cr,&style->dark[GTK_STATE_NORMAL]);
@@ -443,34 +449,34 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 			grey=max/3;
 
 			cairo_set_source_rgb(cr, grey/3, grey/3, grey/3);
-			cairo_rectangle(cr, 1+indent, 1, 62, 12);
+			cairo_rectangle(cr, 1+indent, 1, 62, 13);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, grey, grey, grey);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), 7-(extents.y_bearing)/2);
+			cairo_move_to(cr,31+indent-(extents.width/2), 11);
 			cairo_show_text(cr,off_text);
 
-			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
+			pat = cairo_pattern_create_linear (indent, 0.0,  66.0+indent, 0.0);
 			cairo_pattern_add_color_stop_rgba (pat, 0.0, on.R/6, on.G/6, on.B/6, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.3, on.R/3, on.G/3, on.B/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.5, on.R/2, on.G/2, on.B/2, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.7, on.R/3, on.G/3, on.B/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 1.0, on.R/6, on.G/6, on.B/6, 1);
 			cairo_set_source (cr, pat);
-			cairo_rectangle(cr, 1+indent, 51, 62, 12);
+			cairo_rectangle(cr, 1+indent, 53, 62, 13);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, on.R, on.G, on.B);
 			cairo_text_extents (cr,on_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), 56-(extents.y_bearing)/2);
+			cairo_move_to(cr,31+indent-(extents.width/2), 63);
 			cairo_show_text(cr,on_text);
 
 			cairo_save(cr);
-			cairo_arc(cr,32+indent,32.5,12,0,2*INV_PI);
+			cairo_arc(cr,32+indent,33.5,12,0,2*INV_PI);
 			cairo_clip(cr);
 
-			gdk_cairo_set_source_pixbuf(cr,img_on, 32+indent-12.5, 32.5-12.5);
+			gdk_cairo_set_source_pixbuf(cr,img_on, 32+indent-12.5, 33.5-12.5);
 			cairo_paint(cr);
 
 			cairo_restore(cr);
@@ -479,19 +485,19 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 		case INV_SWITCH_TOGGLE_OFF:
 
-			pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 0.0);
+			pat = cairo_pattern_create_linear (indent, 0.0,  66.0+indent, 0.0);
 			cairo_pattern_add_color_stop_rgba (pat, 0.0, off.R/6, off.G/6, off.B/6, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.3, off.R/3, off.G/3, off.B/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.5, off.R/2, off.G/2, off.B/2, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 0.7, off.R/3, off.G/3, off.B/3, 1);
 			cairo_pattern_add_color_stop_rgba (pat, 1.0, off.R/6, off.G/6, off.B/6, 1);
 			cairo_set_source (cr, pat);
-			cairo_rectangle(cr, 1+indent, 1, 62, 12);
+			cairo_rectangle(cr, 1+indent, 1, 62, 13);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, off.R, off.G, off.B);
 			cairo_text_extents (cr,off_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width/2), 7-(extents.y_bearing)/2);
+			cairo_move_to(cr,31+indent-(extents.width/2), 11);
 			cairo_show_text(cr,off_text);
 
 			max = on.R > on.G ? on.R : on.G;
@@ -499,19 +505,19 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 			grey=max/3;
 
 			cairo_set_source_rgb(cr, grey/3, grey/3, grey/3);
-			cairo_rectangle(cr, 1+indent, 51, 62, 12);
+			cairo_rectangle(cr, 1+indent, 53, 62, 13);
 			cairo_fill(cr);
 
 			cairo_set_source_rgb(cr, grey, grey, grey);
 			cairo_text_extents (cr,on_text,&extents);
-			cairo_move_to(cr,31+indent-(extents.width)/2, 56-(extents.y_bearing)/2);
+			cairo_move_to(cr,31+indent-(extents.width)/2, 63);
 			cairo_show_text(cr,on_text);
 
 			cairo_save(cr);
-			cairo_arc(cr,32+indent,32.5,12,0,2*INV_PI);
+			cairo_arc(cr,32+indent,33.5,12,0,2*INV_PI);
 			cairo_clip(cr);
 
-			gdk_cairo_set_source_pixbuf(cr,img_off, 32+indent-12.5, 32.5-12.5);
+			gdk_cairo_set_source_pixbuf(cr,img_off, 32+indent-12.5, 33.5-12.5);
 			cairo_paint(cr);
 
 			cairo_restore(cr);
@@ -521,13 +527,13 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 
 	cairo_save(cr);
 
-	cairo_move_to(cr,32+indent,48.5);
+	cairo_move_to(cr,32+indent,50.5);
 	for(i=1;i<=6;i++) {
-		cairo_line_to(cr,32+indent+17*sin(i*INV_PI/3),32.5+17*cos(i*INV_PI/3));
+		cairo_line_to(cr,32+indent+17*sin(i*INV_PI/3),33.5+17*cos(i*INV_PI/3));
 	}
 	cairo_clip(cr);
 
-	pat = cairo_pattern_create_linear (indent, 0.0,  64.0+indent, 64.0);
+	pat = cairo_pattern_create_linear (indent, 0.0,  66.0+indent, 64.0);
 	cairo_pattern_add_color_stop_rgba (pat, 0.0, 1.00, 1.00, 1.00, 1);
 	cairo_pattern_add_color_stop_rgba (pat, 0.32, 0.91, 0.89, 0.83, 1);
 	cairo_pattern_add_color_stop_rgba (pat, 0.5, 0.43, 0.32, 0.26, 1);
@@ -535,7 +541,7 @@ inv_switch_toggle_paint(GtkWidget *widget, gint mode)
 	cairo_pattern_add_color_stop_rgba (pat, 1.0, 0.00, 0.00, 0.00, 1);
 	cairo_set_source (cr, pat);
 	cairo_set_line_width(cr,5);
-	cairo_arc(cr,32+indent,32.5,14.5,0,2*INV_PI);
+	cairo_arc(cr,32+indent,33.5,14.5,0,2*INV_PI);
 	cairo_stroke(cr);
 
 	cairo_restore(cr);
@@ -586,15 +592,5 @@ inv_switch_toggle_destroy(GtkObject *object)
 }
 
 
-static gint
-inv_switch_choose_light_dark(GdkColor *bg,GdkColor *light,GdkColor *dark)
-{
 
-	float ld,dd;
-
-	ld=pow(bg->red-light->red,2) + pow(bg->green-light->green,2) + pow(bg->blue-light->blue,2);
-	dd=pow(bg->red-dark->red,2) + pow(bg->green-dark->green,2) + pow(bg->blue-dark->blue,2);
-
-	return ld > dd ? 1 : 0;
-}
 
