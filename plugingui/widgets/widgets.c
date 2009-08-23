@@ -46,10 +46,10 @@ inv_choose_font_size(cairo_t *cr, const char *family, cairo_font_slant_t slant, 
 
 	cairo_select_font_face(cr,family,slant,weight);
 
-	for(i=20;i>0;i--) {
+	for(i=15;i>0;i--) {
 		cairo_set_font_size(cr,i);
 		cairo_text_extents (cr,character,&extents);
-		printf("Char: %s, font %i, width: %f, height: %f\n",character,i,extents.width,extents.height);
+		//printf("Char: %s, font %i, width: %f, height: %f\n",character,i,extents.width,extents.height);
 		if(extents.width <= width && extents.height <= height) {
 			return i;
 		}

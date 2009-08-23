@@ -28,7 +28,8 @@ all:			libinv_widgets.a
 
 # RULES TO BUILD LIBRARIES FROM C CODE
 
-libinv_widgets.a:	display-Compressor.o    display-Compressor.h \
+libinv_widgets.a:	widgets.o		widgets.h \
+			display-Compressor.o    display-Compressor.h \
 			display-FrequencyGain.o display-FrequencyGain.h \
 			display-ErReverb.o      display-ErReverb.h \
 			display-Spectrograph.o  display-Spectrograph.h \
@@ -37,10 +38,10 @@ libinv_widgets.a:	display-Compressor.o    display-Compressor.h \
 			meter-peak.o            meter-peak.h \
 			meter-phase.o           meter-phase.h \
 			meter-vu.o              meter-vu.h \
-			switch-toggle.o         switch-toggle.h \
-			widgets.o		widgets.h
+			switch-toggle.o         switch-toggle.h 
 			@echo "Creating libinv_widgets.a"
 			@ar rcs libinv_widgets.a \
+				widgets.o \
 				display-Compressor.o \
 				display-ErReverb.o \
 				display-FrequencyGain.o \
@@ -50,8 +51,8 @@ libinv_widgets.a:	display-Compressor.o    display-Compressor.h \
 				meter-peak.o \
 				meter-phase.o \
 				meter-vu.o \
-				switch-toggle.o \
-				widgets.o
+				switch-toggle.o
+				
 
 # OTHER TARGETS
 
