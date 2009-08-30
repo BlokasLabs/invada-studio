@@ -601,5 +601,16 @@ applyBandpassFilter(struct FilterP *f, float in)
 	}
 }
 
+void
+denormalBandpassFilter(struct FilterP *f)
+{ 
+	int i;
 
+	for(i=0;i<2;i++) {
+		f->x[i]  = (fabs(f->x[i])<1.0e-10)  ? 0.f : f->x[i]; 
+		f->x2[i] = (fabs(f->x2[i])<1.0e-10)  ? 0.f : f->x2[i]; 
+		f->y[i]  = (fabs(f->y[i])<1.0e-10)  ? 0.f : f->y[i]; 
+		f->y2[i] = (fabs(f->y2[i])<1.0e-10)  ? 0.f : f->y2[i]; 
+	}
+}
 

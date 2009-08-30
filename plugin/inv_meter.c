@@ -320,7 +320,9 @@ runIMeter(LV2_Handle instance, uint32_t SampleCount)
 	plugin->EnvVuLLast 	= (fabs(EnvVuL)<1.0e-10)  ? 0.f : EnvVuL; 
 	plugin->EnvVuRLast 	= (fabs(EnvVuR)<1.0e-10)  ? 0.f : EnvVuR; 
 	plugin->EnvPhaseLast 	= (fabs(EnvPhase)<1.0e-10)  ? 0.f : EnvPhase; 
+	filter=plugin->filters;
 	for(i=0;i<FILTER_COUNT;i++) {
+ 		denormalBandpassFilter(&filter[i]);
 		plugin->EnvSpecLast[i] = (fabs(EnvSpec[i])<1.0e-10)  ? 0.f : EnvSpec[i];
 	}
 

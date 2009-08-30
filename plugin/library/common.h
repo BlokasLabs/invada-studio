@@ -109,5 +109,6 @@ int calculateIReverbER(struct ERunit *erarray, int erMax,
 /* Butterworth bandpass for spectral analysier */
 void  initBandpassFilter(struct FilterP *f, double sr, double cf, double bw);
 float applyBandpassFilter(struct FilterP *f, float in);
+void denormalBandpassFilter(struct FilterP *f);
 
 #endif /*__INVADA_COMMON_H */

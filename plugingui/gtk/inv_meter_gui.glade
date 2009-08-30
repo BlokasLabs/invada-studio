@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sat Aug 22 17:36:39 2009 -->
+<!--Generated with glade3 3.4.5 on Sun Aug 30 13:31:06 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="meter_window">
     <property name="type">GTK_WINDOW_POPUP</property>
@@ -307,7 +307,7 @@
                 <child>
                   <widget class="GtkLabel" id="label10">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">Phase</property>
+                    <property name="label" translatable="yes">Stereo Width</property>
                     <property name="use_markup">True</property>
                   </widget>
                   <packing>
