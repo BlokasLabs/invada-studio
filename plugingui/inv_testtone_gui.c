@@ -36,8 +36,6 @@
 #include "inv_testtone_gui.h"
 
 
-static LV2UI_Descriptor *IToneGuiDescriptor = NULL;
-
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
@@ -65,7 +63,7 @@ static LV2UI_Handle
 instantiateIToneGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
 
-	IToneGui *pluginGui = (IToneGui *)malloc(sizeof(IToneGui));
+	IToneGui *pluginGui = (IToneGui *)g_malloc0(sizeof(IToneGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -85,7 +83,7 @@ instantiateIToneGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 	builder = gtk_builder_new ();
 	file = g_strdup_printf("%s/gtk/inv_testtone_gui.xml",bundle_path);
 	gtk_builder_add_from_file (builder, file, &err);
-	free(file);
+	g_free(file);
 
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "testtone_window"));
 
@@ -182,7 +180,11 @@ instantiateIToneGui(const struct _LV2UI_Descriptor* descriptor, const char* plug
 static void 
 cleanupIToneGui(LV2UI_Handle ui)
 {
-	return;
+    IToneGui *pluginGui = (IToneGui *)ui;
+    GtkWidget *window = (GtkWidget *) pluginGui->windowContainer;
+    gtk_widget_destroy(GTK_WIDGET(window));
+    g_free(pluginGui);
+    return;
 }
 
 
@@ -233,32 +235,25 @@ port_eventIToneGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32_
 }
 
 
-static void 
-init()
-{
-	IToneGuiDescriptor =
-	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
-
-	IToneGuiDescriptor->URI 		= ITONE_GUI_URI;
-	IToneGuiDescriptor->instantiate 	= instantiateIToneGui;
-	IToneGuiDescriptor->cleanup		= cleanupIToneGui;
-	IToneGuiDescriptor->port_event		= port_eventIToneGui;
-	IToneGuiDescriptor->extension_data 	= NULL;
-
-}
+static const
+LV2UI_Descriptor descriptor = {
+    ITONE_GUI_URI,
+    &instantiateIToneGui,
+    &cleanupIToneGui,
+    &port_eventIToneGui,
+    0
+};
 
 
+LV2_SYMBOL_EXPORT
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IToneGuiDescriptor) init();
-
-	switch (index) {
-		case 0:
-			return IToneGuiDescriptor;
-	default:
-		return NULL;
-	}
+    if (index == 0) {
+	return &descriptor;
+    }
+    return 0;
 }
+
 
 /*****************************************************************************/
 

@@ -36,8 +36,6 @@
 #include "inv_input_gui.h"
 
 
-static LV2UI_Descriptor *IInputGuiDescriptor = NULL;
-
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
@@ -74,7 +72,7 @@ static LV2UI_Handle
 instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
 
-	IInputGui *pluginGui = (IInputGui *)malloc(sizeof(IInputGui));
+	IInputGui *pluginGui = (IInputGui *)g_malloc0(sizeof(IInputGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -94,7 +92,7 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 	builder = gtk_builder_new ();
 	file = g_strdup_printf("%s/gtk/inv_input_gui.xml",bundle_path);
 	gtk_builder_add_from_file (builder, file, &err);
-	free(file);
+	g_free(file);
 
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "input_window"));
 
@@ -277,7 +275,11 @@ instantiateIInputGui(const struct _LV2UI_Descriptor* descriptor, const char* plu
 static void 
 cleanupIInputGui(LV2UI_Handle ui)
 {
-	return;
+    IInputGui *pluginGui = (IInputGui *)ui;
+    GtkWidget *window = (GtkWidget *) pluginGui->windowContainer;
+    gtk_widget_destroy(GTK_WIDGET(window));
+    g_free(pluginGui);
+    return;
 }
 
 
@@ -379,31 +381,23 @@ port_eventIInputGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint32
 }
 
 
-static void 
-init()
-{
-	IInputGuiDescriptor =
-	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
-
-	IInputGuiDescriptor->URI 		= IINPUT_GUI_URI;
-	IInputGuiDescriptor->instantiate 	= instantiateIInputGui;
-	IInputGuiDescriptor->cleanup		= cleanupIInputGui;
-	IInputGuiDescriptor->port_event		= port_eventIInputGui;
-	IInputGuiDescriptor->extension_data 	= NULL;
-
-}
+static const
+LV2UI_Descriptor descriptor = {
+    IINPUT_GUI_URI,
+    &instantiateIInputGui,
+    &cleanupIInputGui,
+    &port_eventIInputGui,
+    0
+};
 
 
+LV2_SYMBOL_EXPORT
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IInputGuiDescriptor) init();
-
-	switch (index) {
-		case 0:
-			return IInputGuiDescriptor;
-	default:
-		return NULL;
-	}
+    if (index == 0) {
+	return &descriptor;
+    }
+    return 0;
 }
 
 

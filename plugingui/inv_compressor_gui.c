@@ -36,8 +36,6 @@
 #include "inv_compressor_gui.h"
 
 
-static LV2UI_Descriptor *ICompGuiDescriptor = NULL;
-
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
@@ -76,7 +74,7 @@ typedef struct {
 
 static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
-	ICompGui *pluginGui = (ICompGui *)malloc(sizeof(ICompGui));
+	ICompGui *pluginGui = (ICompGui *)g_malloc0(sizeof(ICompGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -96,7 +94,7 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 	builder = gtk_builder_new ();
 	file = g_strdup_printf("%s/gtk/inv_compressor_gui.xml",bundle_path);
 	gtk_builder_add_from_file (builder, file, &err);
-	free(file);
+	g_free(file);
 
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "comp_window"));
 
@@ -321,7 +319,11 @@ static LV2UI_Handle instantiateICompGui(const struct _LV2UI_Descriptor* descript
 
 static void cleanupICompGui(LV2UI_Handle ui)
 {
-	return;
+    ICompGui *pluginGui = (ICompGui *)ui;
+    GtkWidget *window = (GtkWidget *) pluginGui->windowContainer;
+    gtk_widget_destroy(GTK_WIDGET(window));
+    g_free(pluginGui);
+    return;
 }
 
 
@@ -428,30 +430,23 @@ static void port_eventICompGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_s
 }
 
 
-static void init()
-{
-	ICompGuiDescriptor =
-	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
-
-	ICompGuiDescriptor->URI 		= ICOMP_GUI_URI;
-	ICompGuiDescriptor->instantiate 	= instantiateICompGui;
-	ICompGuiDescriptor->cleanup		= cleanupICompGui;
-	ICompGuiDescriptor->port_event	= port_eventICompGui;
-	ICompGuiDescriptor->extension_data 	= NULL;
-
-}
+static const
+LV2UI_Descriptor descriptor = {
+    ICOMP_GUI_URI,
+    &instantiateICompGui,
+    &cleanupICompGui,
+    &port_eventICompGui,
+    0
+};
 
 
+LV2_SYMBOL_EXPORT
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!ICompGuiDescriptor) init();
-
-	switch (index) {
-		case 0:
-			return ICompGuiDescriptor;
-	default:
-		return NULL;
-	}
+    if (index == 0) {
+	return &descriptor;
+    }
+    return 0;
 }
 
 

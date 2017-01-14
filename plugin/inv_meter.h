@@ -18,8 +18,8 @@
 
 */
 
-#define IMETER_URI		"http://invadarecords.com/plugins/lv2/meter";
-#define IMETER_GUI_URI		"http://invadarecords.com/plugins/lv2/meter/gui";
+#define IMETER_URI		"http://invadarecords.com/plugins/lv2/meter"
+#define IMETER_GUI_URI		"http://invadarecords.com/plugins/lv2/meter/gui"
 #define IMETER_BYPASS		0
 #define IMETER_AUDIO_INL	1
 #define IMETER_AUDIO_INR	2

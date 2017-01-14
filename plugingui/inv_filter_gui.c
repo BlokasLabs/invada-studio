@@ -36,8 +36,6 @@
 #include "inv_filter_gui.h"
 
 
-static LV2UI_Descriptor *IFilterGuiDescriptor = NULL;
-
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
@@ -67,7 +65,7 @@ typedef struct {
 static LV2UI_Handle 
 instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
-	IFilterGui *pluginGui = (IFilterGui *)malloc(sizeof(IFilterGui));
+	IFilterGui *pluginGui = (IFilterGui *)g_malloc0(sizeof(IFilterGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -87,7 +85,7 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	builder = gtk_builder_new ();
 	file = g_strdup_printf("%s/gtk/inv_filter_gui.xml",bundle_path);
 	gtk_builder_add_from_file (builder, file, &err);
-	free(file);
+	g_free(file);
 
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "filter_window"));
 
@@ -250,7 +248,11 @@ instantiateIFilterGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 static void 
 cleanupIFilterGui(LV2UI_Handle ui)
 {
-	return;
+    IFilterGui *pluginGui = (IFilterGui *)ui;
+    GtkWidget *window = (GtkWidget *) pluginGui->windowContainer;
+    gtk_widget_destroy(GTK_WIDGET(window));
+    g_free(pluginGui);
+    return;
 }
 
 
@@ -325,31 +327,23 @@ port_eventIFilterGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint3
 }
 
 
-static void 
-init()
-{
-	IFilterGuiDescriptor =
-	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
-
-	IFilterGuiDescriptor->URI 		= IFILTER_GUI_URI;
-	IFilterGuiDescriptor->instantiate 	= instantiateIFilterGui;
-	IFilterGuiDescriptor->cleanup		= cleanupIFilterGui;
-	IFilterGuiDescriptor->port_event	= port_eventIFilterGui;
-	IFilterGuiDescriptor->extension_data 	= NULL;
-
-}
+static const
+LV2UI_Descriptor descriptor = {
+    IFILTER_GUI_URI,
+    &instantiateIFilterGui,
+    &cleanupIFilterGui,
+    &port_eventIFilterGui,
+    0
+};
 
 
+LV2_SYMBOL_EXPORT
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IFilterGuiDescriptor) init();
-
-	switch (index) {
-		case 0:
-			return IFilterGuiDescriptor;
-	default:
-		return NULL;
-	}
+    if (index == 0) {
+	return &descriptor;
+    }
+    return 0;
 }
 
 

@@ -35,8 +35,6 @@
 #include "inv_phaser_gui.h"
 
 
-static LV2UI_Descriptor *IPhaserGuiDescriptor = NULL;
-
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
@@ -71,7 +69,7 @@ typedef struct {
 static LV2UI_Handle 
 instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
-	IPhaserGui *pluginGui = (IPhaserGui *)malloc(sizeof(IPhaserGui));
+	IPhaserGui *pluginGui = (IPhaserGui *)g_malloc0(sizeof(IPhaserGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -91,7 +89,7 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 	builder = gtk_builder_new ();
 	file = g_strdup_printf("%s/gtk/inv_phaser_gui.xml",bundle_path);
 	gtk_builder_add_from_file (builder, file, &err);
-	free(file);
+	g_free(file);
 
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "phaser_window"));
 
@@ -278,7 +276,11 @@ instantiateIPhaserGui(const struct _LV2UI_Descriptor* descriptor, const char* pl
 static void 
 cleanupIPhaserGui(LV2UI_Handle ui)
 {
-	return;
+    IPhaserGui *pluginGui = (IPhaserGui *)ui;
+    GtkWidget *window = (GtkWidget *) pluginGui->windowContainer;
+    gtk_widget_destroy(GTK_WIDGET(window));
+    g_free(pluginGui);
+    return;
 }
 
 
@@ -359,31 +361,23 @@ port_eventIPhaserGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uint3
 }
 
 
-static void 
-init()
-{
-	IPhaserGuiDescriptor =
-	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
-
-	IPhaserGuiDescriptor->URI 		= IPHASER_GUI_URI;
-	IPhaserGuiDescriptor->instantiate 	= instantiateIPhaserGui;
-	IPhaserGuiDescriptor->cleanup		= cleanupIPhaserGui;
-	IPhaserGuiDescriptor->port_event	= port_eventIPhaserGui;
-	IPhaserGuiDescriptor->extension_data 	= NULL;
-
-}
+static const
+LV2UI_Descriptor descriptor = {
+    IPHASER_GUI_URI,
+    &instantiateIPhaserGui,
+    &cleanupIPhaserGui,
+    &port_eventIPhaserGui,
+    0
+};
 
 
+LV2_SYMBOL_EXPORT
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IPhaserGuiDescriptor) init();
-
-	switch (index) {
-		case 0:
-			return IPhaserGuiDescriptor;
-	default:
-		return NULL;
-	}
+    if (index == 0) {
+	return &descriptor;
+    }
+    return 0;
 }
 
 

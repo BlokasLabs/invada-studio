@@ -18,8 +18,8 @@
 
 */
 
-#define ITONE_URI		"http://invadarecords.com/plugins/lv2/testtone";
-#define ITONE_GUI_URI		"http://invadarecords.com/plugins/lv2/testtone/gui";
+#define ITONE_URI		"http://invadarecords.com/plugins/lv2/testtone"
+#define ITONE_GUI_URI		"http://invadarecords.com/plugins/lv2/testtone/gui"
 #define ITONE_ACTIVE		0
 #define ITONE_FREQ		1
 #define ITONE_TRIM		2

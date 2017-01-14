@@ -35,8 +35,6 @@
 #include "inv_erreverb_gui.h"
 
 
-static LV2UI_Descriptor *IErReverbGuiDescriptor = NULL;
-
 typedef struct {
 	GtkWidget	*windowContainer;
 	GtkWidget	*heading;
@@ -75,7 +73,7 @@ typedef struct {
 static LV2UI_Handle 
 instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* plugin_uri, const char* bundle_path, LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget* widget, const LV2_Feature* const* features)
 {
-	IErReverbGui *pluginGui = (IErReverbGui *)malloc(sizeof(IErReverbGui));
+	IErReverbGui *pluginGui = (IErReverbGui *)g_malloc0(sizeof(IErReverbGui));
 	if(pluginGui==NULL)
 		return NULL;
 
@@ -95,7 +93,7 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 	builder = gtk_builder_new ();
 	file = g_strdup_printf("%s/gtk/inv_erreverb_gui.xml",bundle_path);
 	gtk_builder_add_from_file (builder, file, &err);
-	free(file);
+	g_free(file);
 
 	window = GTK_WIDGET (gtk_builder_get_object (builder, "erreverb_window"));
 
@@ -287,7 +285,11 @@ instantiateIErReverbGui(const struct _LV2UI_Descriptor* descriptor, const char* 
 static void 
 cleanupIErReverbGui(LV2UI_Handle ui)
 {
-	return;
+    IErReverbGui *pluginGui = (IErReverbGui *)ui;
+    GtkWidget *window = (GtkWidget *) pluginGui->windowContainer;
+    gtk_widget_destroy(GTK_WIDGET(window));
+    g_free(pluginGui);
+    return;
 }
 
 
@@ -392,31 +394,24 @@ port_eventIErReverbGui(LV2UI_Handle ui, uint32_t port, uint32_t buffer_size, uin
 }
 
 
-static void 
-init()
-{
-	IErReverbGuiDescriptor =
-	 (LV2UI_Descriptor *)malloc(sizeof(LV2UI_Descriptor));
 
-	IErReverbGuiDescriptor->URI 		= IERR_GUI_URI;
-	IErReverbGuiDescriptor->instantiate 	= instantiateIErReverbGui;
-	IErReverbGuiDescriptor->cleanup		= cleanupIErReverbGui;
-	IErReverbGuiDescriptor->port_event	= port_eventIErReverbGui;
-	IErReverbGuiDescriptor->extension_data 	= NULL;
-
-}
+static const
+LV2UI_Descriptor descriptor = {
+    IERR_GUI_URI,
+    &instantiateIErReverbGui,
+    &cleanupIErReverbGui,
+    &port_eventIErReverbGui,
+    0
+};
 
 
+LV2_SYMBOL_EXPORT
 const LV2UI_Descriptor* lv2ui_descriptor(uint32_t index)
 {
-	if (!IErReverbGuiDescriptor) init();
-
-	switch (index) {
-		case 0:
-			return IErReverbGuiDescriptor;
-	default:
-		return NULL;
-	}
+    if (index == 0) {
+	return &descriptor;
+    }
+    return 0;
 }
 
 
