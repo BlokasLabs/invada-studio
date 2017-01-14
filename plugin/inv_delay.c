@@ -28,6 +28,8 @@
 #include "library/common.h"
 #include "inv_delay.h"
 
+#define SMALL_TO_ZERO(f) if (fabs(f) < 1e-16) f = 0;
+
 static LV2_Descriptor *IDelayMonoDescriptor = NULL;
 static LV2_Descriptor *IDelaySumDescriptor = NULL;
 
@@ -906,7 +908,9 @@ runSumIDelay(LV2_Handle instance, uint32_t SampleCount)
 			}
 
 			// munge it
+			SMALL_TO_ZERO(In1FBmix);
 			In1FB	= (1-fMunge)*In1FBmix + fMunge*ITube_do(In1FBmix,1+fMunge);
+			SMALL_TO_ZERO(In2FBmix);
 			In2FB	= (1-fMunge)*In2FBmix + fMunge*ITube_do(In2FBmix,1+fMunge);
 			HPF1 = ((fHPFsamples-1) * HPF1 + In1FB) / fHPFsamples;  
 			HPF2 = ((fHPFsamples-1) * HPF2 + In2FB) / fHPFsamples; 

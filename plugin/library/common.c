@@ -27,6 +27,7 @@
 #include <lv2.h>
 #include "common.h"
 
+#define SMALL_TO_ZERO(f) if (fabs(f) < 1e-16) f = 0;
 
 /* a function that checks to see if a control has been changed and calls the provided conversion fuction */
 void 
@@ -99,6 +100,8 @@ applyIEnvelope(struct Envelope * Env, float audio_value, float envelope_value)
 {
 	float valueA;
 
+	SMALL_TO_ZERO(audio_value);
+	
 	valueA=fabs(audio_value);
 
 	return (valueA > envelope_value)  ? Env->attack * (valueA - envelope_value)  : Env->decay * (valueA - envelope_value);
