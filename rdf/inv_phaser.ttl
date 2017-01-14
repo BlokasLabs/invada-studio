@@ -1,17 +1,16 @@
-@prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
-@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
-@prefix doap:  <http://usefulinc.com/ns/doap#> .
-@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix units: <http://lv2plug.in/ns/extension/units#> .
-@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
-@prefix epp:   <http://lv2plug.in/ns/dev/extportinfo#> .
-@prefix pg:    <http://lv2plug.in/ns/dev/port-groups#> .
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix doap:   <http://usefulinc.com/ns/doap#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix units:  <http://lv2plug.in/ns/extension/units#> .
+@prefix uiext:  <http://lv2plug.in/ns/extensions/ui#> .
+@prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
+@prefix pg:     <http://lv2plug.in/ns/ext/port-groups#> .
 
 <http://invadarecords.com/plugins/lv2/phaser/gui>
     a uiext:GtkUI;
     uiext:binary <inv_phaser_gui.so>;
-    uiext:requiredFeature uiext:makeResident ;
-    uiext:optionalFeature uiext:noUserResize ;
+    lv2:optionalFeature uiext:noUserResize ;
 
     uiext:portNotification [ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/phaser/mono> ;
@@ -97,7 +96,7 @@
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
-    lv2:optionalFeature lv2:hardRtCapable ;
+    lv2:optionalFeature lv2:hardRTCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/phaser/gui>;
 
     lv2:port [
@@ -118,7 +117,7 @@
 	lv2:minimum 0.5 ;
 	lv2:maximum 500 ;
 	units:unit units:s ;
-        lv2:portProperty epp:logarithmic ;
+        lv2:portProperty pprops:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
@@ -251,7 +250,7 @@
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
-    lv2:optionalFeature lv2:hardRtCapable ;
+    lv2:optionalFeature lv2:hardRTCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/phaser/gui>;
 
     lv2:port [
@@ -272,7 +271,7 @@
 	lv2:minimum 0.5 ;
 	lv2:maximum 500 ;
 	units:unit units:s ;
-        lv2:portProperty epp:logarithmic ;
+        lv2:portProperty pprops:logarithmic ;
     ] , [
 	a lv2:InputPort, lv2:ControlPort ;
 	lv2:index 2 ;
@@ -423,7 +422,7 @@
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
-    lv2:optionalFeature lv2:hardRtCapable ;
+    lv2:optionalFeature lv2:hardRTCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/phaser/gui>;
 
     lv2:port [

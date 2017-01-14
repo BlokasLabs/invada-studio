@@ -4,15 +4,14 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
-@prefix dc:    <http://dublincore.org/documents/dcmi-namespace/> .
-@prefix pg:    <http://lv2plug.in/ns/dev/port-groups#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
 
 
 <http://invadarecords.com/plugins/lv2/tube/gui>
     a uiext:GtkUI;
     uiext:binary <inv_tube_gui.so>;
-    uiext:requiredFeature uiext:makeResident ;
-    uiext:optionalFeature uiext:noUserResize ;
+    lv2:optionalFeature uiext:noUserResize ;
 
     uiext:portNotification [ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/tube/mono> ;
@@ -57,9 +56,9 @@
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
-    lv2:optionalFeature lv2:hardRtCapable ;
+    lv2:optionalFeature lv2:hardRTCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/tube/gui> ;
-    dc:replaces <urn:ladspa:3306> ;
+    dct:replaces <urn:ladspa:3306> ;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -168,9 +167,9 @@
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
-    lv2:optionalFeature lv2:hardRtCapable ;
+    lv2:optionalFeature lv2:hardRTCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/tube/gui> ;
-    dc:replaces <urn:ladspa:3307> ;
+    dct:replaces <urn:ladspa:3307> ;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;

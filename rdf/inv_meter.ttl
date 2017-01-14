@@ -4,14 +4,13 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
-@prefix pg:    <http://lv2plug.in/ns/dev/port-groups#> .
+@prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
 
 
 <http://invadarecords.com/plugins/lv2/meter/gui>
     a uiext:GtkUI;
     uiext:binary <inv_meter_gui.so>;
-    uiext:requiredFeature uiext:makeResident ;
-    uiext:optionalFeature uiext:noUserResize ;
+    lv2:optionalFeature uiext:noUserResize ;
 
     uiext:portNotification [ 
 	uiext:plugin <http://invadarecords.com/plugins/lv2/meter>  ;
@@ -147,7 +146,7 @@
 	foaf:homepage <http://www.invadarecords.com/Downloads.php?ID=00000264> ;
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
-    lv2:optionalFeature lv2:hardRtCapable ;
+    lv2:optionalFeature lv2:hardRTCapable ;
     uiext:ui <http://invadarecords.com/plugins/lv2/meter/gui>;
 
     lv2:port [
