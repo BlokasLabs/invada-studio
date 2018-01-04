@@ -5,6 +5,7 @@
 @prefix units:  <http://lv2plug.in/ns/extension/units#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix pg:     <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix mod:    <http://moddevices.com/ns/mod#> .
 
 <http://invadarecords.com/plugins/lv2/delay/mono#out> 
     a pg:Group ;
@@ -14,6 +15,8 @@
 <http://invadarecords.com/plugins/lv2/delay/mono> 
     a lv2:Plugin, lv2:DelayPlugin ;
     doap:name "Invada Delay Munge (mono in)" ;
+    mod:brand "Invada" ;
+    mod:label "Delay Munge M" ;
     doap:developer [
 	foaf:name "Fraser Stuart";
 	foaf:homepage <https://launchpad.net/invada-studio> ;
@@ -223,6 +226,8 @@
 <http://invadarecords.com/plugins/lv2/delay/sum> 
     a lv2:Plugin, lv2:DelayPlugin ;
     doap:name "Invada Delay Munge (sum L+R in)" ;
+    mod:brand "Invada" ;
+    mod:label "Delay Munge LR" ;
     doap:developer [
 	foaf:name "Fraser Stuart";
 	foaf:homepage <https://launchpad.net/invada-studio> ;

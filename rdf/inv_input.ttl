@@ -5,6 +5,7 @@
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix mod:   <http://moddevices.com/ns/mod#> .
 
 <http://invadarecords.com/plugins/lv2/input#in> 
     a pg:Group ;
@@ -19,6 +20,8 @@
 <http://invadarecords.com/plugins/lv2/input> 
     a lv2:Plugin, lv2:UtilityPlugin ;
     doap:name "Invada Input Module" ;
+    mod:brand "Invada" ;
+    mod:label "Input Module" ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     doap:developer [
 	foaf:name "Fraser Stuart";

@@ -4,6 +4,7 @@
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix mod:   <http://moddevices.com/ns/mod#> .
 
 <http://invadarecords.com/plugins/lv2/meter#in> 
     a pg:Group ;
@@ -18,6 +19,8 @@
 <http://invadarecords.com/plugins/lv2/meter> 
     a lv2:Plugin, lv2:AnalyserPlugin ;
     doap:name "Invada Meter" ;
+    mod:brand "Invada" ;
+    mod:label "Meter" ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     doap:developer [
 	foaf:name "Fraser Stuart";

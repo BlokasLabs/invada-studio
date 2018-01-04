@@ -5,10 +5,13 @@
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix mod:   <http://moddevices.com/ns/mod#> .
 
 <http://invadarecords.com/plugins/lv2/tube/mono> 
     a lv2:Plugin, lv2:DistortionPlugin ;
     doap:name "Invada Tube Distortion (mono)" ;
+    mod:brand "Invada" ;
+    mod:label "Tube Dist. M" ;
     doap:developer [
 	foaf:name "Fraser Stuart";
 	foaf:homepage <https://launchpad.net/invada-studio> ;
@@ -119,6 +122,8 @@
 <http://invadarecords.com/plugins/lv2/tube/stereo> 
     a lv2:Plugin, lv2:DistortionPlugin ;
     doap:name "Invada Tube Distortion (stereo)" ;
+    mod:brand "Invada" ;
+    mod:label "Tube Dist. St" ;
     doap:developer [
 	foaf:name "Fraser Stuart";
 	foaf:homepage <https://launchpad.net/invada-studio> ;

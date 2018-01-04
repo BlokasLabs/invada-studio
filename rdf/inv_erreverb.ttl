@@ -6,6 +6,7 @@
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix dct:    <http://purl.org/dc/terms/> .
 @prefix pg:     <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix mod:    <http://moddevices.com/ns/mod#> .
 
 <http://invadarecords.com/plugins/lv2/erreverb/mono#out> 
     a pg:Group ;
@@ -15,6 +16,8 @@
 <http://invadarecords.com/plugins/lv2/erreverb/mono> 
     a lv2:Plugin, lv2:ReverbPlugin ;
     doap:name "Invada Early Reflection Reverb (mono in)" ;
+    mod:brand "Invada" ;
+    mod:label "ER Reverb M" ;
     doap:developer [
 	foaf:name "Fraser Stuart";
 	foaf:homepage <https://launchpad.net/invada-studio> ;
@@ -187,6 +190,8 @@
 <http://invadarecords.com/plugins/lv2/erreverb/sum> 
     a lv2:Plugin, lv2:ReverbPlugin ;
     doap:name "Invada Early Reflection Reverb (sum L+R in)" ;
+    mod:brand "Invada" ;
+    mod:label "ER Reverb LR" ;
     doap:developer [
 	foaf:name "Fraser Stuart";
 	foaf:homepage <https://launchpad.net/invada-studio> ;
