@@ -3,38 +3,9 @@
 @prefix doap:   <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units:  <http://lv2plug.in/ns/extension/units#> .
-@prefix uiext:  <http://lv2plug.in/ns/extensions/ui#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix dct:    <http://purl.org/dc/terms/> .
 @prefix pg:     <http://lv2plug.in/ns/ext/port-groups#> .
-
-
-<http://invadarecords.com/plugins/lv2/erreverb/gui>
-    a uiext:GtkUI;
-    uiext:binary <inv_erreverb_gui.so>;
-    lv2:optionalFeature uiext:noUserResize ;
-
-    uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/mono> ;
-        uiext:portIndex 14 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/mono> ;
-        uiext:portIndex 15 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/mono> ;
-        uiext:portIndex 16 ;
-    ] ;
-
-    uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/sum> ;
-        uiext:portIndex 14 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/sum> ;
-        uiext:portIndex 15 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/erreverb/sum> ;
-        uiext:portIndex 16 ;
-    ] .
 
 <http://invadarecords.com/plugins/lv2/erreverb/mono#out> 
     a pg:Group ;
@@ -56,7 +27,6 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRTCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/erreverb/gui> ;
     dct:replaces <urn:ladspa:3311> ;
 
     lv2:port [
@@ -229,7 +199,6 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRTCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/erreverb/gui> ;
     dct:replaces <urn:ladspa:3312> ;
 
     lv2:port [

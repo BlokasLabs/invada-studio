@@ -3,42 +3,8 @@
 @prefix doap:   <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units:  <http://lv2plug.in/ns/extension/units#> .
-@prefix uiext:  <http://lv2plug.in/ns/extensions/ui#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix pg:     <http://lv2plug.in/ns/ext/port-groups#> .
-
-<http://invadarecords.com/plugins/lv2/delay/gui>
-    a uiext:GtkUI;
-    uiext:binary <inv_delay_gui.so>;
-    lv2:optionalFeature uiext:noUserResize ;
-
-    uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/mono> ;
-        uiext:portIndex 14 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/mono> ;
-        uiext:portIndex 15 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/mono> ;
-        uiext:portIndex 16 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/mono> ;
-        uiext:portIndex 17 ;
-    ] ;
-
-    uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/sum> ;
-        uiext:portIndex 14 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/sum> ;
-        uiext:portIndex 15 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/sum> ;
-        uiext:portIndex 16 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/delay/sum> ;
-        uiext:portIndex 17 ;
-    ] .
 
 <http://invadarecords.com/plugins/lv2/delay/mono#out> 
     a pg:Group ;
@@ -60,7 +26,6 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRTCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/delay/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;
@@ -270,7 +235,6 @@
     ] ;
     doap:license <http://usefulinc.com/doap/licenses/gpl> ;
     lv2:optionalFeature lv2:hardRTCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/delay/gui>;
 
     lv2:port [
 	a lv2:InputPort, lv2:ControlPort ;

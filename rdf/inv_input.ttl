@@ -3,35 +3,8 @@
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extension/units#> .
-@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> .
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
-
-
-<http://invadarecords.com/plugins/lv2/input/gui>
-    a uiext:GtkUI;
-    uiext:binary <inv_input_gui.so>;
-    lv2:optionalFeature uiext:noUserResize ;
-
-    uiext:portNotification [ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
-        uiext:portIndex 11 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
-        uiext:portIndex 12 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
-        uiext:portIndex 13 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
-        uiext:portIndex 14 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
-        uiext:portIndex 15 ;
-    ],[ 
-	uiext:plugin <http://invadarecords.com/plugins/lv2/input>  ;
-        uiext:portIndex 16 ;
-    ] .
 
 <http://invadarecords.com/plugins/lv2/input#in> 
     a pg:Group ;
@@ -58,7 +31,6 @@
 	foaf:mbox <mailto:fraser@arkhostings.com> ;
     ] ;
     lv2:optionalFeature lv2:hardRTCapable ;
-    uiext:ui <http://invadarecords.com/plugins/lv2/input/gui> ;
     dct:replaces <urn:ladspa:3301> ;
 
     lv2:port [
