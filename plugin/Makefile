@@ -19,8 +19,8 @@
 
 # GENERAL
 
-CC		=	gcc
-LD		=	gcc
+CC		?=	gcc
+LD		?=	gcc
 CFLAGS		+=	-I. -O3 -Wall -fomit-frame-pointer -fstrength-reduce -funroll-loops -ffast-math -c -fPIC -DPIC
 LDFLAGS		+=	-shared -Llibrary -lc -lm  -linv_common -fPIC -DPIC
 
@@ -63,10 +63,11 @@ clean:
 
 %.o: %.c
 	@echo "Compiling $<"
-	@$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@ 
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 %.so: %.o
+	@echo "LDFLAGS = $(LDFLAGS)"
 	@echo "Creating  $@"
-	@$(LD) -o $@ $< $(LDFLAGS)
+	$(LD) -o $@ $< $(LDFLAGS)
 
 
