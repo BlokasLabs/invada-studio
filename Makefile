@@ -70,7 +70,7 @@ install-sys:
 	@echo "=================================="; 
 	-mkdir -p		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp plugin/*.so 		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp rdf/*.ttl 		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp -r rdf/*		$(DESTDIR)$(INSTALL_SYS_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	@echo ""
 
 install-user: 
@@ -82,7 +82,7 @@ install-user:
 	-mkdir -p		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 	cp plugin/*.so 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp plugingui/*.so	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
-	cp rdf/*.ttl 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
+	cp -r rdf/* 		$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)
 	cp plugingui/gtk/*.png	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 	cp plugingui/gtk/*.xml	$(INSTALL_USER_PLUGINS_DIR)/$(INSTALL_BUNDLE_DIR)/gtk
 	@echo ""
